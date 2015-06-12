@@ -114,7 +114,7 @@ For example, the default U.S. English locale is defined as:
 }
 ```
 
-See the [source]((https://github.com/d3/d3-format/tree/master/src/) for available locale definitions.
+See the [source](https://github.com/d3/d3-format/tree/master/src/) for available locale definitions.
 
 <a name="formatPrefix" href="#formatPrefix">#</a> <b>formatPrefix</b>(<i>value</i>[, <i>precision</i>])
 
