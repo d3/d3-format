@@ -87,6 +87,10 @@ console.log(prefix.scale(1.21e9)); // 1.21
 
 This method is used by [format](#format) for the `s` format type.
 
+<a name="formatPrecision" href="#formatPrecision">#</a> <b>formatPrecision</b>(<i>x</i>, <i>n</i>)
+
+…
+
 <a name="round" href="#round">#</a> <b>round</b>(<i>x</i>[, <i>n</i>])
 
 Returns the value *x* rounded to *n* digits after the decimal point. If *n* is omitted, it defaults to zero. The result is a number. Values are rounded to the closest multiple of 10 to the power minus *n*; if two multiples are equally close, the value is rounded up in accordance with the built-in [Math.round](https://developer.mozilla.org/en/JavaScript/Reference/Global_Objects/Math/round]) function. For example:
