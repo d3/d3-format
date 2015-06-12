@@ -37,7 +37,7 @@ The default [format](#format) instance uses the U.S. English ([`en-US`](https://
 
 To switch locales, either create a custom build by editing [index.js](https://github.com/d3/d3-format/tree/master/src/index.js) or copy the desired code it from one of the above linked locale definitions.
 
-<a name="format" href="#format">#</a> <i>format</i>(<i>specifier</i>)
+<a name="format" href="#format">#</a> <b>format</b>(<i>specifier</i>)
 
 Returns a new format function with the given string *specifier*. TODO Document optional *locale* argument, which defaults to U.S. English if not present.
 
