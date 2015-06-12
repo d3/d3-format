@@ -63,10 +63,10 @@ The available *type* values are:
 * rounded percentage (`p`) - like rounded, but multiply by 100 and suffix with "%".
 * binary (`b`) - outputs the number in base 2.
 * octal (`o`) - outputs the number in base 8.
-* hexadecimal (`x`) - outputs the number in base 16, using lower-case letters for the digits above 9.
-* hexadecimal (`X`) - outputs the number in base 16, using upper-case letters for the digits above 9.
+* hexadecimal (`x`) - outputs the number in base 16 using lower-case letters.
+* hexadecimal (`X`) - outputs the number in base 16 using upper-case letters.
 * character (`c`) - converts the integer to the corresponding unicode character before printing.
-* SI-prefix (`s`) - like rounded, but with a unit suffixed such as `"9.5M"` for mega, or `"1.00µ"` for micro.
+* SI-prefix (`s`) - like rounded, but with an SI unit such as `"9.5M"` or `"1.00µ"`.
 
 The type `n` is also supported as shorthand for `,g`.
 
