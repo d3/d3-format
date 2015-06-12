@@ -44,7 +44,7 @@ The *symbol* can be:
 * `$` - a currency symbol should be prefixed (or suffixed) per the locale.
 * `#` - for binary, octal, or hexadecimal output, prefix by `0b`, `0o`, or `0x`, respectively.
 
-The `0` option enables zero-padding.
+The *zero* (`0`) option enables zero-padding.
 
 The *width* defines the minimum field width. If not specified, then the width will be determined by the content.
 
