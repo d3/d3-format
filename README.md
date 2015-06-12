@@ -37,7 +37,7 @@ The *sign* can be:
 
 * `-` - a sign should be used only for negative numbers. (Default behavior.)
 * `+` - a sign should be used for both positive and negative numbers.
-* `\ ` - a leading space should be used on positive numbers, and a minus sign on negative numbers.
+* ` ` - a leading space should be used on positive numbers, and a minus sign on negative numbers.
 
 The *symbol* can be:
 
