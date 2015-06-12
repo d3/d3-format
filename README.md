@@ -60,7 +60,7 @@ The available *type* values are:
 * `d` - use [Number.toString](https://developer.mozilla.org/en/JavaScript/Reference/Global_Objects/Number/toString), but ignore any non-integer values.
 * `r` - [round](#round) to *precision* significant digits, padding with zeroes where necessary in similar fashion to `f`. If no *precision* is specified, falls back to general notation.
 * `%` - like `f`, but multiply by 100 and suffix with `"%"`.
-* `p` - like `r`, but multiply by 100 and suffix with "%".
+* `p` - like `r`, but multiply by 100 and suffix with `"%"`.
 * `b` - binary (base 2).
 * `o` - octal (base 8).
 * `x` - hexadecimal (base 16), using lower-case letters.
