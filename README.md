@@ -29,20 +29,20 @@ The *fill* can be any character other than `"{"` or `"}"`. The presence of a fil
 
 The *align* can be:
 
-* (`"<"`) Forces the field to be left-aligned within the available space.
-* (`">"`) Forces the field to be right-aligned within the available space. (This is the default).
-* (`"^"`) Forces the field to be centered within the available space.
+* `">"` - Forces the field to be right-aligned within the available space. (Default behavior).
+* `"<"` - Forces the field to be left-aligned within the available space.
+* `"^"` - Forces the field to be centered within the available space.
 
 The *sign* can be:
 
-* plus (`"+"`) - a sign should be used for both positive and negative numbers.
-* minus (`"-"`) - a sign should be used only for negative numbers. (This is the default.)
-* space (`" "`) - a leading space should be used on positive numbers, and a minus sign on negative numbers.
+* `"-"` - a sign should be used only for negative numbers. (Default behavior.)
+* `"+"` - a sign should be used for both positive and negative numbers.
+* `" "` - a leading space should be used on positive numbers, and a minus sign on negative numbers.
 
 The *symbol* can be:
 
-* currency (`"$"`) - a currency symbol should be prefixed (or suffixed) per the locale.
-* base (`"#"`) - for binary, octal, or hexadecimal output, prefix by `"0b"`, `"0o"`, or `"0x"`, respectively.
+* `"$"` - a currency symbol should be prefixed (or suffixed) per the locale.
+* `"#"` - for binary, octal, or hexadecimal output, prefix by `"0b"`, `"0o"`, or `"0x"`, respectively.
 
 The `"0"` option enables zero-padding.
 
