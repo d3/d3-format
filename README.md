@@ -74,8 +74,8 @@ The type `n` is also supported as shorthand for `,g`. If no *precision* is speci
 
 Returns the [SI prefix](https://en.wikipedia.org/wiki/Metric_prefix) for the specified *value*. If an optional *precision* is specified, the *value* is rounded accordingly using [round](#round) before computing the prefix. The returned prefix object has two properties:
 
-* symbol - the prefix symbol, such as `"M"` for millions.
-* scale - the scale function, for converting numbers to the appropriate prefixed scale.
+* `symbol` - the prefix symbol, such as `"M"` for millions.
+* `scale` - the scale function, for converting numbers to the appropriate prefixed scale.
 
 For example:
 
