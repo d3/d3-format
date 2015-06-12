@@ -58,7 +58,7 @@ The available *type* values are:
 * `g` - use [Number.toPrecision](https://developer.mozilla.org/en/JavaScript/Reference/Global_Objects/Number/toPrecision).
 * `f` - use [Number.toFixed](https://developer.mozilla.org/en/JavaScript/Reference/Global_Objects/Number/toFixed).
 * `d` - use [Number.toString](https://developer.mozilla.org/en/JavaScript/Reference/Global_Objects/Number/toString), but ignore any non-integer values.
-* `r` - [round](#round) to *precision* significant digits, padding with zeroes where necessary in similar fashion to `f`. If no *precision* is specified, falls back to general notation.
+* `r` - [round](#round) to *precision* significant digits, padding with zeroes like `f`.
 * `%` - like `f`, but multiply by 100 and suffix with `"%"`.
 * `p` - like `r`, but multiply by 100 and suffix with `"%"`.
 * `b` - binary (base 2).
@@ -68,7 +68,7 @@ The available *type* values are:
 * `c` - converts the integer to the corresponding unicode character before printing.
 * `s` - like `r`, but with an SI unit such as `"9.5M"` or `"1.00µ"`.
 
-The type `n` is also supported as shorthand for `,g`.
+The type `n` is also supported as shorthand for `,g`. If no *precision* is specified for `r`, `g` is used instead; if no *precision* is specified for `p`, `%` is used instead.
 
 <a name="formatPrefix" href="#formatPrefix">#</a> <b>formatPrefix</b>(<i>value</i>[, <i>precision</i>])
 
