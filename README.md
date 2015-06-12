@@ -15,25 +15,25 @@ zeroPad(2);   // "0002"
 zeroPad(123); // "0123"
 ```
 
-The default [format](#format) instance uses the U.S. English ([`en-US`](https://github.com/d3/d3-format/src/format-en-US.js)) locale; but a handful of other locales are also available:
+The default [format](#format) instance uses the U.S. English ([`en-US`](https://github.com/d3/d3-format/tree/master/src/format-en-US.js)) locale; but a handful of other locales are also available:
 
-* [`ca-ES`](https://github.com/d3/d3-format/src/format-ca-ES.js) - Catalan (Spain)
-* [`de-DE`](https://github.com/d3/d3-format/src/format-de-DE.js) - German (Germany)
-* [`en-CA`](https://github.com/d3/d3-format/src/format-en-CA.js) - English (Canada)
-* [`en-GB`](https://github.com/d3/d3-format/src/format-en-GB.js) - English (United Kingdom)
-* [`en-US`](https://github.com/d3/d3-format/src/format-en-US.js) - English (United States)
-* [`es-ES`](https://github.com/d3/d3-format/src/format-es-ES.js) - Spanish (Spain)
-* [`fi-FI`](https://github.com/d3/d3-format/src/format-fi-FI.js) - Finnish (Finland)
-* [`fr-CA`](https://github.com/d3/d3-format/src/format-fr-CA.js) - French (Canada)
-* [`fr-FR`](https://github.com/d3/d3-format/src/format-fr-FR.js) - French (France)
-* [`he-IL`](https://github.com/d3/d3-format/src/format-he-IL.js) - Hebrew (Israel)
-* [`it-IT`](https://github.com/d3/d3-format/src/format-it-IT.js) - Italian (Italy)
-* [`mk-MK`](https://github.com/d3/d3-format/src/format-mk-MK.js) - Macedonian (Macedonia)
-* [`nl-NL`](https://github.com/d3/d3-format/src/format-nl-NL.js) - Dutch (Netherlands)
-* [`pl-PL`](https://github.com/d3/d3-format/src/format-pl-PL.js) - Polish (Poland)
-* [`pt-BR`](https://github.com/d3/d3-format/src/format-pt-BR.js) - Portuguese (Brazil)
-* [`ru-RU`](https://github.com/d3/d3-format/src/format-ru-RU.js) - Russian (Russia)
-* [`zh-CN`](https://github.com/d3/d3-format/src/format-zh-CN.js) - Chinese (China)
+* [`ca-ES`](https://github.com/d3/d3-format/tree/master/src/format-ca-ES.js) - Catalan (Spain)
+* [`de-DE`](https://github.com/d3/d3-format/tree/master/src/format-de-DE.js) - German (Germany)
+* [`en-CA`](https://github.com/d3/d3-format/tree/master/src/format-en-CA.js) - English (Canada)
+* [`en-GB`](https://github.com/d3/d3-format/tree/master/src/format-en-GB.js) - English (United Kingdom)
+* [`en-US`](https://github.com/d3/d3-format/tree/master/src/format-en-US.js) - English (United States)
+* [`es-ES`](https://github.com/d3/d3-format/tree/master/src/format-es-ES.js) - Spanish (Spain)
+* [`fi-FI`](https://github.com/d3/d3-format/tree/master/src/format-fi-FI.js) - Finnish (Finland)
+* [`fr-CA`](https://github.com/d3/d3-format/tree/master/src/format-fr-CA.js) - French (Canada)
+* [`fr-FR`](https://github.com/d3/d3-format/tree/master/src/format-fr-FR.js) - French (France)
+* [`he-IL`](https://github.com/d3/d3-format/tree/master/src/format-he-IL.js) - Hebrew (Israel)
+* [`it-IT`](https://github.com/d3/d3-format/tree/master/src/format-it-IT.js) - Italian (Italy)
+* [`mk-MK`](https://github.com/d3/d3-format/tree/master/src/format-mk-MK.js) - Macedonian (Macedonia)
+* [`nl-NL`](https://github.com/d3/d3-format/tree/master/src/format-nl-NL.js) - Dutch (Netherlands)
+* [`pl-PL`](https://github.com/d3/d3-format/tree/master/src/format-pl-PL.js) - Polish (Poland)
+* [`pt-BR`](https://github.com/d3/d3-format/tree/master/src/format-pt-BR.js) - Portuguese (Brazil)
+* [`ru-RU`](https://github.com/d3/d3-format/tree/master/src/format-ru-RU.js) - Russian (Russia)
+* [`zh-CN`](https://github.com/d3/d3-format/tree/master/src/format-zh-CN.js) - Chinese (China)
 
 To switch locales, either create a custom build by editing [index.js](https://github.com/d3/d3-format/index.js) or copy the desired code it from one of the above linked locale definitions.
 
