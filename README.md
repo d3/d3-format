@@ -4,18 +4,40 @@ Number formatting is one of those things you don’t normally think about until 
 
 Formatting numbers for human consumption is the purpose of the d3-format module. For example, to create a function that zero-fills to four digits, say:
 
-```javascript
+```js
 var zeroPad = format("04d");
 ```
 
 Now you can conveniently format numbers:
 
-```javascript
+```js
 zeroPad(2);   // "0002"
 zeroPad(123); // "0123"
 ```
 
-<a name="format" href="#format">#</a> <b>format</b>(<i>specifier</i>[, <i>locale</i>])
+The default [format](#format) instance uses the U.S. English ([`en-US`](https://github.com/d3/d3-format/src/format-en-US.js)) locale; but a handful of other locales are also available:
+
+* [`ca-ES`](https://github.com/d3/d3-format/src/format-ca-ES.js) - Catalan (Spain)
+* [`de-DE`](https://github.com/d3/d3-format/src/format-de-DE.js) - German (Germany)
+* [`en-CA`](https://github.com/d3/d3-format/src/format-en-CA.js) - English (Canada)
+* [`en-GB`](https://github.com/d3/d3-format/src/format-en-GB.js) - English (United Kingdom)
+* [`en-US`](https://github.com/d3/d3-format/src/format-en-US.js) - English (United States)
+* [`es-ES`](https://github.com/d3/d3-format/src/format-es-ES.js) - Spanish (Spain)
+* [`fi-FI`](https://github.com/d3/d3-format/src/format-fi-FI.js) - Finnish (Finland)
+* [`fr-CA`](https://github.com/d3/d3-format/src/format-fr-CA.js) - French (Canada)
+* [`fr-FR`](https://github.com/d3/d3-format/src/format-fr-FR.js) - French (France)
+* [`he-IL`](https://github.com/d3/d3-format/src/format-he-IL.js) - Hebrew (Israel)
+* [`it-IT`](https://github.com/d3/d3-format/src/format-it-IT.js) - Italian (Italy)
+* [`mk-MK`](https://github.com/d3/d3-format/src/format-mk-MK.js) - Macedonian (Macedonia)
+* [`nl-NL`](https://github.com/d3/d3-format/src/format-nl-NL.js) - Dutch (Netherlands)
+* [`pl-PL`](https://github.com/d3/d3-format/src/format-pl-PL.js) - Polish (Poland)
+* [`pt-BR`](https://github.com/d3/d3-format/src/format-pt-BR.js) - Portuguese (Brazil)
+* [`ru-RU`](https://github.com/d3/d3-format/src/format-ru-RU.js) - Russian (Russia)
+* [`zh-CN`](https://github.com/d3/d3-format/src/format-zh-CN.js) - Chinese (China)
+
+To switch locales, either create a custom build by editing [index.js](https://github.com/d3/d3-format/index.js) or copy the desired code it from one of the above linked locale definitions.
+
+<a name="format" href="#format">#</a> <i>format</i>(<i>specifier</i>)
 
 Returns a new format function with the given string *specifier*. TODO Document optional *locale* argument, which defaults to U.S. English if not present.
 
@@ -69,6 +91,39 @@ The available *type* values are:
 * `s` - like `r`, but with an SI unit such as `"9.5M"` or `"1.00µ"`.
 
 The type `n` is also supported as shorthand for `,g`. If no *precision* is specified for `r`, `g` is used instead; if no *precision* is specified for `p`, `%` is used instead.
+
+<a name="formatLocale" href="#formatLocale">#</a> <b>formatLocale</b>(<i>locale</i>)
+
+Returns a [*format*](#format) function localized for the specified *locale*. The *locale* definition must include the following properties:
+
+* `decimal` - the decimal point (e.g., `"."`).
+* `thousands` - the group separator (e.g., `","`).
+* `grouping` - the array of group sizes (e.g., `[3]`), cycled as needed.
+* `currency` - the currency prefix and suffix (e.g., `["$", ""]`).
+
+(Note that the *thousands* property is a misnomer, as the grouping definition allows groups other than thousands.)
+
+For example, the default U.S. English locale is defined as:
+
+```json
+{
+  "decimal": ".",
+  "thousands": ",",
+  "grouping": [3],
+  "currency": ["$", ""]
+}
+```
+
+A locale for Russian might be defined as:
+
+```json
+{
+  "decimal": ",",
+  "thousands": "\xa0",
+  "grouping": [3],
+  "currency": ["", " руб."]
+}
+```
 
 <a name="formatPrefix" href="#formatPrefix">#</a> <b>formatPrefix</b>(<i>value</i>[, <i>precision</i>])
 
