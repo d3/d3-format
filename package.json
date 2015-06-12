@@ -1,7 +1,7 @@
 {
   "name": "d3-format",
   "version": "0.0.1",
-  "description": "Format numbers for humans.",
+  "description": "Format numbers for human consumption.",
   "keywords": [
     "d3",
     "format"
