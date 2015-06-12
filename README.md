@@ -58,7 +58,7 @@ The available *type* values are:
 * `g` - use [Number.toPrecision](https://developer.mozilla.org/en/JavaScript/Reference/Global_Objects/Number/toPrecision).
 * `f` - use [Number.toFixed](https://developer.mozilla.org/en/JavaScript/Reference/Global_Objects/Number/toFixed).
 * `d` - use [Number.toString](https://developer.mozilla.org/en/JavaScript/Reference/Global_Objects/Number/toString), but ignore any non-integer values.
-* `r` - [round](#round) to *precision* significant digits, padding with zeroes like `f`.
+* `r` - [round](#round) to *precision* significant digits, then pad like `f`.
 * `%` - like `f`, but multiply by 100 and suffix with `"%"`.
 * `p` - like `r`, but multiply by 100 and suffix with `"%"`.
 * `b` - binary (base 2).
