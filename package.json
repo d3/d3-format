@@ -1,0 +1,32 @@
+{
+  "name": "d3-format",
+  "version": "0.0.1",
+  "description": "Format numbers for humans.",
+  "keywords": [
+    "d3",
+    "format"
+  ],
+  "homepage": "https://github.com/d3/d3-format",
+  "license": "BSD-3-Clause",
+  "author": {
+    "name": "Mike Bostock",
+    "url": "http://bost.ocks.org/mike"
+  },
+  "main": "build/format",
+  "jsnext:main": "index",
+  "repository": {
+    "type": "git",
+    "url": "https://github.com/d3/d3-format.git"
+  },
+  "scripts": {
+    "pretest": "mkdir -p build && d3-bundler --format=umd --name=format -- index.js > build/format.js",
+    "test": "faucet `find test -name '*-test.js'`",
+    "prepublish": "npm run test && uglifyjs build/format.js -c -m -o build/format.min.js"
+  },
+  "devDependencies": {
+    "d3-bundler": "~0.2.5",
+    "faucet": "0.0",
+    "tape": "4",
+    "uglifyjs": "2"
+  }
+}
