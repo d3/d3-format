@@ -114,16 +114,7 @@ For example, the default U.S. English locale is defined as:
 }
 ```
 
-A locale for Russian might be defined as:
-
-```json
-{
-  "decimal": ",",
-  "thousands": "\xa0",
-  "grouping": [3],
-  "currency": ["", " руб."]
-}
-```
+See the [source]((https://github.com/d3/d3-format/tree/master/src/) for available locale definitions.
 
 <a name="formatPrefix" href="#formatPrefix">#</a> <b>formatPrefix</b>(<i>value</i>[, <i>precision</i>])
 
