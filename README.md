@@ -54,19 +54,19 @@ The *precision* indicates how many digits should be displayed after the decimal 
 
 The available *type* values are:
 
-* exponent (`e`) - use [Number.toExponential](https://developer.mozilla.org/en/JavaScript/Reference/Global_Objects/Number/toExponential).
-* general (`g`) - use [Number.toPrecision](https://developer.mozilla.org/en/JavaScript/Reference/Global_Objects/Number/toPrecision).
-* fixed (`f`) - use [Number.toFixed](https://developer.mozilla.org/en/JavaScript/Reference/Global_Objects/Number/toFixed).
-* integer (`d`) - use [Number.toString](https://developer.mozilla.org/en/JavaScript/Reference/Global_Objects/Number/toString), but ignore any non-integer values.
-* rounded (`r`) - round to *precision* significant digits, padding with zeroes where necessary in similar fashion to fixed (`f`). If no *precision* is specified, falls back to general notation.
-* percentage (`%`) - like fixed, but multiply by 100 and suffix with `"%"`.
-* rounded percentage (`p`) - like rounded, but multiply by 100 and suffix with "%".
-* binary (`b`) - outputs the number in base 2.
-* octal (`o`) - outputs the number in base 8.
-* hexadecimal (`x`) - outputs the number in base 16 using lower-case letters.
-* hexadecimal (`X`) - outputs the number in base 16 using upper-case letters.
-* character (`c`) - converts the integer to the corresponding unicode character before printing.
-* SI-prefix (`s`) - like rounded, but with an SI unit such as `"9.5M"` or `"1.00µ"`.
+* `e` - use [Number.toExponential](https://developer.mozilla.org/en/JavaScript/Reference/Global_Objects/Number/toExponential).
+* `g` - use [Number.toPrecision](https://developer.mozilla.org/en/JavaScript/Reference/Global_Objects/Number/toPrecision).
+* `f` - use [Number.toFixed](https://developer.mozilla.org/en/JavaScript/Reference/Global_Objects/Number/toFixed).
+* `d` - use [Number.toString](https://developer.mozilla.org/en/JavaScript/Reference/Global_Objects/Number/toString), but ignore any non-integer values.
+* `r` - [round](#round) to *precision* significant digits, padding with zeroes where necessary in similar fashion to `f`. If no *precision* is specified, falls back to general notation.
+* `%` - like `f`, but multiply by 100 and suffix with `"%"`.
+* `p` - like `r`, but multiply by 100 and suffix with "%".
+* `b` - binary (base 2).
+* `o` - octal (base 8).
+* `x` - hexadecimal (base 16), using lower-case letters.
+* `X` - hexadecimal (base 16), using upper-case letters.
+* `c` - converts the integer to the corresponding unicode character before printing.
+* `s` - like `r`, but with an SI unit such as `"9.5M"` or `"1.00µ"`.
 
 The type `n` is also supported as shorthand for `,g`.
 
