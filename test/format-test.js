@@ -186,6 +186,12 @@ tape("format(\"%\") can output a percentage", function(test) {
   test.end();
 });
 
+tape("format(\"%\") fill respects suffix", function(test) {
+  test.equal(format.format("020.0%")(42), "0000000000000004200%");
+  test.equal(format.format("20.0%")(42), "               4200%");
+  test.end();
+});
+
 tape("format(\"+p\") can output a percentage with rounding and sign", function(test) {
   var f = format.format("+.2p");
   test.equal(f(.00123), "+0.12%");
@@ -381,6 +387,7 @@ tape("format(\"#X\") hexadecimal (uppercase) with prefix", function(test) {
 
 tape("format(\"#x\") fill respects prefix", function(test) {
   test.equal(format.format("#20x")(3735928559), "          0xdeadbeef");
+  test.equal(format.format("#020x")(3735928559), "0x0000000000deadbeef");
   test.end();
 });
 

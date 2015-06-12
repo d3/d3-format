@@ -39,7 +39,7 @@ To switch locales, either create a custom build by editing [index.js](https://gi
 
 <a name="format" href="#format">#</a> <b>format</b>(<i>specifier</i>)
 
-Returns a new format function with the given string *specifier*. By default, uses the U.S. English locale; use [formatLocale](#formatLocale) to specify a different locale.
+Returns a new format function with the given string *specifier*. By default, uses the U.S. English locale; use [localeFormat](#localeFormat) to specify a different locale.
 
 The returned function takes a number as the only argument, and returns a string representing the formatted number. The format specifier is modeled after Python 3.1’s [format specification mini-language](http://docs.python.org/release/3.1.3/library/string.html#formatspec). The general form of a specifier is:
 
@@ -92,7 +92,28 @@ The available *type* values are:
 
 The type `n` is also supported as shorthand for `,g`. If no *precision* is specified for `r`, `g` is used instead; if no *precision* is specified for `p`, `%` is used instead.
 
-<a name="formatLocale" href="#formatLocale">#</a> <b>formatLocale</b>(<i>locale</i>)
+<a name="formatPrefix" href="#formatPrefix">#</a> <b>formatPrefix</b>(<i>value</i>[, <i>precision</i>])
+
+Returns the [SI prefix](https://en.wikipedia.org/wiki/Metric_prefix) for the specified *value*. If an optional *precision* is specified, the *value* is rounded accordingly using [round](#round) before computing the prefix. The returned prefix object has two properties:
+
+* `symbol` - the prefix symbol, such as `"M"` for millions.
+* `scale` - the scale function, for converting numbers to the appropriate prefixed scale.
+
+For example:
+
+```js
+var prefix = formatPrefix(1.21e9);
+console.log(prefix.symbol); // "G"
+console.log(prefix.scale(1.21e9)); // 1.21
+```
+
+This method is used by [format](#format) for the `s` format type.
+
+<a name="formatPrecision" href="#formatPrecision">#</a> <b>formatPrecision</b>(<i>x</i>, <i>n</i>)
+
+…
+
+<a name="localeFormat" href="#localeFormat">#</a> <b>localeFormat</b>(<i>locale</i>)
 
 Returns a [*format*](#format) function localized for the specified *locale*. The *locale* definition must include the following properties:
 
@@ -115,27 +136,6 @@ For example, the default U.S. English locale is defined as:
 ```
 
 See the [source](https://github.com/d3/d3-format/tree/master/src/) for available locale definitions.
-
-<a name="formatPrefix" href="#formatPrefix">#</a> <b>formatPrefix</b>(<i>value</i>[, <i>precision</i>])
-
-Returns the [SI prefix](https://en.wikipedia.org/wiki/Metric_prefix) for the specified *value*. If an optional *precision* is specified, the *value* is rounded accordingly using [round](#round) before computing the prefix. The returned prefix object has two properties:
-
-* `symbol` - the prefix symbol, such as `"M"` for millions.
-* `scale` - the scale function, for converting numbers to the appropriate prefixed scale.
-
-For example:
-
-```js
-var prefix = formatPrefix(1.21e9);
-console.log(prefix.symbol); // "G"
-console.log(prefix.scale(1.21e9)); // 1.21
-```
-
-This method is used by [format](#format) for the `s` format type.
-
-<a name="formatPrecision" href="#formatPrecision">#</a> <b>formatPrecision</b>(<i>x</i>, <i>n</i>)
-
-…
 
 <a name="round" href="#round">#</a> <b>round</b>(<i>x</i>[, <i>n</i>])
 

@@ -1,6 +1,6 @@
-import formatLocale from "./formatLocale";
+import localeFormat from "./localeFormat";
 
-export default formatLocale({
+export default localeFormat({
   decimal: ".",
   thousands: ",",
   grouping: [3],

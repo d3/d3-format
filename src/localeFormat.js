@@ -141,7 +141,7 @@ export default function(locale) {
       // If the fill character is not "0", grouping is applied before padding.
       if (!zfill && comma) before = group(before, Infinity);
 
-      var length = prefix.length + before.length + after.length + (zcomma ? 0 : valueSign.length),
+      var length = prefix.length + before.length + after.length + valueSuffix.length + (zcomma ? 0 : valueSign.length),
           padding = length < width ? new Array(length = width - length + 1).join(fill) : "";
 
       // If the fill character is "0", grouping is applied after padding.
