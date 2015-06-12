@@ -39,7 +39,7 @@ To switch locales, either create a custom build by editing [index.js](https://gi
 
 <a name="format" href="#format">#</a> <b>format</b>(<i>specifier</i>)
 
-Returns a new format function with the given string *specifier*. TODO Document optional *locale* argument, which defaults to U.S. English if not present.
+Returns a new format function with the given string *specifier*. By default, uses the U.S. English locale; use [formatLocale](#formatLocale) to specify a different locale.
 
 The returned function takes a number as the only argument, and returns a string representing the formatted number. The format specifier is modeled after Python 3.1’s [format specification mini-language](http://docs.python.org/release/3.1.3/library/string.html#formatspec). The general form of a specifier is:
 
