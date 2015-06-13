@@ -59,7 +59,7 @@ export default function(locale) {
     // For significant precision, it must be in [1, 21].
     // For fixed precision, it must be in [0, 20].
     if (precision) {
-      precision = +precision.substring(1);
+      precision = +precision.slice(1);
       precision = /[gprs]/.test(type)
           ? Math.max(1, Math.min(21, precision))
           : Math.max(0, Math.min(20, precision));
@@ -98,13 +98,13 @@ export default function(locale) {
       if (maybeDecimal) {
         var i = value.indexOf(".");
         if (i >= 0) {
-          valueSuffix = decimal + value.substring(i + 1) + suffix;
-          value = value.substring(0, i);
+          valueSuffix = decimal + value.slice(i + 1) + suffix;
+          value = value.slice(0, i);
         } else if (maybeExponent) {
           i = value.indexOf("e");
           if (i >= 0) {
-            valueSuffix = value.substring(i) + suffix;
-            value = value.substring(0, i);
+            valueSuffix = value.slice(i) + suffix;
+            value = value.slice(0, i);
           }
         }
       }
@@ -123,7 +123,7 @@ export default function(locale) {
       switch (align) {
         case "<": return valuePrefix + value + valueSuffix + padding;
         case "=": return valuePrefix + padding + value + valueSuffix;
-        case "^": return padding.substring(0, length = padding.length >> 1) + valuePrefix + value + valueSuffix + padding.substring(length);
+        case "^": return padding.slice(0, length = padding.length >> 1) + valuePrefix + value + valueSuffix + padding.slice(length);
       }
       return padding + valuePrefix + value + valueSuffix;
     };
