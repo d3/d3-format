@@ -401,6 +401,11 @@ tape("format(\"c\") unicode character", function(test) {
   test.end();
 });
 
+tape("format(\"c\") does not localize a decimal point", function(test) {
+  test.equal(format.localeFormat({decimal: "/"})("c")(46), ".");
+  test.end();
+});
+
 tape("format(\"b\") binary", function(test) {
   test.equal(format.format("b")(10), "1010");
   test.end();
