@@ -9,18 +9,20 @@ import formatSystem from "./formatSystem";
 var formatRe = /(?:([^{])?([<>=^]))?([+\- ])?([$#])?(0)?(\d+)?(,)?(\.-?\d+)?([a-z%])?/i;
 
 var formatTypes = {
+  "": formatDefault,
+  "%": function(x, p) { return (x * 100).toFixed(p); },
   "b": function(x) { return x.toString(2); },
   "c": function(x) { return String.fromCharCode(x); },
-  "o": function(x) { return x.toString(8); },
-  "x": function(x) { return x.toString(16); },
-  "X": function(x) { return x.toString(16).toUpperCase(); },
-  "g": function(x, p) { return x.toPrecision(p); },
+  "d": formatDefault,
   "e": function(x, p) { return x.toExponential(p); },
   "f": function(x, p) { return x.toFixed(p); },
-  "%": function(x, p) { return (x * 100).toFixed(p); },
+  "g": function(x, p) { return x.toPrecision(p); },
+  "o": function(x) { return x.toString(8); },
   "p": formatRoundedPercentage,
   "r": formatRounded,
-  "s": formatSystem
+  "s": formatSystem,
+  "X": function(x) { return x.toString(16).toUpperCase(); },
+  "x": function(x) { return x.toString(16); }
 };
 
 function identity(x) {
@@ -42,10 +44,13 @@ export default function(locale) {
         width = +match[6],
         comma = match[7],
         precision = match[8],
-        type = match[9] || "";
+        type = match[9];
 
     // The "n" type is an alias for ",g".
     if (type === "n") comma = true, type = "g";
+
+    // Map invalid types to the default format.
+    else if (!(type in formatTypes)) type = "";
 
     // If zero fill is specified, padding goes after sign and before digits.
     if (zero || (fill === "0" && align === "=")) zero = fill = "0", align = "=";
@@ -64,13 +69,13 @@ export default function(locale) {
     var prefix = symbol === "$" ? currency[0] : symbol === "#" && /[boxX]/.test(type) ? "0" + type.toLowerCase() : "",
         suffix = symbol === "$" ? currency[1] : /[%p]/.test(type) ? "%" : "";
 
+    // What format function should we use?
     // Is this an integer type?
     // Can this type generate exponential notation?
-    // What format function should we use?
-    var integer = /[bcdoxX]/.test(type),
+    var format = formatTypes[type],
+        integer = /[bcdoxX]/.test(type),
         maybeDecimal = !type || /[defgprs%]/.test(type),
-        maybeExponent = !type || /[deg]/.test(type),
-        format = formatTypes[type] || formatDefault;
+        maybeExponent = !type || /[deg]/.test(type);
 
     return function(value) {
       value = +value;
