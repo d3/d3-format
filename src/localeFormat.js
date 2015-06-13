@@ -92,17 +92,15 @@ export default function(locale) {
       // grouped, and fractional or exponential “after” part that is not.
       if (maybeDecimal) {
         var i = value.indexOf(".");
-        if (i < 0) {
-          if (maybeExponent) {
-            var j = value.indexOf("e");
-            if (j >= 0) {
-              before = value.substring(0, j);
-              after = value.substring(j) + suffix;
-            }
-          }
-        } else {
+        if (i >= 0) {
           before = value.substring(0, i);
           after = decimal + value.substring(i + 1) + suffix;
+        } else if (maybeExponent) {
+          var j = value.indexOf("e");
+          if (j >= 0) {
+            before = value.substring(0, j);
+            after = value.substring(j) + suffix;
+          }
         }
       }
 
