@@ -88,8 +88,8 @@ export default function(locale) {
       var before = value = format(value, precision),
           after = suffix;
 
-      // Break the value into the integer “before” part that can be grouped,
-      // and fractional and exponential “after” part that is not grouped.
+      // Break the formatted value into the integer “before” part that can be
+      // grouped, and fractional or exponential “after” part that is not.
       if (maybeDecimal) {
         var i = value.indexOf(".");
         if (i < 0) {
