@@ -117,10 +117,12 @@ export default function(locale) {
       if (comma && zero) before = group(padding + before, padding.length ? width - after.length : Infinity), padding = "";
 
       // Reconstruct the final output based on the desired alignment.
-      return align === "<" ? valueSign + prefix + before + after + padding
-          : align === ">" ? padding + valueSign + prefix + before + after
-          : align === "^" ? padding.substring(0, length >>= 1) + valueSign + prefix + before + after + padding.substring(length)
-          : valueSign + prefix + padding + before + after;
+      switch (align) {
+        case "<": return valueSign + prefix + before + after + padding;
+        case "=": return valueSign + prefix + padding + before + after;
+        case "^": return padding.substring(0, length >>= 1) + valueSign + prefix + before + after + padding.substring(length);
+        default: return padding + valueSign + prefix + before + after;
+      }
     };
   };
 };
