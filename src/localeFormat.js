@@ -1,13 +1,27 @@
-import formatPrefix from "./formatPrefix";
-import formatPrecision from "./formatPrecision";
-import round from "./round";
-// import toFixedPercentage from "./toFixedPercentage";
-import toRounded from "./toRounded";
-import toRoundedPercentage from "./toRoundedPercentage";
-import toEngineering from "./toEngineering";
-
 // [[fill]align][sign][symbol][0][width][,][.precision][type]
-var formatRe = /(?:([^{])?([<>=^]))?([+\- ])?([$#])?(0)?(\d+)?(,)?(\.-?\d+)?([a-z%])?/i;
+var formatRe = /(?:([^{])?([<>=^]))?([+\- ])?([$#])?(0)?(\d+)?(,)?(\.-?\d+)?([a-z%])?/i,
+    systemSymbols = ["y","z","a","f","p","n","µ","m","","k","M","G","T","P","E","Z","Y"];
+
+export default function(x, p) {
+  var i = (x = p == null ? x.toExponential() : x.toExponential(p - 1)).indexOf("e"); // TODO ternary?
+  if (i < 0) return x;
+
+  var coefficient = x.slice(0, i),
+      exponent = +x.slice(i + 1),
+      offset = exponent % 3;
+
+  if (offset) {
+    var j = coefficient.indexOf("."),
+        decimal = j < 0 ? coefficient : coefficient.slice(0, j),
+        fractional = j < 0 ? "" : coefficient.slice(j + 1);
+    if (offset < 0) offset += 3;
+    coefficient = decimal + (offset >= fractional.length
+        ? fractional + new Array(offset - fractional.length + 1).join("0")
+        : fractional.slice(0, offset) + "." + fractional.slice(offset));
+  }
+
+  return coefficient + symbols[8 + Math.floor(exponent / 3)];
+};
 
 var formatTypes = {
   "b": function(x) { return x.toString(2); },
@@ -18,11 +32,48 @@ var formatTypes = {
   "g": function(x, p) { return x.toPrecision(p); },
   "e": function(x, p) { return x.toExponential(p); },
   "f": function(x, p) { return x.toFixed(p); },
-  // "%": toFixedPercentage,
+  "%": function(x, p) { return (x * 100).toFixed(p); },
   "p": toRoundedPercentage,
   "r": toRounded,
-  "s": toEngineering
+  "s": toSystem
 };
+
+function toRoundedPercentage(x, p) {
+  var d = btod(x, p);
+  if (!d) return x + "";
+  var i = d.exponent + 2;
+  return i <= 0
+      ? "0." + new Array(1 - i).join("0") + d.coefficient
+      : d.coefficient.slice(0, i)
+      + (d.coefficient.length > i
+      ? "." + d.coefficient.slice(i)
+      : new Array(i - d.coefficient.length + 1).join("0"));
+}
+
+function toRounded(x, p) {
+  var d = btod(x, p);
+  if (!d) return x + "";
+  var i = d.exponent;
+  return i <= 0
+      ? "0." + new Array(1 - i).join("0") + d.coefficient
+      : d.coefficient.slice(0, i)
+      + (d.coefficient.length > i
+      ? "." + d.coefficient.slice(i)
+      : new Array(i - d.coefficient.length + 1).join("0"));
+}
+
+function toSystem(x, p) {
+  var d = btod(x, p);
+  if (!d) return x + "";
+  var i = d.exponent % 3;
+  if (!i) i = 3;
+  else if (i < 0) i += 3;
+  return d.coefficient.slice(0, i)
+      + (d.coefficient.length > i
+      ? "." + d.coefficient.slice(i)
+      : new Array(i - d.coefficient.length + 1).join("0"))
+      + systemSymbols[8 + Math.floor((d.exponent - 1) / 3)]; // TODO this screws up grouping, but only if grouping < 3
+}
 
 function stringOf(x) {
   return x + "";
@@ -30,6 +81,22 @@ function stringOf(x) {
 
 function identity(x) {
   return x;
+}
+
+// Note: assumes that x is positive.
+function btod(x, p) {
+  var s = p == null ? x.toExponential() : x.toExponential(p - 1),
+      i = s.indexOf("e");
+  if (i < 0) return null; // NaN, ±Infinity
+  var coefficient = s.slice(0, i),
+      exponent = +s.slice(i + 1),
+      j = coefficient.indexOf("."),
+      decimal = j < 0 ? coefficient : coefficient.slice(0, j),
+      fractional = j < 0 ? "" : coefficient.slice(j + 1);
+  return {
+    coefficient: decimal + fractional,
+    exponent: exponent + decimal.length
+  };
 }
 
 function formatGroup(grouping, thousands) {
@@ -67,7 +134,6 @@ export default function(locale) {
         comma = match[7],
         precision = match[8],
         type = match[9],
-        scale = 1,
         prefix = "",
         suffix = "",
         integer = false,
@@ -82,8 +148,8 @@ export default function(locale) {
 
     switch (type) {
       case "n": comma = true; type = "g"; break;
-      case "%": scale = 100; suffix = "%"; type = "f"; break;
-      // case "p": suffix = "%"; break; // type = "r"; break;
+      case "%": suffix = "%"; break;
+      case "p": suffix = "%"; break;
       case "b":
       case "o":
       case "x":
@@ -97,7 +163,7 @@ export default function(locale) {
     // Ensure that the requested precision is in the supported range.
     if (precision != null) {
       if (type == "g") precision = Math.max(1, Math.min(21, precision));
-      else if (type == "e" || type == "f") precision = Math.max(0, Math.min(20, precision));
+      else if (type == "e" || type == "f" || type == "%") precision = Math.max(0, Math.min(20, precision));
     }
 
     type = formatTypes[type] || stringOf;
@@ -105,16 +171,13 @@ export default function(locale) {
     var zcomma = zfill && comma;
 
     return function(value) {
-      // value = +value;
-
-      // Apply scale and coerce to a number.
-      value *= scale;
+      value = +value;
 
       // Return the empty string for floats formatted as ints.
       if (integer && (value % 1)) return "";
 
       // Convert negative to positive, and record the sign prefix.
-      var valueSign = value < 0 || value === 0 && 1 / value < 0 ? (value = -value, "-") : sign === "-" ? "" : sign;
+      var valueSign = value < 0 || value === 0 && 1 / value < 0 ? (value *= -1, "-") : sign === "-" ? "" : sign;
 
       // Convert to the desired precision.
       value = type(value, precision);

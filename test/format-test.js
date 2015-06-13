@@ -176,7 +176,7 @@ tape("format(\"$s\") can output a currency with si-prefix notation", function(te
   test.end();
 });
 
-tape("format(\"%\") can output a percentage", function(test) {
+tape("format(\"%\") can output a whole percentage", function(test) {
   var f = format.format("%");
   test.equal(f(0), "0%");
   test.equal(f(.042), "4%");
@@ -185,8 +185,14 @@ tape("format(\"%\") can output a percentage", function(test) {
   test.equal(f(-.042), "-4%");
   test.equal(f(-.42), "-42%");
   test.equal(f(-4.2), "-420%");
+  test.end();
+});
+
+tape("format(\".%\") can output a percentage with precision", function(test) {
   var f = format.format(".1%");
   test.equal(f(.234), "23.4%");
+  var f = format.format(".2%");
+  test.equal(f(.234), "23.40%");
   test.end();
 });
 
@@ -245,11 +251,11 @@ tape("format(\"r\") can round to significant digits", function(test) {
   test.equal(format.format(".1r")(.09), "0.09");
   test.equal(format.format(".1r")(.949), "0.9");
   test.equal(format.format(".1r")(.0949), "0.09");
-  test.equal(format.format(".1r")(.0000000129), "0.000000001");
-  test.equal(format.format(".2r")(.0000000129), "0.0000000013");
-  test.equal(format.format(".2r")(.00000000129), "0.00000000013");
-  test.equal(format.format(".3r")(.00000000129), "0.000000000129");
-  test.equal(format.format(".4r")(.00000000129), "0.0000000001290");
+  test.equal(format.format(".1r")(.0000000129), "0.00000001");
+  test.equal(format.format(".2r")(.0000000129), "0.000000013");
+  test.equal(format.format(".2r")(.00000000129), "0.0000000013");
+  test.equal(format.format(".3r")(.00000000129), "0.00000000129");
+  test.equal(format.format(".4r")(.00000000129), "0.000000001290");
   test.equal(format.format(".10r")(.9999999999), "0.9999999999");
   test.equal(format.format(".15r")(.999999999999999), "0.999999999999999");
   test.end();
@@ -257,7 +263,7 @@ tape("format(\"r\") can round to significant digits", function(test) {
 
 tape("format(\"r\") can round very small numbers", function(test) {
   var f = format.format(".2r");
-  test.equal(f(1e-22), "0.000000000000000000000010");
+  test.equal(f(1e-22), "0.00000000000000000000010");
   test.end();
 });
 
