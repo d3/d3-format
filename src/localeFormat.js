@@ -85,21 +85,21 @@ export default function(locale) {
           : sign;
 
       // Perform the initial formatting.
-      var before = value = format(value, precision),
+      var before = format(value, precision),
           after = suffix;
 
       // Break the formatted value into the integer “before” part that can be
       // grouped, and fractional or exponential “after” part that is not.
       if (maybeDecimal) {
-        var i = value.indexOf(".");
+        var i = before.indexOf(".");
         if (i >= 0) {
-          before = value.substring(0, i);
-          after = decimal + value.substring(i + 1) + suffix;
+          after = decimal + before.substring(i + 1) + suffix;
+          before = before.substring(0, i);
         } else if (maybeExponent) {
-          i = value.indexOf("e");
+          i = before.indexOf("e");
           if (i >= 0) {
-            before = value.substring(0, i);
-            after = value.substring(i) + suffix;
+            after = before.substring(i) + suffix;
+            before = before.substring(0, i);
           }
         }
       }
