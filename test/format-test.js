@@ -32,6 +32,19 @@ tape("format(\"d\") can space fill", function(test) {
   test.end();
 });
 
+tape("format(\"d\") can zero fill with sign and group", function(test) {
+  var f = format.format("+08,d");
+  test.equal(f(0), "+0,000,000");
+  test.equal(f(42), "+0,000,042");
+  test.equal(f(42000000), "+42,000,000");
+  test.equal(f(420000000), "+420,000,000");
+  test.equal(f(-4), "-0,000,004");
+  test.equal(f(-42), "-0,000,042");
+  test.equal(f(-4200000), "-4,200,000");
+  test.equal(f(-42000000), "-42,000,000");
+  test.end();
+});
+
 tape("format(\"d\") always uses zero precision", function(test) {
   var f = format.format(".2d");
   test.equal(f(0), "0");
