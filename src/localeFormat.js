@@ -83,7 +83,7 @@ export default function(locale) {
       case "X": if (symbol === "#") prefix = "0" + type.toLowerCase();
       case "c": exponent = false;
       case "d": integer = true; precision = 0; break;
-      case "s": scale = -1; type = "r"; break;
+      case "s": scale = -1; type = "f"; break;
     }
 
     if (symbol === "$") prefix = currency[0], suffix = currency[1];
@@ -102,6 +102,7 @@ export default function(locale) {
     var zcomma = zfill && comma;
 
     return function(value) {
+      value = +value;
 
       // Return the empty string for floats formatted as ints.
       if (integer && (value % 1)) return "";
@@ -113,9 +114,13 @@ export default function(locale) {
       // Apply the scale, computing it from the value’s exponent for si format.
       // Preserve the existing suffix, if any, such as the currency symbol.
       if (scale < 0) {
-        var valuePrefix = formatPrefix(value, precision);
-        value = valuePrefix.scale(value);
-        valueSuffix = valuePrefix.symbol + suffix;
+        var valueExponential = exponential(value),
+            valueExponent3 = Math.floor(valueExponential.exponent / 3),
+            valueExponent = 3 * valueExponent3;
+        if (valueExponent < 0) value *= "1e" + -valueExponent;
+        else if (valueExponent > 0) value /= "1e" + valueExponent;
+        precision = Math.max(0, valueExponential.precision - (Math.abs(valueExponential.exponent) % 3) - 1);
+        valueSuffix = ["y","z","a","f","p","n","µ","m","","k","M","G","T","P","E","Z","Y"][8 + valueExponent3] + suffix;
       } else {
         value *= scale;
       }
@@ -160,3 +165,15 @@ export default function(locale) {
     };
   };
 };
+
+function exponential(value) {
+  var s = (value = +value) < 0 ? -1 : 1,
+      e = (s * value).toExponential(),
+      i = e.indexOf("e");
+  return i < 0 ? null : {
+    sign: s,
+    coefficient: +e.slice(0, i),
+    precision: i < 2 ? i : i - 1,
+    exponent: +e.slice(i + 1)
+  };
+}

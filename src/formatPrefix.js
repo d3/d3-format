@@ -2,9 +2,9 @@ import formatPrecision from "./formatPrecision";
 import round from "./round";
 
 var prefixes = ["y","z","a","f","p","n","µ","m","","k","M","G","T","P","E","Z","Y"].map(function(d, i) {
-  var k = Math.pow(10, Math.abs(8 - i) * 3);
+  var k = +("1e" + (8 - i) * 3);
   return {
-    scale: i > 8 ? function(d) { return d / k; } : function(d) { return d * k; },
+    scale: function(d) { return d * k; },
     symbol: d
   };
 });

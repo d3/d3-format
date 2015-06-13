@@ -85,6 +85,7 @@ tape("format(\"s\") can output SI prefix notation", function(test) {
   test.equal(f(1000), "1k");
   test.equal(f(1400), "1.4k");
   test.equal(f(1500.5), "1.5005k");
+  test.equal(f(.00001), "10µ");
   test.equal(f(.000001), "1µ");
   test.end();
 });
