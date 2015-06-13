@@ -109,7 +109,7 @@ export default function(locale) {
 
       // Compute the padding.
       var length = (comma && zero ? 0 : valueSign.length) + prefix.length + before.length + after.length,
-          padding = length < width ? new Array((length = width - length) + 1).join(fill) : "";
+          padding = length < width ? new Array(width - length + 1).join(fill) : "";
 
       // If the fill character is "0", grouping is applied after padding.
       if (comma && zero) before = group(padding + before, padding.length ? width - after.length : Infinity), padding = "";
@@ -118,7 +118,7 @@ export default function(locale) {
       switch (align) {
         case "<": return valueSign + prefix + before + after + padding;
         case "=": return valueSign + prefix + padding + before + after;
-        case "^": return padding.substring(0, length >>= 1) + valueSign + prefix + before + after + padding.substring(length);
+        case "^": return length = padding.length >> 1, padding.substring(0, length) + valueSign + prefix + before + after + padding.substring(length);
       }
       return padding + valueSign + prefix + before + after;
     };
