@@ -118,7 +118,7 @@ export default function(locale) {
       switch (align) {
         case "<": return valueSign + prefix + before + after + padding;
         case "=": return valueSign + prefix + padding + before + after;
-        case "^": return length = padding.length >> 1, padding.substring(0, length) + valueSign + prefix + before + after + padding.substring(length);
+        case "^": return padding.substring(0, length = padding.length >> 1) + valueSign + prefix + before + after + padding.substring(length);
       }
       return padding + valueSign + prefix + before + after;
     };
