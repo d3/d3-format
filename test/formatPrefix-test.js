@@ -95,33 +95,33 @@ tape("formatPrefix(x) returns the expected symbol for negative numbers", functio
 });
 
 tape("formatPrefix(x) considers the effect of rounding based on precision", function(test) {
-  test.equal(format.formatPrefix(999.50000, 4).symbol, "");
-  test.equal(format.formatPrefix(999.50000, 3).symbol, "k");
-  test.equal(format.formatPrefix(995.00000, 3).symbol, "");
-  test.equal(format.formatPrefix(995.00000, 2).symbol, "k");
-  test.equal(format.formatPrefix(950.00000, 2).symbol, "");
-  test.equal(format.formatPrefix(950.00000, 1).symbol, "k");
-  test.equal(format.formatPrefix(0.0009995, 4).symbol, "µ");
-  test.equal(format.formatPrefix(0.0009995, 3).symbol, "m");
-  test.equal(format.formatPrefix(0.0009950, 3).symbol, "µ");
-  test.equal(format.formatPrefix(0.0009950, 2).symbol, "m");
-  test.equal(format.formatPrefix(0.0009500, 2).symbol, "µ");
-  test.equal(format.formatPrefix(0.0009500, 1).symbol, "m");
+  test.equal(format.formatPrefix(999.90000, 4).symbol, "");
+  test.equal(format.formatPrefix(999.90000, 3).symbol, "k");
+  test.equal(format.formatPrefix(999.00000, 3).symbol, "");
+  test.equal(format.formatPrefix(999.00000, 2).symbol, "k");
+  test.equal(format.formatPrefix(990.00000, 2).symbol, "");
+  test.equal(format.formatPrefix(990.00000, 1).symbol, "k");
+  test.equal(format.formatPrefix(0.0009999, 4).symbol, "µ");
+  test.equal(format.formatPrefix(0.0009999, 3).symbol, "m");
+  test.equal(format.formatPrefix(0.0009990, 3).symbol, "µ");
+  test.equal(format.formatPrefix(0.0009990, 2).symbol, "m");
+  test.equal(format.formatPrefix(0.0009900, 2).symbol, "µ");
+  test.equal(format.formatPrefix(0.0009900, 1).symbol, "m");
   test.end();
 });
 
 tape("formatPrefix(x) returns the expected scale", function(test) {
-  test.inDelta(format.formatPrefix(999.50000, 4).scale(999.50000), 999.5);
-  test.inDelta(format.formatPrefix(999.50000, 3).scale(999.50000), .9995);
-  test.inDelta(format.formatPrefix(995.00000, 3).scale(995.00000), 995);
-  test.inDelta(format.formatPrefix(995.00000, 2).scale(995.00000), .995);
-  test.inDelta(format.formatPrefix(950.00000, 2).scale(950.00000), 950);
-  test.inDelta(format.formatPrefix(950.00000, 1).scale(950.00000), .95);
-  test.inDelta(format.formatPrefix(0.0009995, 4).scale(0.0009995), 999.5);
-  test.inDelta(format.formatPrefix(0.0009995, 3).scale(0.0009995), .9995);
-  test.inDelta(format.formatPrefix(0.0009950, 3).scale(0.0009950), 995);
-  test.inDelta(format.formatPrefix(0.0009950, 2).scale(0.0009950), .995);
-  test.inDelta(format.formatPrefix(0.0009500, 2).scale(0.0009500), 950);
-  test.inDelta(format.formatPrefix(0.0009500, 1).scale(0.0009500), .95);
+  test.inDelta(format.formatPrefix(999.90000, 4).scale(999.90000), 999.9);
+  test.inDelta(format.formatPrefix(999.90000, 3).scale(999.90000), .9999);
+  test.inDelta(format.formatPrefix(999.00000, 3).scale(999.00000), 999);
+  test.inDelta(format.formatPrefix(999.00000, 2).scale(999.00000), .999);
+  test.inDelta(format.formatPrefix(990.00000, 2).scale(990.00000), 990);
+  test.inDelta(format.formatPrefix(990.00000, 1).scale(990.00000), .99);
+  test.inDelta(format.formatPrefix(0.0009999, 4).scale(0.0009999), 999.9);
+  test.inDelta(format.formatPrefix(0.0009999, 3).scale(0.0009999), .9999);
+  test.inDelta(format.formatPrefix(0.0009990, 3).scale(0.0009990), 999);
+  test.inDelta(format.formatPrefix(0.0009990, 2).scale(0.0009990), .999);
+  test.inDelta(format.formatPrefix(0.0009900, 2).scale(0.0009900), 990);
+  test.inDelta(format.formatPrefix(0.0009900, 1).scale(0.0009900), .99);
   test.end();
 });

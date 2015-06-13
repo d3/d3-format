@@ -1,6 +1,6 @@
-import formatPrecision from "./formatPrecision";
-import round from "./round";
+import btod from "./btod";
 
+// TODO This duplicates toSystem in localeFormat.
 var prefixes = ["y","z","a","f","p","n","µ","m","","k","M","G","T","P","E","Z","Y"].map(function(d, i) {
   var k = +("1e" + (8 - i) * 3);
   return {
@@ -9,12 +9,11 @@ var prefixes = ["y","z","a","f","p","n","µ","m","","k","M","G","T","P","E","Z",
   };
 });
 
-export default function(value, precision) {
-  var i = 0;
-  if (value = +value) {
-    if (value < 0) value *= -1;
-    if (precision) value = round(value, formatPrecision(value, precision));
-    i = Math.max(-24, Math.min(24, Math.floor((1e-12 + Math.log(value)) / (Math.LN10 * 3)) * 3));
+export default function(x, p) {
+  var i = 8;
+  if (x = +x) {
+    if (x < 0) x *= -1;
+    i += Math.max(-8, Math.min(8, Math.floor((btod(x, p).exponent - 1) / 3)));
   }
-  return prefixes[8 + i / 3];
+  return prefixes[i];
 };

@@ -109,10 +109,6 @@ console.log(prefix.scale(1.21e9)); // 1.21
 
 This method is used by [format](#format) for the `s` format type.
 
-<a name="formatPrecision" href="#formatPrecision">#</a> <b>formatPrecision</b>(<i>x</i>, <i>n</i>)
-
-…
-
 <a name="localeFormat" href="#localeFormat">#</a> <b>localeFormat</b>(<i>locale</i>)
 
 Returns a [*format*](#format) function localized for the specified *locale*. The *locale* definition must include the following properties:
