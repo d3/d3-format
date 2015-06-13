@@ -78,49 +78,49 @@ export default function(locale) {
       // Return the empty string for floats formatted as ints.
       if (integer && (value % 1)) return "";
 
-      // Convert negative to positive, and record the sign.
+      // Convert negative to positive, and compute the prefix.
       // Note that -0 is not less than 0, but 1 / -0 is!
-      var valueSign = value < 0 || 1 / value < 0 ? (value *= -1, "-")
-          : sign === "-" ? ""
-          : sign;
+      var valueSuffix = suffix,
+          valuePrefix = (value < 0 || 1 / value < 0 ? (value *= -1, "-")
+              : sign === "-" ? ""
+              : sign) + prefix;
 
       // Perform the initial formatting.
-      var before = format(value, precision),
-          after = suffix;
+      value = format(value, precision);
 
-      // Break the formatted value into the integer “before” part that can be
-      // grouped, and fractional or exponential “after” part that is not.
+      // Break the formatted value into the integer “value” part that can be
+      // grouped, and fractional or exponential “suffix” part that is not.
       if (maybeDecimal) {
-        var i = before.indexOf(".");
+        var i = value.indexOf(".");
         if (i >= 0) {
-          after = decimal + before.substring(i + 1) + suffix;
-          before = before.substring(0, i);
+          valueSuffix = decimal + value.substring(i + 1) + suffix;
+          value = value.substring(0, i);
         } else if (maybeExponent) {
-          i = before.indexOf("e");
+          i = value.indexOf("e");
           if (i >= 0) {
-            after = before.substring(i) + suffix;
-            before = before.substring(0, i);
+            valueSuffix = value.substring(i) + suffix;
+            value = value.substring(0, i);
           }
         }
       }
 
       // If the fill character is not "0", grouping is applied before padding.
-      if (comma && !zero) before = group(before, Infinity);
+      if (comma && !zero) value = group(value, Infinity);
 
       // Compute the padding.
-      var length = valueSign.length + prefix.length + before.length + after.length,
+      var length = valuePrefix.length + value.length + valueSuffix.length,
           padding = length < width ? new Array(width - length + 1).join(fill) : "";
 
       // If the fill character is "0", grouping is applied after padding.
-      if (comma && zero) before = group(padding + before, padding.length ? width - after.length : Infinity), padding = "";
+      if (comma && zero) value = group(padding + value, padding.length ? width - valueSuffix.length : Infinity), padding = "";
 
       // Reconstruct the final output based on the desired alignment.
       switch (align) {
-        case "<": return valueSign + prefix + before + after + padding;
-        case "=": return valueSign + prefix + padding + before + after;
-        case "^": return padding.substring(0, length = padding.length >> 1) + valueSign + prefix + before + after + padding.substring(length);
+        case "<": return valuePrefix + value + valueSuffix + padding;
+        case "=": return valuePrefix + padding + value + valueSuffix;
+        case "^": return padding.substring(0, length = padding.length >> 1) + valuePrefix + value + valueSuffix + padding.substring(length);
       }
-      return padding + valueSign + prefix + before + after;
+      return padding + valuePrefix + value + valueSuffix;
     };
   };
 };
