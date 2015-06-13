@@ -96,10 +96,10 @@ export default function(locale) {
           before = value.substring(0, i);
           after = decimal + value.substring(i + 1) + suffix;
         } else if (maybeExponent) {
-          var j = value.indexOf("e");
-          if (j >= 0) {
-            before = value.substring(0, j);
-            after = value.substring(j) + suffix;
+          i = value.indexOf("e");
+          if (i >= 0) {
+            before = value.substring(0, i);
+            after = value.substring(i) + suffix;
           }
         }
       }
