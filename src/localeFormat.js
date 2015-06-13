@@ -50,14 +50,6 @@ export default function(locale) {
     // If zero fill is specified, padding goes after sign and before digits.
     if (zero || (fill === "0" && align === "=")) zero = fill = "0", align = "=";
 
-    // Compute the fixed prefix and suffix.
-    var prefix = symbol === "$" ? currency[0] : symbol === "#" && /[boxX]/.test(type) ? "0" + type.toLowerCase() : "",
-        suffix = symbol === "$" ? currency[1] : /[%p]/.test(type) ? "%" : "";
-
-    // Is this an integer type? Can this type generate exponential notation?
-    var integer = /[boxXcd]/.test(type),
-        exponent = !type || /[ged]/.test(type);
-
     // Clamp the specified precision to the supported range.
     // For significant precision, it must be in [1, 21].
     // For fixed precision, it must be in [0, 20].
@@ -67,6 +59,15 @@ export default function(locale) {
           ? Math.max(1, Math.min(21, precision))
           : Math.max(0, Math.min(20, precision));
     }
+
+    // Compute the fixed prefix and suffix.
+    var prefix = symbol === "$" ? currency[0] : symbol === "#" && /[boxX]/.test(type) ? "0" + type.toLowerCase() : "",
+        suffix = symbol === "$" ? currency[1] : /[%p]/.test(type) ? "%" : "";
+
+    // Is this an integer type? Can this type generate exponential notation?
+    var integer = /[bcdoxX]/.test(type),
+        maybeDecimal = !type || /[defgprs%]/.test(type),
+        maybeExponent = !type || /[deg]/.test(type);
 
     type = formatTypes[type] || formatDefault;
 
@@ -82,39 +83,41 @@ export default function(locale) {
           : sign === "-" ? ""
           : sign;
 
-      // Convert to the desired precision.
-      value = type(value, precision);
+      // Perform the initial formatting.
+      var before = value = type(value, precision),
+          after = suffix;
 
-      // Break the value into the integer part (before) and decimal part (after).
-      var i = value.lastIndexOf("."),
-          before,
-          after;
-
-      // If there is no decimal, break on "e" where appropriate.
-      if (i < 0) {
-        var j = exponent ? value.lastIndexOf("e") : -1;
-        if (j < 0) before = value, after = suffix;
-        else before = value.substring(0, j), after = value.substring(j) + suffix;
-      } else {
-        before = value.substring(0, i);
-        after = decimal + value.substring(i + 1) + suffix;
+      // Break the value into the integer “before” part that can be grouped,
+      // and fractional and exponential “after” part that is not grouped.
+      if (maybeDecimal) {
+        var i = value.indexOf(".");
+        if (i < 0) {
+          if (maybeExponent) {
+            var j = value.indexOf("e");
+            if (j >= 0) {
+              before = value.substring(0, j);
+              after = value.substring(j) + suffix;
+            }
+          }
+        } else {
+          before = value.substring(0, i);
+          after = decimal + value.substring(i + 1) + suffix;
+        }
       }
 
       // If the fill character is not "0", grouping is applied before padding.
-      if (!zero && comma) before = group(before, Infinity);
+      if (comma && !zero) before = group(before, Infinity);
 
-      var length = (zero && comma ? 0 : valueSign.length) + prefix.length + before.length + after.length,
+      // Compute the padding.
+      var length = (comma && zero ? 0 : valueSign.length) + prefix.length + before.length + after.length,
           padding = length < width ? new Array(length = width - length + 1).join(fill) : "";
 
       // If the fill character is "0", grouping is applied after padding.
-      if (zero && comma) before = group(padding + before, padding.length ? width - after.length : Infinity);
+      if (comma && zero) before = group(padding + before, padding.length ? width - after.length : Infinity);
 
-      // Apply prefix.
+      // Reconstruct the final output based on the desired alignment.
       valueSign += prefix;
-
-      // Rejoin integer and decimal parts.
       value = before + after;
-
       return align === "<" ? valueSign + value + padding
           : align === ">" ? padding + valueSign + value
           : align === "^" ? padding.substring(0, length >>= 1) + valueSign + value + padding.substring(length)
