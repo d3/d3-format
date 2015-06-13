@@ -74,8 +74,8 @@ export default function(locale) {
     // Can this type generate exponential notation?
     var format = formatTypes[type],
         integer = /[bcdoxX]/.test(type),
-        maybeDecimal = !type || /[defgprs%]/.test(type),
-        maybeExponent = !type || /[deg]/.test(type);
+        maybeExponent = !type || /[deg]/.test(type),
+        maybeDecimal = maybeExponent || /[fprs%]/.test(type);
 
     return function(value) {
       value = +value;
