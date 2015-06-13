@@ -1,8 +1,12 @@
 import btod from "./btod";
+import formatDefault from "./formatDefault";
+import formatGroup from "./formatGroup";
+import formatRounded from "./formatRounded";
+import formatRoundedPercentage from "./formatRoundedPercentage";
+import formatSystem from "./formatSystem";
 
 // [[fill]align][sign][symbol][0][width][,][.precision][type]
-var formatRe = /(?:([^{])?([<>=^]))?([+\- ])?([$#])?(0)?(\d+)?(,)?(\.-?\d+)?([a-z%])?/i,
-    systemSymbols = ["y","z","a","f","p","n","µ","m","","k","M","G","T","P","E","Z","Y"];
+var formatRe = /(?:([^{])?([<>=^]))?([+\- ])?([$#])?(0)?(\d+)?(,)?(\.-?\d+)?([a-z%])?/i;
 
 var formatTypes = {
   "b": function(x) { return x.toString(2); },
@@ -14,73 +18,13 @@ var formatTypes = {
   "e": function(x, p) { return x.toExponential(p); },
   "f": function(x, p) { return x.toFixed(p); },
   "%": function(x, p) { return (x * 100).toFixed(p); },
-  "p": toRoundedPercentage,
-  "r": toRounded,
-  "s": toSystem
+  "p": formatRoundedPercentage,
+  "r": formatRounded,
+  "s": formatSystem
 };
-
-function toRoundedPercentage(x, p) {
-  var d = btod(x, p);
-  if (!d) return x + "";
-  var i = d.exponent + 2;
-  return i <= 0
-      ? "0." + new Array(1 - i).join("0") + d.coefficient
-      : d.coefficient.slice(0, i)
-      + (d.coefficient.length > i
-      ? "." + d.coefficient.slice(i)
-      : new Array(i - d.coefficient.length + 1).join("0"));
-}
-
-function toRounded(x, p) {
-  var d = btod(x, p);
-  if (!d) return x + "";
-  var i = d.exponent;
-  return i <= 0
-      ? "0." + new Array(1 - i).join("0") + d.coefficient
-      : d.coefficient.slice(0, i)
-      + (d.coefficient.length > i
-      ? "." + d.coefficient.slice(i)
-      : new Array(i - d.coefficient.length + 1).join("0"));
-}
-
-function toSystem(x, p) {
-  var d = btod(x, p);
-  if (!d) return x + "";
-  var i = d.exponent % 3;
-  if (!i) i = 3;
-  else if (i < 0) i += 3;
-  return d.coefficient.slice(0, i)
-      + (d.coefficient.length > i
-      ? "." + d.coefficient.slice(i)
-      : new Array(i - d.coefficient.length + 1).join("0"))
-      + systemSymbols[8 + Math.floor((d.exponent - 1) / 3)]; // TODO this screws up grouping, but only if grouping < 3
-}
-
-function stringOf(x) {
-  return x + "";
-}
 
 function identity(x) {
   return x;
-}
-
-function formatGroup(grouping, thousands) {
-  return function(value, width) {
-    var i = value.length,
-        t = [],
-        j = 0,
-        g = grouping[0],
-        length = 0;
-
-    while (i > 0 && g > 0) {
-      if (length + g + 1 > width) g = Math.max(1, width - length);
-      t.push(value.substring(i -= g, i + g));
-      if ((length += g + 1) > width) break;
-      g = grouping[j = (j + 1) % grouping.length];
-    }
-
-    return t.reverse().join(thousands);
-  };
 }
 
 export default function(locale) {
@@ -94,46 +38,37 @@ export default function(locale) {
         align = match[2] || ">",
         sign = match[3] || "-",
         symbol = match[4] || "",
-        zfill = match[5],
+        zero = match[5],
         width = +match[6],
         comma = match[7],
         precision = match[8],
-        type = match[9],
-        prefix = "",
-        suffix = "",
-        integer = false,
-        exponent = true;
+        type = match[9];
 
-    if (precision) precision = +precision.substring(1);
+    // The "n" type is an alias for ",g".
+    if (type === "n") comma = true, type = "g";
 
-    if (zfill || fill === "0" && align === "=") {
-      zfill = fill = "0";
-      align = "=";
+    // If zero fill is specified, padding goes after sign and before digits.
+    if (zero || (fill === "0" && align === "=")) zero = fill = "0", align = "=";
+
+    // Compute the fixed prefix and suffix.
+    var prefix = symbol === "$" ? currency[0] : symbol === "#" && /[boxX]/.test(type) ? "0" + type.toLowerCase() : "",
+        suffix = symbol === "$" ? currency[1] : /[%p]/.test(type) ? "%" : "";
+
+    // Is this an integer type? Can this type generate exponential notation?
+    var integer = type && /[boxXcd]/.test(type),
+        exponent = !type || !/[boxXcf%p]/.test(type);
+
+    // Clamp the specified precision to the supported range.
+    // For significant precision, it must be in [1, 21].
+    // For fixed precision, it must be in [0, 20].
+    if (precision) {
+      precision = +precision.substring(1);
+      precision = /[gprs]/.test(type)
+          ? Math.max(1, Math.min(21, precision))
+          : Math.max(0, Math.min(20, precision));
     }
 
-    switch (type) {
-      case "n": comma = true; type = "g"; break;
-      case "%": suffix = "%"; break;
-      case "p": suffix = "%"; break;
-      case "b":
-      case "o":
-      case "x":
-      case "X": if (symbol === "#") prefix = "0" + type.toLowerCase();
-      case "c": exponent = false;
-      case "d": integer = true; precision = 0; break;
-    }
-
-    if (symbol === "$") prefix = currency[0], suffix = currency[1];
-
-    // Ensure that the requested precision is in the supported range.
-    if (precision != null) {
-      if (type == "g") precision = Math.max(1, Math.min(21, precision));
-      else if (type == "e" || type == "f" || type == "%") precision = Math.max(0, Math.min(20, precision));
-    }
-
-    type = formatTypes[type] || stringOf;
-
-    var zcomma = zfill && comma;
+    type = formatTypes[type] || formatDefault;
 
     return function(value) {
       value = +value;
@@ -142,7 +77,10 @@ export default function(locale) {
       if (integer && (value % 1)) return "";
 
       // Convert negative to positive, and record the sign prefix.
-      var valueSign = value < 0 || value === 0 && 1 / value < 0 ? (value *= -1, "-") : sign === "-" ? "" : sign;
+      // Note that -0 is not less than 0, but 1 / -0 is!
+      var valueSign = value < 0 || 1 / value < 0 ? (value *= -1, "-")
+          : sign === "-" ? ""
+          : sign;
 
       // Convert to the desired precision.
       value = type(value, precision);
@@ -155,21 +93,21 @@ export default function(locale) {
       // If there is no decimal, break on "e" where appropriate.
       if (i < 0) {
         var j = exponent ? value.lastIndexOf("e") : -1;
-        if (j < 0) before = value, after = "";
-        else before = value.substring(0, j), after = value.substring(j);
+        if (j < 0) before = value, after = suffix;
+        else before = value.substring(0, j), after = value.substring(j) + suffix;
       } else {
         before = value.substring(0, i);
-        after = decimal + value.substring(i + 1);
+        after = decimal + value.substring(i + 1) + suffix;
       }
 
       // If the fill character is not "0", grouping is applied before padding.
-      if (!zfill && comma) before = group(before, Infinity);
+      if (!zero && comma) before = group(before, Infinity);
 
-      var length = prefix.length + before.length + after.length + suffix.length + (zcomma ? 0 : valueSign.length),
+      var length = (zero && comma ? 0 : valueSign.length) + prefix.length + before.length + after.length,
           padding = length < width ? new Array(length = width - length + 1).join(fill) : "";
 
       // If the fill character is "0", grouping is applied after padding.
-      if (zcomma) before = group(padding + before, padding.length ? width - after.length : Infinity);
+      if (zero && comma) before = group(padding + before, padding.length ? width - after.length : Infinity);
 
       // Apply prefix.
       valueSign += prefix;
@@ -177,10 +115,10 @@ export default function(locale) {
       // Rejoin integer and decimal parts.
       value = before + after;
 
-      return (align === "<" ? valueSign + value + padding
+      return align === "<" ? valueSign + value + padding
           : align === ">" ? padding + valueSign + value
           : align === "^" ? padding.substring(0, length >>= 1) + valueSign + value + padding.substring(length)
-          : valueSign + (zcomma ? value : padding + value)) + suffix;
+          : valueSign + (zero && comma ? value : padding + value);
     };
   };
 };

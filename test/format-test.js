@@ -32,6 +32,20 @@ tape("format(\"d\") can space fill", function(test) {
   test.end();
 });
 
+tape("format(\"d\") always uses zero precision", function(test) {
+  var f = format.format(".2d");
+  test.equal(f(0), "0");
+  test.equal(f(42), "42");
+  test.equal(f(-4.2), "");
+  test.end();
+});
+
+tape("format(\"d\") returns the empty string for non-integers", function(test) {
+  var f = format.format("d");
+  test.equal(f(4.2), "");
+  test.end();
+});
+
 tape("format(\"f\") can output fixed-point notation", function(test) {
   test.equal(format.format(".1f")(0.49), "0.5");
   test.equal(format.format(".2f")(0.449), "0.45");
@@ -457,6 +471,13 @@ tape("format(\"^\") align center", function(test) {
   test.equal(format.format("^21,d")(0), "          0          ");
   test.equal(format.format("^21,d")(1000), "        1,000        ");
   test.equal(format.format("^21,d")(1e21), "        1e+21        ");
+  test.end();
+});
+
+tape("format(\"^%\") align center puts suffix adjacent to number", function(test) {
+  test.equal(format.format("^21.0%")(.42),    "         42%         ");
+  test.equal(format.format("^21,.0%")(422),   "       42,200%       ");
+  // test.equal(format.format("^21,.0%")(-422),  "      -42,200%       "); // TODO
   test.end();
 });
 
