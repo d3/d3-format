@@ -463,10 +463,10 @@ tape("format(\">\") align right", function(test) {
 tape("format(\"^\") align center", function(test) {
   test.equal(format.format("^1,d")(0), "0");
   test.equal(format.format("^1,d")(0), "0");
-  test.equal(format.format("^2,d")(0), " 0");
+  test.equal(format.format("^2,d")(0), "0 ");
   test.equal(format.format("^3,d")(0), " 0 ");
   test.equal(format.format("^5,d")(0), "  0  ");
-  test.equal(format.format("^8,d")(0), "    0   ");
+  test.equal(format.format("^8,d")(0), "   0    ");
   test.equal(format.format("^13,d")(0), "      0      ");
   test.equal(format.format("^21,d")(0), "          0          ");
   test.equal(format.format("^21,d")(1000), "        1,000        ");
@@ -477,7 +477,7 @@ tape("format(\"^\") align center", function(test) {
 tape("format(\"^%\") align center puts suffix adjacent to number", function(test) {
   test.equal(format.format("^21.0%")(.42),    "         42%         ");
   test.equal(format.format("^21,.0%")(422),   "       42,200%       ");
-  // test.equal(format.format("^21,.0%")(-422),  "      -42,200%       "); // TODO
+  test.equal(format.format("^21,.0%")(-422),  "      -42,200%       ");
   test.end();
 });
 

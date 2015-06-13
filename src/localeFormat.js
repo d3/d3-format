@@ -109,7 +109,7 @@ export default function(locale) {
 
       // Compute the padding.
       var length = (comma && zero ? 0 : valueSign.length) + prefix.length + before.length + after.length,
-          padding = length < width ? new Array(length = width - length + 1).join(fill) : "";
+          padding = length < width ? new Array((length = width - length) + 1).join(fill) : "";
 
       // If the fill character is "0", grouping is applied after padding.
       if (comma && zero) before = group(padding + before, padding.length ? width - after.length : Infinity), padding = "";
