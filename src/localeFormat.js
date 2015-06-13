@@ -1,20 +1,27 @@
 import formatPrefix from "./formatPrefix";
 import formatPrecision from "./formatPrecision";
 import round from "./round";
+// import toFixedPercentage from "./toFixedPercentage";
+import toRounded from "./toRounded";
+import toRoundedPercentage from "./toRoundedPercentage";
+import toEngineering from "./toEngineering";
 
 // [[fill]align][sign][symbol][0][width][,][.precision][type]
 var formatRe = /(?:([^{])?([<>=^]))?([+\- ])?([$#])?(0)?(\d+)?(,)?(\.-?\d+)?([a-z%])?/i;
 
 var formatTypes = {
-  b: function(x) { return x.toString(2); },
-  c: function(x) { return String.fromCharCode(x); },
-  o: function(x) { return x.toString(8); },
-  x: function(x) { return x.toString(16); },
-  X: function(x) { return x.toString(16).toUpperCase(); },
-  g: function(x, p) { return x.toPrecision(p); },
-  e: function(x, p) { return x.toExponential(p); },
-  f: function(x, p) { return x.toFixed(p); },
-  r: function(x, p) { return (x = round(x, formatPrecision(x, p))).toFixed(Math.max(0, Math.min(20, formatPrecision(x * (1 + 1e-15), p)))); }
+  "b": function(x) { return x.toString(2); },
+  "c": function(x) { return String.fromCharCode(x); },
+  "o": function(x) { return x.toString(8); },
+  "x": function(x) { return x.toString(16); },
+  "X": function(x) { return x.toString(16).toUpperCase(); },
+  "g": function(x, p) { return x.toPrecision(p); },
+  "e": function(x, p) { return x.toExponential(p); },
+  "f": function(x, p) { return x.toFixed(p); },
+  // "%": toFixedPercentage,
+  "p": toRoundedPercentage,
+  "r": toRounded,
+  "s": toEngineering
 };
 
 function stringOf(x) {
@@ -76,20 +83,16 @@ export default function(locale) {
     switch (type) {
       case "n": comma = true; type = "g"; break;
       case "%": scale = 100; suffix = "%"; type = "f"; break;
-      case "p": scale = 100; suffix = "%"; type = "r"; break;
+      // case "p": suffix = "%"; break; // type = "r"; break;
       case "b":
       case "o":
       case "x":
       case "X": if (symbol === "#") prefix = "0" + type.toLowerCase();
       case "c": exponent = false;
       case "d": integer = true; precision = 0; break;
-      case "s": scale = -1; type = "f"; break;
     }
 
     if (symbol === "$") prefix = currency[0], suffix = currency[1];
-
-    // If no precision is specified for r, fallback to general notation.
-    if (type == "r" && !precision) type = "g";
 
     // Ensure that the requested precision is in the supported range.
     if (precision != null) {
@@ -102,28 +105,16 @@ export default function(locale) {
     var zcomma = zfill && comma;
 
     return function(value) {
-      value = +value;
+      // value = +value;
+
+      // Apply scale and coerce to a number.
+      value *= scale;
 
       // Return the empty string for floats formatted as ints.
       if (integer && (value % 1)) return "";
 
       // Convert negative to positive, and record the sign prefix.
-      var valueSign = value < 0 || value === 0 && 1 / value < 0 ? (value = -value, "-") : sign === "-" ? "" : sign,
-          valueSuffix = suffix;
-
-      // Apply the scale, computing it from the value’s exponent for si format.
-      // Preserve the existing suffix, if any, such as the currency symbol.
-      if (scale < 0) {
-        var valueExponential = exponential(value),
-            valueExponent3 = Math.floor(valueExponential.exponent / 3),
-            valueExponent = 3 * valueExponent3;
-        if (valueExponent < 0) value *= "1e" + -valueExponent;
-        else if (valueExponent > 0) value /= "1e" + valueExponent;
-        precision = Math.max(0, valueExponential.precision - (Math.abs(valueExponential.exponent) % 3) - 1);
-        valueSuffix = ["y","z","a","f","p","n","µ","m","","k","M","G","T","P","E","Z","Y"][8 + valueExponent3] + suffix;
-      } else {
-        value *= scale;
-      }
+      var valueSign = value < 0 || value === 0 && 1 / value < 0 ? (value = -value, "-") : sign === "-" ? "" : sign;
 
       // Convert to the desired precision.
       value = type(value, precision);
@@ -146,7 +137,7 @@ export default function(locale) {
       // If the fill character is not "0", grouping is applied before padding.
       if (!zfill && comma) before = group(before, Infinity);
 
-      var length = prefix.length + before.length + after.length + valueSuffix.length + (zcomma ? 0 : valueSign.length),
+      var length = prefix.length + before.length + after.length + suffix.length + (zcomma ? 0 : valueSign.length),
           padding = length < width ? new Array(length = width - length + 1).join(fill) : "";
 
       // If the fill character is "0", grouping is applied after padding.
@@ -161,19 +152,7 @@ export default function(locale) {
       return (align === "<" ? valueSign + value + padding
           : align === ">" ? padding + valueSign + value
           : align === "^" ? padding.substring(0, length >>= 1) + valueSign + value + padding.substring(length)
-          : valueSign + (zcomma ? value : padding + value)) + valueSuffix;
+          : valueSign + (zcomma ? value : padding + value)) + suffix;
     };
   };
 };
-
-function exponential(value) {
-  var s = (value = +value) < 0 ? -1 : 1,
-      e = (s * value).toExponential(),
-      i = e.indexOf("e");
-  return i < 0 ? null : {
-    sign: s,
-    coefficient: +e.slice(0, i),
-    precision: i < 2 ? i : i - 1,
-    exponent: +e.slice(i + 1)
-  };
-}

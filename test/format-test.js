@@ -83,6 +83,7 @@ tape("format(\"s\") can output SI prefix notation", function(test) {
   test.equal(f(999.5), "999.5");
   test.equal(f(999500), "999.5k");
   test.equal(f(1000), "1k");
+  test.equal(f(100), "100");
   test.equal(f(1400), "1.4k");
   test.equal(f(1500.5), "1.5005k");
   test.equal(f(.00001), "10µ");
@@ -184,12 +185,28 @@ tape("format(\"%\") can output a percentage", function(test) {
   test.equal(f(-.042), "-4%");
   test.equal(f(-.42), "-42%");
   test.equal(f(-4.2), "-420%");
+  var f = format.format(".1%");
+  test.equal(f(.234), "23.4%");
   test.end();
 });
 
 tape("format(\"%\") fill respects suffix", function(test) {
   test.equal(format.format("020.0%")(42), "0000000000000004200%");
   test.equal(format.format("20.0%")(42), "               4200%");
+  test.end();
+});
+
+tape("format(\"p\") can output a percentage", function(test) {
+  var f = format.format("p");
+  test.equal(f(.00123), "0.123%");
+  test.equal(f(.0123), "1.23%");
+  test.equal(f(.123), "12.3%");
+  test.equal(f(.234), "23.4%");
+  test.equal(f(1.23), "123%");
+  test.equal(f(-.00123), "-0.123%");
+  test.equal(f(-.0123), "-1.23%");
+  test.equal(f(-.123), "-12.3%");
+  test.equal(f(-1.23), "-123%");
   test.end();
 });
 
@@ -228,6 +245,11 @@ tape("format(\"r\") can round to significant digits", function(test) {
   test.equal(format.format(".1r")(.09), "0.09");
   test.equal(format.format(".1r")(.949), "0.9");
   test.equal(format.format(".1r")(.0949), "0.09");
+  test.equal(format.format(".1r")(.0000000129), "0.000000001");
+  test.equal(format.format(".2r")(.0000000129), "0.0000000013");
+  test.equal(format.format(".2r")(.00000000129), "0.00000000013");
+  test.equal(format.format(".3r")(.00000000129), "0.000000000129");
+  test.equal(format.format(".4r")(.00000000129), "0.0000000001290");
   test.equal(format.format(".10r")(.9999999999), "0.9999999999");
   test.equal(format.format(".15r")(.999999999999999), "0.999999999999999");
   test.end();
@@ -235,7 +257,7 @@ tape("format(\"r\") can round to significant digits", function(test) {
 
 tape("format(\"r\") can round very small numbers", function(test) {
   var f = format.format(".2r");
-  test.equal(f(1e-22), "0.00000000000000000000");
+  test.equal(f(1e-22), "0.000000000000000000000010");
   test.end();
 });
 
