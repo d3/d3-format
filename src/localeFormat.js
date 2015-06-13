@@ -64,12 +64,13 @@ export default function(locale) {
     var prefix = symbol === "$" ? currency[0] : symbol === "#" && /[boxX]/.test(type) ? "0" + type.toLowerCase() : "",
         suffix = symbol === "$" ? currency[1] : /[%p]/.test(type) ? "%" : "";
 
-    // Is this an integer type? Can this type generate exponential notation?
+    // Is this an integer type?
+    // Can this type generate exponential notation?
+    // What format function should we use?
     var integer = /[bcdoxX]/.test(type),
         maybeDecimal = !type || /[defgprs%]/.test(type),
-        maybeExponent = !type || /[deg]/.test(type);
-
-    type = formatTypes[type] || formatDefault;
+        maybeExponent = !type || /[deg]/.test(type),
+        format = formatTypes[type] || formatDefault;
 
     return function(value) {
       value = +value;
@@ -84,7 +85,7 @@ export default function(locale) {
           : sign;
 
       // Perform the initial formatting.
-      var before = value = type(value, precision),
+      var before = value = format(value, precision),
           after = suffix;
 
       // Break the value into the integer “before” part that can be grouped,
@@ -113,15 +114,13 @@ export default function(locale) {
           padding = length < width ? new Array(length = width - length + 1).join(fill) : "";
 
       // If the fill character is "0", grouping is applied after padding.
-      if (comma && zero) before = group(padding + before, padding.length ? width - after.length : Infinity);
+      if (comma && zero) before = group(padding + before, padding.length ? width - after.length : Infinity), padding = "";
 
       // Reconstruct the final output based on the desired alignment.
-      valueSign += prefix;
-      value = before + after;
-      return align === "<" ? valueSign + value + padding
-          : align === ">" ? padding + valueSign + value
-          : align === "^" ? padding.substring(0, length >>= 1) + valueSign + value + padding.substring(length)
-          : valueSign + (zero && comma ? value : padding + value);
+      return align === "<" ? valueSign + prefix + before + after + padding
+          : align === ">" ? padding + valueSign + prefix + before + after
+          : align === "^" ? padding.substring(0, length >>= 1) + valueSign + prefix + before + after + padding.substring(length)
+          : valueSign + prefix + padding + before + after;
     };
   };
 };
