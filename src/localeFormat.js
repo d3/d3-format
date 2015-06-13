@@ -42,7 +42,7 @@ export default function(locale) {
         width = +match[6],
         comma = match[7],
         precision = match[8],
-        type = match[9];
+        type = match[9] || "";
 
     // The "n" type is an alias for ",g".
     if (type === "n") comma = true, type = "g";
@@ -55,8 +55,8 @@ export default function(locale) {
         suffix = symbol === "$" ? currency[1] : /[%p]/.test(type) ? "%" : "";
 
     // Is this an integer type? Can this type generate exponential notation?
-    var integer = type && /[boxXcd]/.test(type),
-        exponent = !type || !/[boxXcf%p]/.test(type);
+    var integer = /[boxXcd]/.test(type),
+        exponent = !type || /[ged]/.test(type);
 
     // Clamp the specified precision to the supported range.
     // For significant precision, it must be in [1, 21].
@@ -76,7 +76,7 @@ export default function(locale) {
       // Return the empty string for floats formatted as ints.
       if (integer && (value % 1)) return "";
 
-      // Convert negative to positive, and record the sign prefix.
+      // Convert negative to positive, and record the sign.
       // Note that -0 is not less than 0, but 1 / -0 is!
       var valueSign = value < 0 || 1 / value < 0 ? (value *= -1, "-")
           : sign === "-" ? ""
