@@ -121,8 +121,8 @@ export default function(locale) {
         case "<": return valueSign + prefix + before + after + padding;
         case "=": return valueSign + prefix + padding + before + after;
         case "^": return padding.substring(0, length >>= 1) + valueSign + prefix + before + after + padding.substring(length);
-        default: return padding + valueSign + prefix + before + after;
       }
+      return padding + valueSign + prefix + before + after;
     };
   };
 };
