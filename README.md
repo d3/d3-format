@@ -35,7 +35,7 @@ The default [format](#format) instance uses the U.S. English ([`en-US`](https://
 * [`ru-RU`](https://github.com/d3/d3-format/tree/master/src/format-ru-RU.js) - Russian (Russia)
 * [`zh-CN`](https://github.com/d3/d3-format/tree/master/src/format-zh-CN.js) - Chinese (China)
 
-To switch locales, either create a custom build by editing [index.js](https://github.com/d3/d3-format/tree/master/src/index.js) or copy the desired code it from one of the above linked locale definitions.
+To switch locales, either create a custom build by editing [index.js](https://github.com/d3/d3-format/tree/master/index.js) or copy the desired code it from one of the above linked locale definitions.
 
 <a name="format" href="#format">#</a> <b>format</b>(<i>specifier</i>)
 
