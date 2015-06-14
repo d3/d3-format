@@ -166,7 +166,7 @@ f(42); // "42.00";
 
 <a name="precisionFixed" href="#precisionFixed">#</a> <b>precisionFixed</b>(<i>step</i>)
 
-Returns a suggested decimal precision for fixed point notation for the specified numeric *step* value. The *step* represents the minimum absolute difference between values that will be formatted. For example, given the numbers 1, 1.5, and 2, the minimum difference is 0.5 and the suggested precision is 1:
+Returns a suggested decimal precision for fixed point notation for the specified numeric *step* value. The *step* represents the minimum absolute difference between values that will be formatted. For example, given the numbers 1, 1.5, and 2, the minimum absolute difference is 0.5 and the suggested precision is 1:
 
 ```js
 var p = precisionFixed(0.5),
@@ -188,7 +188,7 @@ f(.55); // 55%
 
 <a name="precisionRound" href="#precisionRound">#</a> <b>precisionRound</b>(<i>step</i>, <i>max</i>)
 
-Returns a suggested decimal precision for format types that round to significant digits, given numeric *step* and *max* values*. The *step* represents the minimum absolute difference between values that will be formatted, and the *max* represents the largest absolute value that will be formatted. For example:
+Returns a suggested decimal precision for format types that round to significant digits, given numeric *step* and *max* values*. The *step* represents the minimum absolute difference between values that will be formatted, and the *max* represents the largest absolute value that will be formatted. For example, given the numbers 0.99, 1.0, and 1.01, the minimum absolute difference is 0.01, the largest absolute value is 1.01, and the suggested precision is 3:
 
 ```js
 var p = precisionRound(0.01, 1.01),
