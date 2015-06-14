@@ -39,11 +39,11 @@ To switch locales, either create a custom build by editing [index.js](https://gi
 
 <a name="format" href="#format">#</a> <b>format</b>(<i>specifier</i>)
 
-Equivalent to [format.format](#format_format) on the default U.S. English locale. Use [localeFormat](#localeFormat) to specify a different locale.
+Equivalent to [*format*.format](#format_format) on the default U.S. English locale. Use [localeFormat](#localeFormat) to specify a different locale.
 
 <a name="formatPrefix" href="#formatPrefix">#</a> <b>formatPrefix</b>(<i>specifier</i>)
 
-Equivalent to [format.formatPrefix](#format_formatPrefix) on the default U.S. English locale. Use [localeFormat](#localeFormat) to specify a different locale.
+Equivalent to [*format*.formatPrefix](#format_formatPrefix) on the default U.S. English locale. Use [localeFormat](#localeFormat) to specify a different locale.
 
 <a name="format_format" href="#format_format">#</a> <i>format</i>.<b>format</b>(<i>specifier</i>)
 
@@ -100,7 +100,7 @@ The type `n` is also supported as shorthand for `,g`. If no *precision* is speci
 
 <a name="format_formatPrefix" href="#format_formatPrefix">#</a> <i>format</i>.<b>formatPrefix</b>(<i>value</i>, <i>prefix</i>)
 
-Equivalent to [format.format](#format_format), except converts the value to the units of the specified SI *prefix*. The following prefixes are supported:
+Equivalent to [*format*.format](#format_format), except converts the value to the units of the specified SI *prefix*. The following prefixes are supported:
 
 `y` - yocto, 10^-24
 `z` - zepto, 10^-21
@@ -129,7 +129,7 @@ f(.00042); // "420µ"
 
 <a name="localeFormat" href="#localeFormat">#</a> <b>localeFormat</b>(<i>locale</i>)
 
-Returns a *format* object localized for the specified *locale*, with [format.format](#format_format) and [format.formatPrefix](#format_formatPrefix) methods. The *locale* definition must include the following properties:
+Returns a *format* object localized for the specified *locale*, with [*format*.format](#format_format) and [*format*.formatPrefix](#format_formatPrefix) methods. The *locale* definition must include the following properties:
 
 * `decimal` - the decimal point (e.g., `"."`).
 * `thousands` - the group separator (e.g., `","`).
