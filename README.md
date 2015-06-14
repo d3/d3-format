@@ -82,10 +82,11 @@ The *precision* indicates how many digits should be displayed after the decimal 
 
 The available *type* values are:
 
-* `e` - use [Number.toExponential](https://developer.mozilla.org/en/JavaScript/Reference/Global_Objects/Number/toExponential).
-* `g` - use [Number.toPrecision](https://developer.mozilla.org/en/JavaScript/Reference/Global_Objects/Number/toPrecision).
-* `f` - use [Number.toFixed](https://developer.mozilla.org/en/JavaScript/Reference/Global_Objects/Number/toFixed).
-* `r` - [round](#round) to *precision* significant digits, then pad like `f`.
+* `​` (none) - like `g`, but trim insignificant trailing zeros.
+* `e` - exponent notation.
+* `f` - fixed point.
+* `g` - general format; rounds and uses either fixed-point or exponent notation.
+* `r` - like `g`, but always uses fixed-point notation.
 * `s` - like `r`, but append an SI prefix such as `"9.5M"` or `"1.00µ"`.
 * `%` - like `f`, but multiply by 100 and suffix with `"%"`.
 * `p` - like `r`, but multiply by 100 and suffix with `"%"`.
@@ -110,7 +111,7 @@ Equivalent to [*locale*.format](#locale_format), except converts the value to th
 * `n` - nano, 10⁻⁹
 * `µ` - micro, 10⁻⁶
 * `m` - milli, 10⁻³
-* `​` (empty string) - 10⁰
+* `​` (none) - 10⁰
 * `k` - kilo, 10³
 * `M` - mega, 10⁶
 * `G` - giga, 10⁹

@@ -1,4 +1,3 @@
-import formatDefault from "./formatDefault";
 import formatGroup from "./formatGroup";
 import formatRounded from "./formatRounded";
 import formatRoundedPercentage from "./formatRoundedPercentage";
@@ -9,11 +8,11 @@ var re = /(?:(.)?([<>=^]))?([+\- ])?([$#])?(0)?(\d+)?(,)?(\.\d+)?([a-z%])?/i,
     prefixes = ["y","z","a","f","p","n","µ","m","","k","M","G","T","P","E","Z","Y"];
 
 var formatTypes = {
-  " ": formatDefault,
+  " ": function(x, p) { return x.toPrecision(p).replace(/(?:\.|(\.\d+?))0+(e|$)/, "$1$2"); },
   "%": function(x, p) { return (x * 100).toFixed(p); },
   "b": function(x) { return x.toString(2); },
   "c": function(x) { return String.fromCharCode(x); },
-  "d": formatDefault,
+  "d": function(x) { return x.toString(10); },
   "e": function(x, p) { return x.toExponential(p); },
   "f": function(x, p) { return x.toFixed(p); },
   "g": function(x, p) { return x.toPrecision(p); },

@@ -6,6 +6,17 @@ tape("format(specifier)(number) returns a string", function(test) {
   test.end();
 });
 
+tape("format(\".[precision]\") can round", function(test) {
+  test.equal(format.format(".1")(0.49), "0.5");
+  test.equal(format.format(".2")(0.449), "0.45");
+  test.equal(format.format(".3")(0.4449), "0.445");
+  test.equal(format.format(".5")(0.444449), "0.44445");
+  test.equal(format.format(".1")(100), "1e+2");
+  test.equal(format.format(".3")(100), "100");
+  test.equal(format.format(".5")(100), "100");
+  test.end();
+});
+
 tape("format(\"d\") can zero fill", function(test) {
   var f = format.format("08d");
   test.equal(f(0), "00000000");
