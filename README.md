@@ -83,11 +83,11 @@ The available *type* values are:
 
 * `e` - exponent notation.
 * `f` - fixed point.
-* `g` - round, and then either fixed point or exponent notation.
-* `r` - round, and then fixed point.
-* `s` - round, and then fixed point with an SI prefix.
+* `g` - round significant digits, and then either fixed point or exponent notation.
+* `r` - round significant digits, and then fixed point.
+* `s` - round significant digits, and then fixed point with an SI prefix.
 * `%` - multiply by 100, and then fixed point with a percentage sign.
-* `p` - multiply by 100, round, and then fixed point with a percentage sign.
+* `p` - multiply by 100, round significant digits, and then fixed point with a percentage sign.
 * `b` - binary (base 2); ignores non-integers.
 * `o` - octal (base 8); ignores non-integers.
 * `d` - decimal (base 10); ignores non-integers.
