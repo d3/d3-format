@@ -2,17 +2,18 @@
 
 Want to get rid of that ugly 0.30000000000000004 on your axis? Or to group thousands and use fixed precision to display currency, such as $1,240.10? Or perhaps you want to display only the significant digits of a particular number?
 
-You’ve come to the right place. Formatting numbers for human consumption is the purpose of the d3-format module, which is modeled after Python 3’s [format specification mini-language](https://docs.python.org/3/library/string.html#format-specification-mini-language) ([PEP 3101](https://www.python.org/dev/peps/pep-3101/)). For example, to create a function that zero-fills to four digits, say:
+You’ve come to the right place. Formatting numbers for human consumption is the purpose of the d3-format module, which is modeled after Python 3’s [format specification mini-language](https://docs.python.org/3/library/string.html#format-specification-mini-language) ([PEP 3101](https://www.python.org/dev/peps/pep-3101/)). For example, to create a function that pads with zeros to fill four digits, say:
 
 ```js
-var zeroPad = format("04d");
+var f = format("04");
 ```
 
 Now you can conveniently format numbers:
 
 ```js
-zeroPad(2);   // "0002"
-zeroPad(123); // "0123"
+f(.1);  // "00.1"
+f(2);   // "0002"
+f(123); // "0123"
 ```
 
 The default locale is U.S. English ([`en-US`](https://github.com/d3/d3-format/tree/master/src/format-en-US.js)). Other locales may be specified using [localeFormat](#localeFormat), or by editing [index.js](https://github.com/d3/d3-format/tree/master/index.js) and rebuilding.
