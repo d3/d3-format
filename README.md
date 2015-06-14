@@ -137,6 +137,49 @@ Returns a *locale* object for the specified *definition*, with [*locale*.format]
 
 To change the default locale, edit [index.js](https://github.com/d3/d3-format/tree/master/index.js) and run `npm run prepublish`.
 
+<a name="formatPrecision" href="#formatPrecision">#</a> <b>formatPrecision</b>(<i>value</i>)
+
+Returns a suggested decimal precision for fixed point notation for the specified numeric *value*. The *value* represents the minimum difference between values that will be formatted. For example, given the numbers 1, 1.5, and 2, the minimum difference is 0.5 and the suggested precision is 1:
+
+```js
+var p = formatPrecision(0.5),
+    f = format("." + p + "f");
+f(1);   // 1.0
+f(1.5); // 1.5
+f(2);   // 2.0
+```
+
+This method can also be used to compute significant-digit precision, such as when using the `e` format type. In this case, *value* should be the minimum value divided by the largest value that will be formatted. For example:
+
+```js
+var p = formatPrecision(0.5e8 / 2e8),
+    f = format("." + p + "e");
+f(0.5e8); // 5.0e+7
+f(1e8);   // 1.0e+8
+f(1.5e8); // 1.5e+8
+f(2e8);   // 2.0e+8
+```
+
+For `​` (none), `g`, `p`, `r` and `s`, the principle is the same, except you should add one:
+
+```
+var p = formatPrecision(0.45 / 0.55) + 1,
+    f = format("." + p);
+f(0.45); // 0.45
+f(0.50); // 0.50
+f(0.55); // 0.55
+```
+
+Some format types may require a small adjustment to the suggested precision. The `%` format multiplies formatted values by 100 to convert to percentages, and so you should subtract two from the suggested precision.
+
+```js
+var p = Math.max(0, formatPrecision(0.05) - 2),
+    f = format("." + p + "%");
+f(.45); // 45%
+f(.50); // 50%
+f(.55); // 55%
+```
+
 <a name="formatSpecifier" href="#formatSpecifier">#</a> <b>formatSpecifier</b>(<i>specifier</i>)
 
 Parses the specified *specifier*, returning an object with exposed fields that correspond to the [format specification mini-language](#locale_format). For example, `formatSpecifier("s")` returns:
