@@ -98,9 +98,9 @@ The available *type* values are:
 
 The type `n` is also supported as shorthand for `,g`.
 
-<a name="locale_formatPrefix" href="#locale_formatPrefix">#</a> <i>locale</i>.<b>formatPrefix</b>(<i>value</i>, <i>prefix</i>)
+<a name="locale_formatPrefix" href="#locale_formatPrefix">#</a> <i>locale</i>.<b>formatPrefix</b>(<i>specifier</i>, <i>prefix</i>)
 
-Equivalent to [*locale*.format](#locale_format), except converts the value to the units of the specified SI *prefix*. The following prefixes are supported:
+Equivalent to [*locale*.format](#locale_format), except the returned function will convert values to the units of the specified SI *prefix* before formatting. The following prefixes are supported:
 
 * `y` - yocto, 10⁻²⁴
 * `z` - zepto, 10⁻²¹
@@ -120,7 +120,7 @@ Equivalent to [*locale*.format](#locale_format), except converts the value to th
 * `Z` - zetta, 10²¹
 * `Y` - yotta, 10²⁴
 
-For example:
+Unlike [*locale*.format](#locale_format) with the `s` format type, this method allows you to specify the SI *prefix* explicitly, rather than computing it dynamically based on the formatted number. In addition, the *precision* for the given *specifier* represents the number of digits past the decimal point (as with `f` fixed point notation), not the number of significant digits. For example:
 
 ```js
 var f = formatPrefix(",.0s", "µ");
@@ -128,7 +128,7 @@ f(.00042); // "420µ"
 f(.0042); // "4,200µ"
 ```
 
-Unlike [*locale*.format](#locale_format) with the `s` format type, this method allows you to specify the SI *prefix* explicitly, rather than computing it dynamically based on the formatted number. This is useful when formatting multiple numbers in the same units for easy comparison.
+This method is useful when formatting multiple numbers in the same units for easy comparison.
 
 <a name="localeFormat" href="#localeFormat">#</a> <b>localeFormat</b>(<i>definition</i>)
 
