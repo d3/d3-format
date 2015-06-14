@@ -32,6 +32,19 @@ tape("format(\"d\") can space fill", function(test) {
   test.end();
 });
 
+tape("format(\"d\") can underscore fill", function(test) {
+  var f = format.format("_>8d");
+  test.equal(f(0), "_______0");
+  test.equal(f(42), "______42");
+  test.equal(f(42000000), "42000000");
+  test.equal(f(420000000), "420000000");
+  test.equal(f(-4), "______-4");
+  test.equal(f(-42), "_____-42");
+  test.equal(f(-4200000), "-4200000");
+  test.equal(f(-42000000), "-42000000");
+  test.end();
+});
+
 tape("format(\"d\") can zero fill with sign and group", function(test) {
   var f = format.format("+08,d");
   test.equal(f(0), "+0,000,000");

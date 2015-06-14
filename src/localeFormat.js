@@ -6,7 +6,7 @@ import formatRoundedPercentage from "./formatRoundedPercentage";
 import formatSystem from "./formatSystem";
 
 // [[fill]align][sign][symbol][0][width][,][.precision][type]
-var formatRe = /(?:([^{])?([<>=^]))?([+\- ])?([$#])?(0)?(\d+)?(,)?(\.-?\d+)?([a-z%])?/i;
+var formatRe = /(?:(.)?([<>=^]))?([+\- ])?([$#])?(0)?(\d+)?(,)?(\.-?\d+)?([a-z%])?/i;
 
 var formatTypes = {
   "": formatDefault,
