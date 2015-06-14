@@ -85,14 +85,14 @@ The available *type* values are:
 * `e` - use [Number.toExponential](https://developer.mozilla.org/en/JavaScript/Reference/Global_Objects/Number/toExponential).
 * `g` - use [Number.toPrecision](https://developer.mozilla.org/en/JavaScript/Reference/Global_Objects/Number/toPrecision).
 * `f` - use [Number.toFixed](https://developer.mozilla.org/en/JavaScript/Reference/Global_Objects/Number/toFixed).
-* `d` - use [Number.toString](https://developer.mozilla.org/en/JavaScript/Reference/Global_Objects/Number/toString), but ignore any non-integer values.
 * `r` - [round](#round) to *precision* significant digits, then pad like `f`.
 * `%` - like `f`, but multiply by 100 and suffix with `"%"`.
 * `p` - like `r`, but multiply by 100 and suffix with `"%"`.
-* `b` - binary (base 2).
-* `o` - octal (base 8).
-* `x` - hexadecimal (base 16), using lower-case letters.
-* `X` - hexadecimal (base 16), using upper-case letters.
+* `b` - binary (base 2); ignores non-integers.
+* `o` - octal (base 8); ignores non-integers.
+* `d` - decimal (base 10); ignores non-integers.
+* `x` - hexadecimal (base 16), using lower-case letters; ignores non-integers.
+* `X` - hexadecimal (base 16), using upper-case letters; ignores non-integers.
 * `c` - converts the integer to the corresponding unicode character before printing.
 * `s` - like `r`, but with an SI prefix such as `"9.5M"` or `"1.00µ"`.
 
