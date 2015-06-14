@@ -139,7 +139,7 @@ To change the default locale, edit [index.js](https://github.com/d3/d3-format/tr
 
 <a name="formatSpecifier" href="#formatSpecifier">#</a> <b>formatSpecifier</b>(<i>specifier</i>)
 
-Parses the specified *specifier*, returning an object with exposed fields that correspond to the [format specification mini-language](#locale_format). For example, `formatSpecifier("s")` returns:
+Parses the specified *specifier*, returning an object with exposed fields that correspond to the [format specification mini-language](#locale_format), and a toString method that reconstructs the specifier. For example, `formatSpecifier("s")` returns:
 
 ```js
 {
