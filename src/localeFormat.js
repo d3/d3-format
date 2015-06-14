@@ -1,14 +1,13 @@
 import formatGroup from "./formatGroup";
 import formatRounded from "./formatRounded";
 import formatRoundedPercentage from "./formatRoundedPercentage";
+import formatSpecifier from "./formatSpecifier";
 import {default as formatAutoPrefix, exponent} from "./formatAutoPrefix";
 
-// [[fill]align][sign][symbol][0][width][,][.precision][type]
-var re = /(?:(.)?([<>=^]))?([+\- ])?([$#])?(0)?(\d+)?(,)?(\.\d+)?([a-z%])?/i,
-    prefixes = ["y","z","a","f","p","n","µ","m","","k","M","G","T","P","E","Z","Y"];
+var prefixes = ["y","z","a","f","p","n","µ","m","","k","M","G","T","P","E","Z","Y"];
 
 var formatTypes = {
-  " ": function(x, p) { return x.toPrecision(p).replace(/(?:\.|(\.\d+?))0+(e|$)/, "$1$2"); },
+  "": function(x, p) { return x.toPrecision(p).replace(/(?:\.|(\.\d+?))0+(e|$)/, "$1$2"); },
   "%": function(x, p) { return (x * 100).toFixed(p); },
   "b": function(x) { return x.toString(2); },
   "c": function(x) { return String.fromCharCode(x); },
@@ -34,39 +33,20 @@ export default function(locale) {
       decimal = locale.decimal;
 
   function format(specifier) {
-    var match = re.exec(specifier),
-        fill = match[1] || " ",
-        align = match[2] || ">",
-        sign = match[3] || "-",
-        symbol = match[4] || "",
-        zero = match[5],
-        width = +match[6],
-        comma = match[7],
-        precision = match[8],
-        type = match[9];
+    specifier = formatSpecifier(specifier);
 
-    // The "n" type is an alias for ",g".
-    if (type === "n") comma = true, type = "g";
+    var fill = specifier.fill,
+        align = specifier.align,
+        sign = specifier.sign,
+        symbol = specifier.symbol,
+        zero = specifier.zero,
+        width = specifier.width,
+        comma = specifier.comma,
+        precision = specifier.precision,
+        type = specifier.type;
 
-    // Map invalid types to the default format.
-    else if (!(type in formatTypes)) type = " ";
-
-    // If zero fill is specified, padding goes after sign and before digits.
-    if (zero || (fill === "0" && align === "=")) zero = fill = "0", align = "=";
-
-    // Clamp the specified precision to the supported range.
-    // For significant precision, it must be in [1, 21].
-    // For fixed precision, it must be in [0, 20].
-    if (precision) {
-      precision = +precision.slice(1);
-      precision = /[gprs]/.test(type)
-          ? Math.max(1, Math.min(21, precision))
-          : Math.max(0, Math.min(20, precision));
-    } else {
-      precision = type === " " ? 12 : 6;
-    }
-
-    // Compute the fixed prefix and suffix.
+    // Compute the prefix and suffix.
+    // For SI-prefix, the suffix is lazily computed.
     var prefix = symbol === "$" ? currency[0] : symbol === "#" && /[boxX]/.test(type) ? "0" + type.toLowerCase() : "",
         suffix = symbol === "$" ? currency[1] : /[%p]/.test(type) ? "%" : "";
 
@@ -75,8 +55,15 @@ export default function(locale) {
     // Can this type generate exponential notation?
     var formatType = formatTypes[type],
         integer = /[bcdoxX]/.test(type),
-        maybeExponent = /[ deg]/.test(type),
+        maybeExponent = !type || /[deg]/.test(type),
         maybeDecimal = maybeExponent || /[fprs%]/.test(type);
+
+    // Clamp the specified precision to the supported range.
+    // For significant precision, it must be in [1, 21].
+    // For fixed precision, it must be in [0, 20].
+    precision = /[gprs]/.test(type)
+        ? Math.max(1, Math.min(21, precision))
+        : Math.max(0, Math.min(20, precision));
 
     return function(value) {
       value = +value;
@@ -133,12 +120,11 @@ export default function(locale) {
   }
 
   function formatPrefix(specifier, prefix) {
-    var match = re.exec(specifier),
-        prefixIndex = prefixes.indexOf(prefix),
-        scale = Math.pow(10, (prefixIndex < 0 ? (prefix = "", 0) : 8 - prefixIndex) * 3),
-        f = (match[0] = match[2] = null, match[9] = "f", format(match.join("")));
+    var f = format((specifier = formatSpecifier(specifier), specifier.type = "f", specifier)),
+        i = prefixes.indexOf(prefix),
+        k = Math.pow(10, (i < 0 ? (prefix = "", 0) : 8 - i) * 3);
     return function(value) {
-      return f(scale * value) + prefix;
+      return f(k * value) + prefix;
     };
   }
 
