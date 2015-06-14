@@ -42,8 +42,8 @@ The *fill* can be any character. The presence of a fill character is signaled by
 
 The *sign* can be:
 
-* `-` - a sign should be used only for negative numbers. (Default behavior.)
-* `+` - a sign should be used for both positive and negative numbers.
+* `-` - a minus sign for negative numbers. (Default behavior.)
+* `+` - a plus sign for positive and a minus sign for negative.
 * ` ` (space) - a space for positive and a minus sign for negative.
 
 The *symbol* can be:
