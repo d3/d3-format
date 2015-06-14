@@ -78,7 +78,7 @@ The *width* defines the minimum field width. If not specified, then the width wi
 
 The *comma* (`,`) option enables the use of a comma for a thousands separator.
 
-The *precision* indicates how many digits should be displayed after the decimal point for a value formatted with types `f` and `%`, or before and after the decimal point for a value formatted with types `g`, `r` and `p`.
+The *precision* indicates how many digits should be displayed after the decimal point for a value formatted with types `f` and `%`, or before and after the decimal point for a value formatted with types `g`, `r` and `p`. If a precision is not specified, it defaults to 6.
 
 The available *type* values are:
 
