@@ -1,15 +1,15 @@
-import btod from "./btod";
 import formatDefault from "./formatDefault";
 import formatGroup from "./formatGroup";
 import formatRounded from "./formatRounded";
 import formatRoundedPercentage from "./formatRoundedPercentage";
-import formatSystem from "./formatSystem";
+import {default as formatAutoPrefix, exponent} from "./formatAutoPrefix";
 
 // [[fill]align][sign][symbol][0][width][,][.precision][type]
-var formatRe = /(?:(.)?([<>=^]))?([+\- ])?([$#])?(0)?(\d+)?(,)?(\.-?\d+)?([a-z%])?/i;
+var re = /(?:(.)?([<>=^]))?([+\- ])?([$#])?(0)?(\d+)?(,)?(\.-?\d+)?([a-z%])?/i,
+    prefixes = ["y","z","a","f","p","n","µ","m","","k","M","G","T","P","E","Z","Y"];
 
 var formatTypes = {
-  "": formatDefault,
+  " ": formatDefault,
   "%": function(x, p) { return (x * 100).toFixed(p); },
   "b": function(x) { return x.toString(2); },
   "c": function(x) { return String.fromCharCode(x); },
@@ -20,7 +20,7 @@ var formatTypes = {
   "o": function(x) { return x.toString(8); },
   "p": formatRoundedPercentage,
   "r": formatRounded,
-  "s": formatSystem,
+  "s": formatAutoPrefix,
   "X": function(x) { return x.toString(16).toUpperCase(); },
   "x": function(x) { return x.toString(16); }
 };
@@ -34,8 +34,8 @@ export default function(locale) {
       currency = locale.currency,
       decimal = locale.decimal;
 
-  return function(specifier) {
-    var match = formatRe.exec(specifier),
+  function format(specifier) {
+    var match = re.exec(specifier),
         fill = match[1] || " ",
         align = match[2] || ">",
         sign = match[3] || "-",
@@ -50,7 +50,7 @@ export default function(locale) {
     if (type === "n") comma = true, type = "g";
 
     // Map invalid types to the default format.
-    else if (!(type in formatTypes)) type = "";
+    else if (!(type in formatTypes)) type = " ";
 
     // If zero fill is specified, padding goes after sign and before digits.
     if (zero || (fill === "0" && align === "=")) zero = fill = "0", align = "=";
@@ -72,9 +72,9 @@ export default function(locale) {
     // What format function should we use?
     // Is this an integer type?
     // Can this type generate exponential notation?
-    var format = formatTypes[type],
+    var formatType = formatTypes[type],
         integer = /[bcdoxX]/.test(type),
-        maybeExponent = !type || /[deg]/.test(type),
+        maybeExponent = /[ deg]/.test(type),
         maybeDecimal = maybeExponent || /[fprs%]/.test(type);
 
     return function(value) {
@@ -85,25 +85,27 @@ export default function(locale) {
 
       // Convert negative to positive, and compute the prefix.
       // Note that -0 is not less than 0, but 1 / -0 is!
-      var valueSuffix = suffix,
-          valuePrefix = (value < 0 || 1 / value < 0 ? (value *= -1, "-")
+      var valuePrefix = (value < 0 || 1 / value < 0 ? (value *= -1, "-")
               : sign === "-" ? ""
               : sign) + prefix;
 
       // Perform the initial formatting.
-      value = format(value, precision);
+      value = formatType(value, precision);
+
+      // Compute the suffix.
+      var valueSuffix = suffix + (type === "s" ? prefixes[8 + Math.floor(exponent / 3)] : "");
 
       // Break the formatted value into the integer “value” part that can be
       // grouped, and fractional or exponential “suffix” part that is not.
       if (maybeDecimal) {
         var i = value.indexOf(".");
         if (i >= 0) {
-          valueSuffix = decimal + value.slice(i + 1) + suffix;
+          valueSuffix = decimal + value.slice(i + 1) + valueSuffix;
           value = value.slice(0, i);
         } else if (maybeExponent) {
           i = value.indexOf("e");
           if (i >= 0) {
-            valueSuffix = value.slice(i) + suffix;
+            valueSuffix = value.slice(i) + valueSuffix;
             value = value.slice(0, i);
           }
         }
@@ -127,5 +129,19 @@ export default function(locale) {
       }
       return padding + valuePrefix + value + valueSuffix;
     };
+  }
+
+  function formatPrefix(specifier, prefix) {
+    var match = re.exec(specifier),
+        scale = Math.pow(10, (8 - prefixes.indexOf(prefix)) * 3),
+        f = (match[0] = match[2] = null, match[9] = "f", format(match.join("")));
+    return function(value) {
+      return f(scale * value) + prefix;
+    };
+  }
+
+  return {
+    format: format,
+    formatPrefix: formatPrefix
   };
 };

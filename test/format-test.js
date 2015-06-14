@@ -415,7 +415,7 @@ tape("format(\"c\") unicode character", function(test) {
 });
 
 tape("format(\"c\") does not localize a decimal point", function(test) {
-  test.equal(format.localeFormat({decimal: "/"})("c")(46), ".");
+  test.equal(format.localeFormat({decimal: "/"}).format("c")(46), ".");
   test.end();
 });
 

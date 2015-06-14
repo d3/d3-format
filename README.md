@@ -39,9 +39,15 @@ To switch locales, either create a custom build by editing [index.js](https://gi
 
 <a name="format" href="#format">#</a> <b>format</b>(<i>specifier</i>)
 
-Returns a new format function with the given string *specifier*. By default, uses the U.S. English locale; use [localeFormat](#localeFormat) to specify a different locale.
+Equivalent to [format.format](#format_format) on the default U.S. English locale. Use [localeFormat](#localeFormat) to specify a different locale.
 
-The returned function takes a number as the only argument, and returns a string representing the formatted number. The format specifier is modeled after Python 3.1’s [format specification mini-language](http://docs.python.org/release/3.1.3/library/string.html#formatspec). The general form of a specifier is:
+<a name="formatPrefix" href="#formatPrefix">#</a> <b>formatPrefix</b>(<i>specifier</i>)
+
+Equivalent to [format.formatPrefix](#format_formatPrefix) on the default U.S. English locale. Use [localeFormat](#localeFormat) to specify a different locale.
+
+<a name="format_format" href="#format_format">#</a> <i>format</i>.<b>format</b>(<i>specifier</i>)
+
+Returns a new format function with the given string *specifier*. The returned function takes a number as the only argument, and returns a string representing the formatted number. The format specifier is modeled after Python 3.1’s [format specification mini-language](http://docs.python.org/release/3.1.3/library/string.html#formatspec). The general form of a specifier is:
 
 ```
 [​[fill]align][sign][symbol][0][width][,][.precision][type]
@@ -92,26 +98,38 @@ The available *type* values are:
 
 The type `n` is also supported as shorthand for `,g`. If no *precision* is specified for `r`, `g` is used instead; if no *precision* is specified for `p`, `%` is used instead.
 
-<a name="formatPrefix" href="#formatPrefix">#</a> <b>formatPrefix</b>(<i>value</i>[, <i>precision</i>])
+<a name="format_formatPrefix" href="#format_formatPrefix">#</a> <i>format</i>.<b>formatPrefix</b>(<i>value</i>, <i>prefix</i>)
 
-Returns the [SI prefix](https://en.wikipedia.org/wiki/Metric_prefix) for the specified *value*. If an optional *precision* is specified, the *value* is rounded accordingly using [round](#round) before computing the prefix. The returned prefix object has two properties:
+Equivalent to [format.format](#format_format), except converts the value to the units of the specified SI *prefix*. The following prefixes are supported:
 
-* `symbol` - the prefix symbol, such as `"M"` for millions.
-* `scale` - the scale function, for converting numbers to the appropriate prefixed scale.
+`y` - yocto, 10^-24
+`z` - zepto, 10^-21
+`a` - atto, 10^-18
+`f` - femto, 10^-15
+`p` - pico, 10^-12
+`n` - nano, 10^-9
+`µ` - micro, 10^-6
+`m` - milli, 10^-3
+`` - 10^0
+`k` - kilo, 10^3
+`M` - mega, 10^6
+`G` - giga, 10^9
+`T` - peta, 10^12
+`P` - peta, 10^15
+`E` - exa, 10^18
+`Z` - zetta, 10^21
+`Y` - yotta, 10^24
 
 For example:
 
 ```js
-var prefix = formatPrefix(1.21e9);
-console.log(prefix.symbol); // "G"
-console.log(prefix.scale(1.21e9)); // 1.21
+var f = formatPrefix(".0s", "µ");
+f(.00042); // "420µ"
 ```
-
-This method is used by [format](#format) for the `s` format type.
 
 <a name="localeFormat" href="#localeFormat">#</a> <b>localeFormat</b>(<i>locale</i>)
 
-Returns a [*format*](#format) function localized for the specified *locale*. The *locale* definition must include the following properties:
+Returns a *format* object localized for the specified *locale*, with [format.format](#format_format) and [format.formatPrefix](#format_formatPrefix) methods. The *locale* definition must include the following properties:
 
 * `decimal` - the decimal point (e.g., `"."`).
 * `thousands` - the group separator (e.g., `","`).
@@ -132,17 +150,3 @@ For example, the default U.S. English locale is defined as:
 ```
 
 See the [source](https://github.com/d3/d3-format/tree/master/src/) for available locale definitions.
-
-<a name="round" href="#round">#</a> <b>round</b>(<i>x</i>[, <i>n</i>])
-
-Returns the value *x* rounded to *n* digits after the decimal point. If *n* is omitted, it defaults to zero. The result is a number. Values are rounded to the closest multiple of 10 to the power minus *n*; if two multiples are equally close, the value is rounded up in accordance with the built-in [Math.round](https://developer.mozilla.org/en/JavaScript/Reference/Global_Objects/Math/round]) function. For example:
-
-```js
-round(1.23); // 1
-round(1.23, 1); // 1.2
-round(1.25, 1); // 1.3
-round(12.5, 0); // 13
-round(12, -1); // 10
-```
-
-Note that the resulting number when converted to a string may be imprecise due to IEEE floating point precision; to format a number to a string with a fixed number of decimal points, use [format](#format) instead.

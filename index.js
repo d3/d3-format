@@ -1,11 +1,9 @@
-import format from "./src/format-en-US";
-import formatPrefix from "./src/formatPrefix";
+import locale from "./src/format-en-US";
 import localeFormat from "./src/localeFormat";
-import round from "./src/round";
+
+export var format = locale.format;
+export var formatPrefix = locale.formatPrefix;
 
 export {
-  format,
-  formatPrefix,
-  localeFormat,
-  round
+  localeFormat
 };
