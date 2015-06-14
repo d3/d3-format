@@ -78,24 +78,24 @@ The *width* defines the minimum field width. If not specified, then the width wi
 
 The *comma* (`,`) option enables the use of a comma for a thousands separator.
 
-The *precision* indicates how many digits should be displayed after the decimal point for a value formatted with types `f` and `%`, or before and after the decimal point for a value formatted with types `g`, `r` and `p`. If a precision is not specified, it defaults to 6.
+Depending on the *type*, the *precision* either indicates the number of digits that follow the decimal point (types `f` and `%`), or the number of significant digits (types `​`, `e`, `g`, `r`, `s` and `p`). If a precision is not specified, it defaults to 6. Precision is ignored for integer formats (types `b`, `o`, `d`, `x`, `X` and `c`).
 
 The available *type* values are:
 
-* `​` (none) - like `g`, but trim insignificant trailing zeros, such as `"12.3"`.
-* `e` - exponent notation, such as `"1.23e+1"`.
-* `f` - fixed point, such as `"12.30"`.
-* `g` - general format; rounds and uses either fixed-point or exponent notation.
-* `r` - fixed point with rounding.
-* `s` - fixed point with rounding and an SI prefix, such as `"1.0µ"`.
-* `%` - fixed point multiplied by 100 and suffixed with `"%"`.
-* `p` - fixed point with rounding multiplied by 100 and suffixed with `"%"`.
+* `e` - exponent notation.
+* `f` - fixed point.
+* `g` - round, and then either fixed point or exponent notation.
+* `r` - round, and then fixed point.
+* `s` - round, and then fixed point with an SI prefix.
+* `%` - multiply by 100, and then fixed point with a percentage sign.
+* `p` - multiply by 100, round, and then fixed point with a percentage sign.
 * `b` - binary (base 2); ignores non-integers.
 * `o` - octal (base 8); ignores non-integers.
 * `d` - decimal (base 10); ignores non-integers.
 * `x` - hexadecimal (base 16), using lower-case letters; ignores non-integers.
 * `X` - hexadecimal (base 16), using upper-case letters; ignores non-integers.
 * `c` - converts the integer to the corresponding unicode character before printing.
+* `​` (none) - like `g`, but trim insignificant trailing zeros.
 
 The type `n` is also supported as shorthand for `,g`.
 
