@@ -86,6 +86,7 @@ The available *type* values are:
 * `g` - use [Number.toPrecision](https://developer.mozilla.org/en/JavaScript/Reference/Global_Objects/Number/toPrecision).
 * `f` - use [Number.toFixed](https://developer.mozilla.org/en/JavaScript/Reference/Global_Objects/Number/toFixed).
 * `r` - [round](#round) to *precision* significant digits, then pad like `f`.
+* `s` - like `r`, but append an SI prefix such as `"9.5M"` or `"1.00µ"`.
 * `%` - like `f`, but multiply by 100 and suffix with `"%"`.
 * `p` - like `r`, but multiply by 100 and suffix with `"%"`.
 * `b` - binary (base 2); ignores non-integers.
@@ -94,7 +95,6 @@ The available *type* values are:
 * `x` - hexadecimal (base 16), using lower-case letters; ignores non-integers.
 * `X` - hexadecimal (base 16), using upper-case letters; ignores non-integers.
 * `c` - converts the integer to the corresponding unicode character before printing.
-* `s` - like `r`, but with an SI prefix such as `"9.5M"` or `"1.00µ"`.
 
 The type `n` is also supported as shorthand for `,g`. If no *precision* is specified for `r`, `g` is used instead; if no *precision* is specified for `p`, `%` is used instead.
 
