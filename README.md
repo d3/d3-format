@@ -102,23 +102,23 @@ The type `n` is also supported as shorthand for `,g`. If no *precision* is speci
 
 Equivalent to [*locale*.format](#locale_format), except converts the value to the units of the specified SI *prefix*. The following prefixes are supported:
 
-* `y` - yocto, 10^-24
-* `z` - zepto, 10^-21
-* `a` - atto, 10^-18
-* `f` - femto, 10^-15
-* `p` - pico, 10^-12
-* `n` - nano, 10^-9
-* `µ` - micro, 10^-6
-* `m` - milli, 10^-3
-* `` - 10^0
-* `k` - kilo, 10^3
-* `M` - mega, 10^6
-* `G` - giga, 10^9
-* `T` - peta, 10^12
-* `P` - peta, 10^15
-* `E` - exa, 10^18
-* `Z` - zetta, 10^21
-* `Y` - yotta, 10^24
+* `y` - yocto, 10⁻²⁴
+* `z` - zepto, 10⁻²¹
+* `a` - atto, 10⁻¹⁸
+* `f` - femto, 10⁻¹⁵
+* `p` - pico, 10⁻¹²
+* `n` - nano, 10⁻⁹
+* `µ` - micro, 10⁻⁶
+* `m` - milli, 10⁻³
+* `​` - 10⁰
+* `k` - kilo, 10³
+* `M` - mega, 10⁶
+* `G` - giga, 10⁹
+* `T` - peta, 10¹²
+* `P` - peta, 10¹⁵
+* `E` - exa, 10¹⁸
+* `Z` - zetta, 10²¹
+* `Y` - yotta, 10²⁴
 
 For example:
 
