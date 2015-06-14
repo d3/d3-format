@@ -8,6 +8,11 @@ tape("formatPrefix(\"s\", prefix)(number) formats with the specified SI prefix",
   test.end();
 });
 
+tape("formatPrefix(\"s\", prefix)(number) treats unknown SI prefix as the empty string", function(test) {
+  test.equal(format.formatPrefix(",.0s", "F")(42), "42");
+  test.end();
+});
+
 tape("formatPrefix(\"$,s\", prefix)(number) formats with the specified SI prefix", function(test) {
   var f = format.formatPrefix(" $12,.1s", "M");
   test.equal(f(-42e6),  "      -$42.0M");

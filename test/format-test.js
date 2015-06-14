@@ -101,14 +101,14 @@ tape("format(\"g\") can output general notation", function(test) {
 
 tape("format(\"e\") can output exponent notation", function(test) {
   var f = format.format("e");
-  test.equal(f(0), "0e+0");
-  test.equal(f(42), "4.2e+1");
-  test.equal(f(42000000), "4.2e+7");
-  test.equal(f(420000000), "4.2e+8");
-  test.equal(f(-4), "-4e+0");
-  test.equal(f(-42), "-4.2e+1");
-  test.equal(f(-4200000), "-4.2e+6");
-  test.equal(f(-42000000), "-4.2e+7");
+  test.equal(f(0), "0.000000e+0");
+  test.equal(f(42), "4.200000e+1");
+  test.equal(f(42000000), "4.200000e+7");
+  test.equal(f(420000000), "4.200000e+8");
+  test.equal(f(-4), "-4.000000e+0");
+  test.equal(f(-42), "-4.200000e+1");
+  test.equal(f(-4200000), "-4.200000e+6");
+  test.equal(f(-42000000), "-4.200000e+7");
   test.equal(format.format(".0e")(42), "4e+1")
   test.equal(format.format(".3e")(42), "4.200e+1")
   test.end();
@@ -116,18 +116,18 @@ tape("format(\"e\") can output exponent notation", function(test) {
 
 tape("format(\"s\") can output SI prefix notation", function(test) {
   var f = format.format("s");
-  test.equal(f(0), "0");
-  test.equal(f(1), "1");
-  test.equal(f(10), "10");
-  test.equal(f(100), "100");
-  test.equal(f(999.5), "999.5");
-  test.equal(f(999500), "999.5k");
-  test.equal(f(1000), "1k");
-  test.equal(f(100), "100");
-  test.equal(f(1400), "1.4k");
-  test.equal(f(1500.5), "1.5005k");
-  test.equal(f(.00001), "10µ");
-  test.equal(f(.000001), "1µ");
+  test.equal(f(0), "0.00000");
+  test.equal(f(1), "1.00000");
+  test.equal(f(10), "10.0000");
+  test.equal(f(100), "100.000");
+  test.equal(f(999.5), "999.500");
+  test.equal(f(999500), "999.500k");
+  test.equal(f(1000), "1.00000k");
+  test.equal(f(100), "100.000");
+  test.equal(f(1400), "1.40000k");
+  test.equal(f(1500.5), "1.50050k");
+  test.equal(f(.00001), "10.0000µ");
+  test.equal(f(.000001), "1.00000µ");
   test.end();
 });
 
@@ -150,6 +150,31 @@ tape("format(\"s\") can output SI prefix notation with appropriate rounding", fu
   test.equal(f(999.5), "999.5");
   test.equal(f(999500), "999.5k");
   test.equal(f(.009995), "9.995m");
+  test.end();
+});
+
+tape("format(\"s\") can handle very large and very small numbers", function(test) {
+  var f = format.format(".8s");
+  test.equal(f(1.23e-30), "0.0000012y");
+  test.equal(f(1.23e-29), "0.0000123y");
+  test.equal(f(1.23e-28), "0.0001230y");
+  test.equal(f(1.23e-27), "0.0012300y");
+  test.equal(f(1.23e-26), "0.0123000y");
+  test.equal(f(1.23e-25), "0.1230000y");
+  test.equal(f(1.23e-24), "1.2300000y");
+  test.equal(f(1.23e-23), "12.300000y");
+  test.equal(f(1.23e-22), "123.00000y");
+  test.equal(f(1.23e-21), "1.2300000z");
+  test.equal(f(1.23e+21), "1.2300000Z");
+  test.equal(f(1.23e+22), "12.300000Z");
+  test.equal(f(1.23e+23), "123.00000Z");
+  test.equal(f(1.23e+24), "1.2300000Y");
+  test.equal(f(1.23e+25), "12.300000Y");
+  test.equal(f(1.23e+26), "123.00000Y");
+  test.equal(f(1.23e+27), "1230.0000Y");
+  test.equal(f(1.23e+28), "12300.000Y");
+  test.equal(f(1.23e+29), "123000.00Y");
+  test.equal(f(1.23e+30), "1230000.0Y");
   test.end();
 });
 
@@ -177,7 +202,7 @@ tape("format(\"$s\") can output SI prefix notation with appropriate rounding and
 
 tape("format(\"s\") SI prefix notation precision is consistent for small and large numbers", function(test) {
   test.deepEqual(
-    [    1e-5,     1e-4,     1e-3,     1e-2,     1e-1,    1e-0,     1e1,     1e2,      1e3,      1e4,      1e5].map(format.format("s")),
+    [    1e-5,     1e-4,     1e-3,     1e-2,     1e-1,    1e-0,     1e1,     1e2,      1e3,      1e4,      1e5].map(format.format(".0s")),
     [    '10µ',   '100µ',    '1m',    '10m',   '100m',     '1',    '10',    '100',    '1k',    '10k',   '100k']);
   test.deepEqual(
     [    1e-5,     1e-4,     1e-3,     1e-2,     1e-1,    1e-0,     1e1,     1e2,      1e3,      1e4,      1e5].map(format.format(".4s")),
@@ -217,7 +242,7 @@ tape("format(\"$s\") can output a currency with si-prefix notation", function(te
 });
 
 tape("format(\"%\") can output a whole percentage", function(test) {
-  var f = format.format("%");
+  var f = format.format(".0%");
   test.equal(f(0), "0%");
   test.equal(f(.042), "4%");
   test.equal(f(.42), "42%");
@@ -244,15 +269,15 @@ tape("format(\"%\") fill respects suffix", function(test) {
 
 tape("format(\"p\") can output a percentage", function(test) {
   var f = format.format("p");
-  test.equal(f(.00123), "0.123%");
-  test.equal(f(.0123), "1.23%");
-  test.equal(f(.123), "12.3%");
-  test.equal(f(.234), "23.4%");
-  test.equal(f(1.23), "123%");
-  test.equal(f(-.00123), "-0.123%");
-  test.equal(f(-.0123), "-1.23%");
-  test.equal(f(-.123), "-12.3%");
-  test.equal(f(-1.23), "-123%");
+  test.equal(f(.00123), "0.123000%");
+  test.equal(f(.0123), "1.23000%");
+  test.equal(f(.123), "12.3000%");
+  test.equal(f(.234), "23.4000%");
+  test.equal(f(1.23), "123.000%");
+  test.equal(f(-.00123), "-0.123000%");
+  test.equal(f(-.0123), "-1.23000%");
+  test.equal(f(-.123), "-12.3000%");
+  test.equal(f(-1.23), "-123.000%");
   test.end();
 });
 
@@ -280,7 +305,7 @@ tape("format(\"r\") can round to significant digits", function(test) {
   test.equal(format.format(".3r")(1.00), "1.00");
   test.equal(format.format(".3r")(0.9995), "1.00");
   test.equal(format.format(".5r")(0.444449), "0.44445");
-  test.equal(format.format("r")(123.45), "123.45");
+  test.equal(format.format("r")(123.45), "123.450");
   test.equal(format.format(".1r")(123.45), "100");
   test.equal(format.format(".2r")(123.45), "120");
   test.equal(format.format(".3r")(123.45), "123");
@@ -375,15 +400,15 @@ tape("format(\",d\") can group thousands and space fill with overflow", function
 });
 
 tape("format(\",g\") can group thousands with general notation", function(test) {
-  var f = format.format(",g");
-  test.equal(f(0), "0");
-  test.equal(f(42), "42");
-  test.equal(f(42000000), "42,000,000");
-  test.equal(f(420000000), "420,000,000");
-  test.equal(f(-4), "-4");
-  test.equal(f(-42), "-42");
-  test.equal(f(-4200000), "-4,200,000");
-  test.equal(f(-42000000), "-42,000,000");
+  var f = format.format(",.12g");
+  test.equal(f(0), "0.00000000000");
+  test.equal(f(42), "42.0000000000");
+  test.equal(f(42000000), "42,000,000.0000");
+  test.equal(f(420000000), "420,000,000.000");
+  test.equal(f(-4), "-4.00000000000");
+  test.equal(f(-42), "-42.0000000000");
+  test.equal(f(-4200000), "-4,200,000.00000");
+  test.equal(f(-42000000), "-42,000,000.0000");
   test.end();
 });
 
@@ -400,7 +425,7 @@ tape("format(\",.f\") can group thousands, space fill, and round to significant 
 });
 
 tape("format(\"f\") can display integers in fixed-point notation", function(test) {
-  test.equal(format.format("f")(42), "42");
+  test.equal(format.format("f")(42), "42.000000");
   test.end();
 });
 
@@ -569,43 +594,40 @@ tape("format(\"d\") can format negative zero", function(test) {
 });
 
 tape("format(\"f\") can format negative zero", function(test) {
-  test.equal(format.format("1f")(-0), "-0");
+  test.equal(format.format("1f")(-0), "-0.000000");
   test.end();
 });
 
 tape("format(\"n\") is an alias for \",g\"", function(test) {
-  var f = format.format("n");
-  test.equal(f(.0042), "0.0042");
-  test.equal(f(.42), "0.42");
-  test.equal(f(0), "0");
-  test.equal(f(42), "42");
-  test.equal(f(42000000), "42,000,000");
-  test.equal(f(420000000), "420,000,000");
-  test.equal(f(-4), "-4");
-  test.equal(f(-42), "-42");
-  test.equal(f(-4200000), "-4,200,000");
-  test.equal(f(-42000000), "-42,000,000");
-  test.equal(f(1e21), "1e+21");
+  var f = format.format(".12n");
+  test.equal(f(0), "0.00000000000");
+  test.equal(f(42), "42.0000000000");
+  test.equal(f(42000000), "42,000,000.0000");
+  test.equal(f(420000000), "420,000,000.000");
+  test.equal(f(-4), "-4.00000000000");
+  test.equal(f(-42), "-42.0000000000");
+  test.equal(f(-4200000), "-4,200,000.00000");
+  test.equal(f(-42000000), "-42,000,000.0000");
+  test.equal(f(.0042), "0.00420000000000");
+  test.equal(f(.42), "0.420000000000");
+  test.equal(f(1e21), "1.00000000000e+21");
   test.end();
 });
 
 tape("format(\"n\") uses zero padding", function(test) {
-  test.equal(format.format("01n")(0), "0");
-  test.equal(format.format("01n")(0), "0");
-  test.equal(format.format("02n")(0), "00");
-  test.equal(format.format("03n")(0), "000");
-  test.equal(format.format("05n")(0), "0,000");
-  test.equal(format.format("08n")(0), "0,000,000");
-  test.equal(format.format("013n")(0), "0,000,000,000");
-  test.equal(format.format("021n")(0), "0,000,000,000,000,000");
-  test.equal(format.format("013n")(-42000000), "-0,042,000,000");
+  test.equal(format.format("01.0n")(0), "0");
+  test.equal(format.format("02.0n")(0), "00");
+  test.equal(format.format("03.0n")(0), "000");
+  test.equal(format.format("05.0n")(0), "0,000");
+  test.equal(format.format("08.0n")(0), "0,000,000");
+  test.equal(format.format("013.0n")(0), "0,000,000,000");
+  test.equal(format.format("021.0n")(0), "0,000,000,000,000,000");
+  test.equal(format.format("013.8n")(-42000000), "-0,042,000,000");
   test.end();
 });
 
 tape("format(\",.\") unreasonable precision values are clamped to reasonable values", function(test) {
   test.equal(format.format(".30f")(0), "0.00000000000000000000");
   test.equal(format.format(".0g")(1), "1");
-  test.equal(format.format(",.-1f")(12345), "12,345");
-  test.equal(format.format("+,.-1%")(123.45), "+12,345%");
   test.end();
 });

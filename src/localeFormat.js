@@ -5,7 +5,7 @@ import formatRoundedPercentage from "./formatRoundedPercentage";
 import {default as formatAutoPrefix, exponent} from "./formatAutoPrefix";
 
 // [[fill]align][sign][symbol][0][width][,][.precision][type]
-var re = /(?:(.)?([<>=^]))?([+\- ])?([$#])?(0)?(\d+)?(,)?(\.-?\d+)?([a-z%])?/i,
+var re = /(?:(.)?([<>=^]))?([+\- ])?([$#])?(0)?(\d+)?(,)?(\.\d+)?([a-z%])?/i,
     prefixes = ["y","z","a","f","p","n","µ","m","","k","M","G","T","P","E","Z","Y"];
 
 var formatTypes = {
@@ -63,6 +63,8 @@ export default function(locale) {
       precision = /[gprs]/.test(type)
           ? Math.max(1, Math.min(21, precision))
           : Math.max(0, Math.min(20, precision));
+    } else {
+      precision = 6;
     }
 
     // Compute the fixed prefix and suffix.
@@ -93,7 +95,7 @@ export default function(locale) {
       value = formatType(value, precision);
 
       // Compute the suffix.
-      var valueSuffix = suffix + (type === "s" ? prefixes[8 + Math.floor(exponent / 3)] : "");
+      var valueSuffix = suffix + (type === "s" ? prefixes[8 + exponent / 3] : "");
 
       // Break the formatted value into the integer “value” part that can be
       // grouped, and fractional or exponential “suffix” part that is not.
@@ -133,7 +135,8 @@ export default function(locale) {
 
   function formatPrefix(specifier, prefix) {
     var match = re.exec(specifier),
-        scale = Math.pow(10, (8 - prefixes.indexOf(prefix)) * 3),
+        prefixIndex = prefixes.indexOf(prefix),
+        scale = Math.pow(10, (prefixIndex < 0 ? (prefix = "", 0) : 8 - prefixIndex) * 3),
         f = (match[0] = match[2] = null, match[9] = "f", format(match.join("")));
     return function(value) {
       return f(scale * value) + prefix;

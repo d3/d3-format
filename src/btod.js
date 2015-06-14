@@ -1,6 +1,6 @@
 // Note: assumes that x is positive.
 export default function(x, p) {
-  x = p == null ? x.toExponential() : x.toExponential(p - 1);
+  x = x.toExponential(p - 1);
   if ((i = x.indexOf("e")) < 0) return null; // NaN, ±Infinity
   var i,
       coefficient = x.slice(0, i),
