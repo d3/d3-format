@@ -86,10 +86,10 @@ The available *type* values are:
 * `e` - exponent notation, such as `"1.23e+1"`.
 * `f` - fixed point, such as `"12.30"`.
 * `g` - general format; rounds and uses either fixed-point or exponent notation.
-* `r` - like `g`, but always uses fixed-point notation.
-* `s` - like `r`, but append an SI prefix, such as `"9.5M"` or `"1.00µ"`.
-* `%` - like `f`, but multiply by 100 and suffix with `"%"`.
-* `p` - like `r`, but multiply by 100 and suffix with `"%"`.
+* `r` - fixed point with rounding.
+* `s` - fixed point with rounding and an SI prefix, such as `"1.0µ"`.
+* `%` - fixed point multiplied by 100 and suffixed with `"%"`.
+* `p` - fixed point with rounding multiplied by 100 and suffixed with `"%"`.
 * `b` - binary (base 2); ignores non-integers.
 * `o` - octal (base 8); ignores non-integers.
 * `d` - decimal (base 10); ignores non-integers.
