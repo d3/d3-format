@@ -1,19 +1,54 @@
 # d3-format
 
-Want to get rid of that ugly 0.30000000000000004 on your axis? Or to group thousands and use fixed precision to display currency, such as $1,240.10? Or perhaps you want to display only the significant digits of a particular number?
-
-You’ve come to the right place. Formatting numbers for human consumption is the purpose of d3-format, which is modeled after Python 3’s [format specification mini-language](https://docs.python.org/3/library/string.html#format-specification-mini-language) ([PEP 3101](https://www.python.org/dev/peps/pep-3101/)). For example, to create a function that pads with zeros to fill four digits, say:
+Ever noticed how sometimes JavaScript doesn’t display numbers the way you expect? Like, you tried to print 0.1, 0.2, … 0.9 with a simple loop:
 
 ```js
-var f = format("04");
+for (var i = 0; i < 10; i++) {
+  console.log(.1 * i);
+}
 ```
 
-Now you can conveniently format numbers:
+And you got this:
 
 ```js
-f(.1);  // "00.1"
-f(2);   // "0002"
-f(123); // "0123"
+0
+0.1
+0.2
+0.30000000000000004
+0.4
+0.5
+0.6000000000000001
+0.7000000000000001
+0.8
+0.9
+```
+
+Welcome to binary floating point! ಠ_ಠ
+
+Yet rounding error is not the only reason to customize number formatting. When comparing numbers, you want them to be formatted consistently; so above, 0.0 would be better than 0. Grouping thousands improves the legibility of large numbers (e.g., 42,000) without resorting to technical notation (4.2e+4). Currencies often need fixed precision (e.g., $3.50). And sometimes you want to round to significant digits (e.g., 4021 ↦ 4000).
+
+Formatting numbers for human consumption is the purpose of d3-format, which is modeled after Python 3’s [format specification mini-language](https://docs.python.org/3/library/string.html#format-specification-mini-language) ([PEP 3101](https://www.python.org/dev/peps/pep-3101/)). Revisiting the example above:
+
+```js
+var f = format(".1f");
+for (var i = 0; i < 10; i++) {
+  console.log(f(.1 * i));
+}
+```
+
+And now you get this:
+
+```js
+0.0
+0.1
+0.2
+0.3
+0.4
+0.5
+0.6
+0.7
+0.8
+0.9
 ```
 
 While [format](#format) generates output for U.S. English-speaking humans ([`en-US`](https://github.com/d3/d3-format/tree/master/src/format-en-US.js)) by default, humans in other locales may be supported by using [localeFormat](#localeFormat) or by editing [index.js](https://github.com/d3/d3-format/tree/master/index.js) and rebuilding.
