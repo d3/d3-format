@@ -19,11 +19,11 @@ The default locale is U.S. English ([`en-US`](https://github.com/d3/d3-format/tr
 
 <a name="format" href="#format">#</a> <b>format</b>(<i>specifier</i>)
 
-Equivalent to [*locale*.format](#locale_format) on the default locale. Use [localeFormat](#localeFormat) to specify a different locale.
+Equivalent to [*locale*.format](#locale_format) on the default locale; use [localeFormat](#localeFormat) to specify a different locale.
 
 <a name="formatPrefix" href="#formatPrefix">#</a> <b>formatPrefix</b>(<i>specifier</i>)
 
-Equivalent to [*locale*.formatPrefix](#locale_formatPrefix) on the default locale. Use [localeFormat](#localeFormat) to specify a different locale.
+Equivalent to [*locale*.formatPrefix](#locale_formatPrefix) on the default locale; use [localeFormat](#localeFormat) to specify a different locale.
 
 <a name="locale_format" href="#locale_format">#</a> <i>locale</i>.<b>format</b>(<i>specifier</i>)
 
