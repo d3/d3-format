@@ -136,9 +136,7 @@ Returns a *locale* object localized for the specified *definition*, with [*local
 * `grouping` - the array of group sizes (e.g., `[3]`), cycled as needed.
 * `currency` - the currency prefix and suffix (e.g., `["$", ""]`).
 
-(Note that the *thousands* property is a misnomer, as the grouping definition allows groups other than thousands.)
-
-For example, the default U.S. English locale is defined as:
+(Note that the *thousands* property is a misnomer, as the grouping definition allows groups other than thousands.) For example, the default U.S. English locale definition is:
 
 ```json
 {
