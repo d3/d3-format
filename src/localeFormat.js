@@ -63,7 +63,7 @@ export default function(locale) {
           ? Math.max(1, Math.min(21, precision))
           : Math.max(0, Math.min(20, precision));
     } else {
-      precision = 6;
+      precision = type === " " ? 12 : 6;
     }
 
     // Compute the fixed prefix and suffix.
