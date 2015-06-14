@@ -45,33 +45,6 @@ Equivalent to [*locale*.format](#locale_format) on the default U.S. English loca
 
 Equivalent to [*locale*.formatPrefix](#locale_formatPrefix) on the default U.S. English locale. Use [localeFormat](#localeFormat) to specify a different locale.
 
-<a name="formatSpecifier" href="#formatSpecifier">#</a> <b>formatSpecifier</b>(<i>specifier</i>)
-
-Parses the specified *specifier*, returning an object with exposed fields that correspond to the [format specification mini-language](#locale_format). For example, `formatSpecifier("s")` returns:
-
-```js
-{
-  "fill": " ",
-  "align": ">",
-  "sign": "-",
-  "symbol": "",
-  "zero": false,
-  "width": undefined,
-  "comma": false,
-  "precision": 6,
-  "type": "s"
-}
-```
-
-This method is useful for understanding how format specifiers are parsed and for deriving new specifiers. For example, you might compute an appropriate precision based on the numbers you want to format, set the precision, and then create a new format:
-
-```js
-var s = formatSpecifier("f");
-s.precision = 2;
-var f = format(s);
-f(42); // "42.00";
-```
-
 <a name="locale_format" href="#locale_format">#</a> <i>locale</i>.<b>format</b>(<i>specifier</i>)
 
 Returns a new format function with the given string *specifier*. The returned function takes a number as the only argument, and returns a string representing the formatted number. The format specifier is modeled after Python 3’s [format specification mini-language](https://docs.python.org/3/library/string.html#format-specification-mini-language). The general form of a specifier is:
@@ -167,3 +140,30 @@ Returns a *locale* object for the specified *definition*, with [*locale*.format]
 * `currency` - the currency prefix and suffix (e.g., `["$", ""]`).
 
 (Note that the *thousands* property is a misnomer, as the grouping definition allows groups other than thousands.) See the [source](https://github.com/d3/d3-format/tree/master/src/) for available locale definitions.
+
+<a name="formatSpecifier" href="#formatSpecifier">#</a> <b>formatSpecifier</b>(<i>specifier</i>)
+
+Parses the specified *specifier*, returning an object with exposed fields that correspond to the [format specification mini-language](#locale_format). For example, `formatSpecifier("s")` returns:
+
+```js
+{
+  "fill": " ",
+  "align": ">",
+  "sign": "-",
+  "symbol": "",
+  "zero": false,
+  "width": undefined,
+  "comma": false,
+  "precision": 6,
+  "type": "s"
+}
+```
+
+This method is useful for understanding how format specifiers are parsed and for deriving new specifiers. For example, you might compute an appropriate precision based on the numbers you want to format, set the precision, and then create a new format:
+
+```js
+var s = formatSpecifier("f");
+s.precision = 2;
+var f = format(s);
+f(42); // "42.00";
+```
