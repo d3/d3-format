@@ -96,7 +96,7 @@ The available *type* values are:
 * `X` - hexadecimal (base 16), using upper-case letters; ignores non-integers.
 * `c` - converts the integer to the corresponding unicode character before printing.
 
-The type `n` is also supported as shorthand for `,g`. If no *precision* is specified for `r`, `g` is used instead; if no *precision* is specified for `p`, `%` is used instead.
+The type `n` is also supported as shorthand for `,g`.
 
 <a name="locale_formatPrefix" href="#locale_formatPrefix">#</a> <i>locale</i>.<b>formatPrefix</b>(<i>value</i>, <i>prefix</i>)
 
