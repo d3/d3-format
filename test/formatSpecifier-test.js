@@ -47,5 +47,6 @@ tape("formatSpecifier(specifier).toString() reflects current field values", func
   test.equal((s.comma = true, s) + "", "_^+$012,");
   test.equal((s.precision = 2, s) + "", "_^+$012,.2");
   test.equal((s.type = "f", s) + "", "_^+$012,.2f");
+  test.equal(format.format(s)(42), "+$0,000,042.00");
   test.end();
 });
