@@ -53,9 +53,7 @@ Returns a new format function with the given string *specifier*. The returned fu
 [​[fill]align][sign][symbol][0][width][,][.precision][type]
 ```
 
-The *fill* can be any character. The presence of a fill character is signaled by the character following it, which must be one of the *align* options.
-
-The *align* can be:
+The *fill* can be any character. The presence of a fill character is signaled by the *align* character following it, which must be one of the following:
 
 * `>` - Forces the field to be right-aligned within the available space. (Default behavior).
 * `<` - Forces the field to be left-aligned within the available space.
