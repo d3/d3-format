@@ -16,7 +16,7 @@ f(2);   // "0002"
 f(123); // "0123"
 ```
 
-The default locale is U.S. English ([`en-US`](https://github.com/d3/d3-format/tree/master/src/format-en-US.js)). Other locales may be specified using [localeFormat](#localeFormat), or by editing [index.js](https://github.com/d3/d3-format/tree/master/index.js) and rebuilding.
+While [format](#format) generates output for U.S. English-speaking humans ([`en-US`](https://github.com/d3/d3-format/tree/master/src/format-en-US.js)) by default, humans in other locales may be supported by using [localeFormat](#localeFormat) or by editing [index.js](https://github.com/d3/d3-format/tree/master/index.js) and rebuilding.
 
 <a name="format" href="#format">#</a> <b>format</b>(<i>specifier</i>)
 
