@@ -109,17 +109,17 @@ Depending on the *type*, the *precision* either indicates the number of digits t
 The available *type* values are:
 
 * `e` - exponent notation.
-* `f` - fixed point.
+* `f` - fixed point notation.
 * `g` - round significant digits, and then either decimal or exponent notation.
-* `r` - round significant digits, and then decimal.
-* `s` - round significant digits, and then decimal with an [SI prefix](#locale_formatPrefix).
-* `%` - multiply by 100, and then decimal with a percentage sign.
-* `p` - multiply by 100, round significant digits, and then decimal with a percentage sign.
-* `b` - binary (base 2); ignores non-integers.
-* `o` - octal (base 8); ignores non-integers.
-* `d` - decimal (base 10); ignores non-integers.
-* `x` - hexadecimal (base 16), using lower-case letters; ignores non-integers.
-* `X` - hexadecimal (base 16), using upper-case letters; ignores non-integers.
+* `r` - round significant digits, and then decimal notation.
+* `s` - round significant digits, and then decimal notation with an [SI prefix](#locale_formatPrefix).
+* `%` - multiply by 100, and then decimal notation with a percent sign.
+* `p` - multiply by 100, round significant digits, and then decimal notation with a percent sign.
+* `b` - binary notation; ignores non-integers.
+* `o` - octal notation; ignores non-integers.
+* `d` - decimal notation; ignores non-integers.
+* `x` - hexadecimal notation, using lower-case letters; ignores non-integers.
+* `X` - hexadecimal notation, using upper-case letters; ignores non-integers.
 * `c` - converts the integer to the corresponding unicode character before printing.
 * `​` (none) - like `g`, but trim insignificant trailing zeros.
 
