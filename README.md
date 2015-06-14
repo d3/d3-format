@@ -48,8 +48,8 @@ The *sign* can be:
 
 The *symbol* can be:
 
-* `$` - a currency symbol should be prefixed (or suffixed) per the locale.
-* `#` - for binary, octal, or hexadecimal output, prefix by `0b`, `0o`, or `0x`, respectively.
+* `$` - apply currency symbols per the locale definition.
+* `#` - for binary, octal, or hexadecimal notation, prefix by `0b`, `0o`, or `0x`, respectively.
 
 The *zero* (`0`) option enables zero-padding.
 
