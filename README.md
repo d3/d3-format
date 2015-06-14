@@ -2,7 +2,7 @@
 
 Want to get rid of that ugly 0.30000000000000004 on your axis? Or to group thousands and use fixed precision to display currency, such as $1,240.10? Or perhaps you want to display only the significant digits of a particular number?
 
-You’ve come to the right place. Formatting numbers for human consumption is the purpose of the d3-format module. For example, to create a function that zero-fills to four digits, say:
+You’ve come to the right place. Formatting numbers for human consumption is the purpose of the d3-format module, which is modeled after Python 3’s [format specification mini-language](https://docs.python.org/3/library/string.html#format-specification-mini-language) ([PEP 3101](https://www.python.org/dev/peps/pep-3101/)). For example, to create a function that zero-fills to four digits, say:
 
 ```js
 var zeroPad = format("04d");
@@ -27,7 +27,7 @@ An alias for [*locale*.formatPrefix](#locale_formatPrefix) on the default locale
 
 <a name="locale_format" href="#locale_format">#</a> <i>locale</i>.<b>format</b>(<i>specifier</i>)
 
-Returns a new format function with the given string *specifier*. The returned function takes a number as the only argument, and returns a string representing the formatted number. The format specifier is modeled after Python 3’s [format specification mini-language](https://docs.python.org/3/library/string.html#format-specification-mini-language). The general form of a specifier is:
+Returns a new format function with the given string *specifier*. The returned function takes a number as the only argument, and returns a string representing the formatted number. The general form of a specifier is:
 
 ```
 [​[fill]align][sign][symbol][0][width][,][.precision][type]
