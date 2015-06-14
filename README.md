@@ -63,7 +63,7 @@ Parses the specified *specifier*, returning an object with exposed fields that c
 }
 ```
 
-This method is useful for understanding how format specifiers are parsed, and for deriving new specifiers. For example, you might compute an appropriate precision based on the numbers you want to format, set the precision, and then create a new format:
+This method is useful for understanding how format specifiers are parsed and for deriving new specifiers. For example, you might compute an appropriate precision based on the numbers you want to format, set the precision, and then create a new format:
 
 ```js
 var s = formatSpecifier("f");
