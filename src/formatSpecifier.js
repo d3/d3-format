@@ -1,3 +1,5 @@
+import formatTypes from "./formatTypes";
+
 // [[fill]align][sign][symbol][0][width][,][.precision][type]
 var re = /(?:(.)?([<>=^]))?([+\- ])?([$#])?(0)?(\d+)?(,)?(\.\d+)?([a-z%])?/i;
 
@@ -21,15 +23,10 @@ function FormatSpecifier(specifier) {
   if (type === "n") comma = true, type = "g";
 
   // Map invalid types to the default format.
-  else if (!/[%bcdefgoprsXx]/.test(type)) type = "";
+  else if (!formatTypes[type]) type = "";
 
   // If zero fill is specified, padding goes after sign and before digits.
   if (zero || (fill === "0" && align === "=")) zero = fill = "0", align = "=";
-
-  // Set the default precision if not specified.
-  // Note that we don’t clamp the precision here to the allowed range,
-  // mainly because of formatPrefix treating "s" precision as fixed.
-  if (precision == null) precision = type ? 6 : 12;
 
   this.fill = fill;
   this.align = align;

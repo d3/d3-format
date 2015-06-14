@@ -1,27 +1,9 @@
 import formatGroup from "./formatGroup";
-import formatRounded from "./formatRounded";
-import formatRoundedPercentage from "./formatRoundedPercentage";
 import formatSpecifier from "./formatSpecifier";
-import {default as formatAutoPrefix, exponent} from "./formatAutoPrefix";
+import formatTypes from "./formatTypes";
+import {exponent} from "./formatAutoPrefix";
 
 var prefixes = ["y","z","a","f","p","n","µ","m","","k","M","G","T","P","E","Z","Y"];
-
-var formatTypes = {
-  "": function(x, p) { return x.toPrecision(p).replace(/(?:\.|(\.\d+?))0+(e|$)/, "$1$2"); },
-  "%": function(x, p) { return (x * 100).toFixed(p); },
-  "b": function(x) { return x.toString(2); },
-  "c": function(x) { return String.fromCharCode(x); },
-  "d": function(x) { return x.toString(10); },
-  "e": function(x, p) { return x.toExponential(p); },
-  "f": function(x, p) { return x.toFixed(p); },
-  "g": function(x, p) { return x.toPrecision(p); },
-  "o": function(x) { return x.toString(8); },
-  "p": formatRoundedPercentage,
-  "r": formatRounded,
-  "s": formatAutoPrefix,
-  "X": function(x) { return x.toString(16).toUpperCase(); },
-  "x": function(x) { return x.toString(16); }
-};
 
 function identity(x) {
   return x;
@@ -58,11 +40,12 @@ export default function(locale) {
         maybeExponent = !type || /[deg]/.test(type),
         maybeDecimal = maybeExponent || /[fprs%]/.test(type);
 
-    // Clamp the specified precision to the supported range.
+    // Set the default precision if not specified,
+    // or clamp the specified precision to the supported range.
     // For significant precision, it must be in [1, 21].
     // For fixed precision, it must be in [0, 20].
-    precision = /[gprs]/.test(type)
-        ? Math.max(1, Math.min(21, precision))
+    precision = precision == null ? (type ? 6 : 12)
+        : /[gprs]/.test(type) ? Math.max(1, Math.min(21, precision))
         : Math.max(0, Math.min(20, precision));
 
     return function(value) {
@@ -73,9 +56,7 @@ export default function(locale) {
 
       // Convert negative to positive, and compute the prefix.
       // Note that -0 is not less than 0, but 1 / -0 is!
-      var valuePrefix = (value < 0 || 1 / value < 0 ? (value *= -1, "-")
-              : sign === "-" ? ""
-              : sign) + prefix;
+      var valuePrefix = (value < 0 || 1 / value < 0 ? (value *= -1, "-") : sign === "-" ? "" : sign) + prefix;
 
       // Perform the initial formatting.
       value = formatType(value, precision);
