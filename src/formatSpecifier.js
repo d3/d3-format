@@ -26,7 +26,7 @@ function FormatSpecifier(specifier) {
   else if (!formatTypes[type]) type = "";
 
   // If zero fill is specified, padding goes after sign and before digits.
-  if (zero || (fill === "0" && align === "=")) zero = fill = "0", align = "=";
+  if (zero || (fill === "0" && align === "=")) zero = true, fill = "0", align = "=";
 
   this.fill = fill;
   this.align = align;
