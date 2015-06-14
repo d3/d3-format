@@ -1,8 +1,8 @@
 # d3-format
 
-Formatting numbers is one of those things you may not have considered until an ugly 0.30000000000000004 appeared on your axis. Or maybe you want to group thousands and use fixed precision to display currency, such as $1,240.10. Or perhaps you want to display only the significant digits of a particular number.
+Want to get rid of that ugly 0.30000000000000004 on your axis? Or to group thousands and use fixed precision to display currency, such as $1,240.10? Or perhaps you want to display only the significant digits of a particular number?
 
-Formatting numbers for human consumption is the purpose of the d3-format module. For example, to create a function that zero-fills to four digits, say:
+You’ve come to the right place. Formatting numbers for human consumption is the purpose of the d3-format module. For example, to create a function that zero-fills to four digits, say:
 
 ```js
 var zeroPad = format("04d");
