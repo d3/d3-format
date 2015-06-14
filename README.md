@@ -139,15 +139,4 @@ Returns a *locale* object for the specified *definition*, with [*locale*.format]
 * `grouping` - the array of group sizes (e.g., `[3]`), cycled as needed.
 * `currency` - the currency prefix and suffix (e.g., `["$", ""]`).
 
-(Note that the *thousands* property is a misnomer, as the grouping definition allows groups other than thousands.) For example, the default U.S. English locale definition is:
-
-```json
-{
-  "decimal": ".",
-  "thousands": ",",
-  "grouping": [3],
-  "currency": ["$", ""]
-}
-```
-
-See the [source](https://github.com/d3/d3-format/tree/master/src/) for available locale definitions.
+(Note that the *thousands* property is a misnomer, as the grouping definition allows groups other than thousands.) See the [source](https://github.com/d3/d3-format/tree/master/src/) for available locale definitions.
