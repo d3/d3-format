@@ -77,7 +77,7 @@ The *zero* (`0`) option enables zero-padding.
 
 The *width* defines the minimum field width. If not specified, then the width will be determined by the content.
 
-The *comma* (`,`) option enables the use of a comma for a thousands separator.
+The *comma* (`,`) option enables the use of a group separator, such as a comma for thousands.
 
 Depending on the *type*, the *precision* either indicates the number of digits that follow the decimal point (types `f` and `%`), or the number of significant digits (types `​`, `e`, `g`, `r`, `s` and `p`). If the precision is not specified, it defaults to 6 for all types except `​` (none), which defaults to 12. Precision is ignored for integer formats (types `b`, `o`, `d`, `x`, `X` and `c`).
 
