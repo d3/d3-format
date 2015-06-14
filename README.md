@@ -60,6 +60,7 @@ The *align* can be:
 * `>` - Forces the field to be right-aligned within the available space. (Default behavior).
 * `<` - Forces the field to be left-aligned within the available space.
 * `^` - Forces the field to be centered within the available space.
+* `=` - like `>`, but with any sign and symbol to the left of any padding.
 
 The *sign* can be:
 
