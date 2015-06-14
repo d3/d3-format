@@ -176,6 +176,16 @@ f(1.5); // 1.5
 f(2);   // 2.0
 ```
 
+Whereas for the numbers 1, 2 and 3, the minimum absolute difference is 1 and the suggested precision is 0:
+
+```js
+var p = precisionFixed(1),
+    f = format("." + p + "f");
+f(1); // 1
+f(2); // 2
+f(3); // 3
+```
+
 Note: for the `%` format type, subtract two:
 
 ```js
@@ -193,8 +203,19 @@ Returns a suggested decimal precision for format types that round to significant
 ```js
 var p = precisionRound(0.01, 1.01),
     f = format("." + p + "r");
-f(0.01); // 0.0100
+f(0.99); // 0.990
+f(1.0);  // 1.00
 f(1.01); // 1.01
+```
+
+Whereas for the numbers 0.9, 1.0, and 1.1, the minimum absolute difference is 0.1, the largest absolute value is 1.1, and the suggested precision is 2:
+
+```js
+var p = precisionRound(0.1, 1.1),
+    f = format("." + p + "r");
+f(0.9); // 0.90
+f(1.0); // 1.0
+f(1.1); // 1.1
 ```
 
 Note: for the `e` format type, subtract one:
