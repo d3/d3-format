@@ -132,7 +132,7 @@ Unlike [*locale*.format](#locale_format) with the `s` format type, this method a
 
 <a name="localeFormat" href="#localeFormat">#</a> <b>localeFormat</b>(<i>definition</i>)
 
-Returns a *locale* object localized for the specified *definition*, with [*locale*.format](#locale_format) and [*locale*.formatPrefix](#locale_formatPrefix) methods. The locale *definition* must include the following properties:
+Returns a *locale* object for the specified *definition*, with [*locale*.format](#locale_format) and [*locale*.formatPrefix](#locale_formatPrefix) methods. The locale *definition* must include the following properties:
 
 * `decimal` - the decimal point (e.g., `"."`).
 * `thousands` - the group separator (e.g., `","`).
