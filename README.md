@@ -2,7 +2,7 @@
 
 Want to get rid of that ugly 0.30000000000000004 on your axis? Or to group thousands and use fixed precision to display currency, such as $1,240.10? Or perhaps you want to display only the significant digits of a particular number?
 
-You’ve come to the right place. Formatting numbers for human consumption is the purpose of the d3-format module, which is modeled after Python 3’s [format specification mini-language](https://docs.python.org/3/library/string.html#format-specification-mini-language) ([PEP 3101](https://www.python.org/dev/peps/pep-3101/)). For example, to create a function that pads with zeros to fill four digits, say:
+You’ve come to the right place. Formatting numbers for human consumption is the purpose of d3-format, which is modeled after Python 3’s [format specification mini-language](https://docs.python.org/3/library/string.html#format-specification-mini-language) ([PEP 3101](https://www.python.org/dev/peps/pep-3101/)). For example, to create a function that pads with zeros to fill four digits, say:
 
 ```js
 var f = format("04");
