@@ -85,7 +85,7 @@ The available *type* values are:
 * `f` - fixed point.
 * `g` - round significant digits, and then either fixed point or exponent notation.
 * `r` - round significant digits, and then fixed point.
-* `s` - round significant digits, and then fixed point with an SI prefix.
+* `s` - round significant digits, and then fixed point with an [SI prefix](#formatPrefix).
 * `%` - multiply by 100, and then fixed point with a percentage sign.
 * `p` - multiply by 100, round significant digits, and then fixed point with a percentage sign.
 * `b` - binary (base 2); ignores non-integers.
