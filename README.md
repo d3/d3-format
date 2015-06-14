@@ -78,7 +78,7 @@ The *width* defines the minimum field width. If not specified, then the width wi
 
 The *comma* (`,`) option enables the use of a comma for a thousands separator.
 
-Depending on the *type*, the *precision* either indicates the number of digits that follow the decimal point (types `f` and `%`), or the number of significant digits (types `​`, `e`, `g`, `r`, `s` and `p`). If a precision is not specified, it defaults to 6. Precision is ignored for integer formats (types `b`, `o`, `d`, `x`, `X` and `c`).
+Depending on the *type*, the *precision* either indicates the number of digits that follow the decimal point (types `f` and `%`), or the number of significant digits (types `​`, `e`, `g`, `r`, `s` and `p`). If the precision is not specified, it defaults to 6. Precision is ignored for integer formats (types `b`, `o`, `d`, `x`, `X` and `c`).
 
 The available *type* values are:
 
