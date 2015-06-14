@@ -128,7 +128,7 @@ f(.00042); // "420µ"
 f(.0042); // "4,200µ"
 ```
 
-Unlike [*locale*.format](#locale_format) with the `s` format type, this method allows you to specify the SI *prefix* explicitly, rather than computing it dynamically based on the formatted number. This is useful when you are formatting several numbers, and you want them to all be in the same units for easy comparison.
+Unlike [*locale*.format](#locale_format) with the `s` format type, this method allows you to specify the SI *prefix* explicitly, rather than computing it dynamically based on the formatted number. This is useful when you are formatting multiple numbers and you want them to be in the same units for easy comparison.
 
 <a name="localeFormat" href="#localeFormat">#</a> <b>localeFormat</b>(<i>definition</i>)
 
