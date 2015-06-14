@@ -100,7 +100,7 @@ Equivalent to [*locale*.format](#locale_format), except the returned function wi
 Unlike [*locale*.format](#locale_format) with the `s` format type, this method allows you to specify the SI *prefix* explicitly, rather than computing it dynamically based on the formatted number. In addition, the *precision* for the given *specifier* represents the number of digits past the decimal point (as with `f` fixed point notation), not the number of significant digits. For example:
 
 ```js
-var f = formatPrefix(",.0s", "µ");
+var f = formatPrefix(",.0", "µ");
 f(.00042); // "420µ"
 f(.0042); // "4,200µ"
 ```
