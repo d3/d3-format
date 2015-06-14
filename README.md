@@ -15,7 +15,7 @@ zeroPad(2);   // "0002"
 zeroPad(123); // "0123"
 ```
 
-The default [format](#format) instance uses the U.S. English ([`en-US`](https://github.com/d3/d3-format/tree/master/src/format-en-US.js)) locale; but a handful of other locales are also available:
+The default locale is U.S. English ([`en-US`](https://github.com/d3/d3-format/tree/master/src/format-en-US.js)), but a handful of other locales are available:
 
 * [`ca-ES`](https://github.com/d3/d3-format/tree/master/src/format-ca-ES.js) - Catalan (Spain)
 * [`de-DE`](https://github.com/d3/d3-format/tree/master/src/format-de-DE.js) - German (Germany)
@@ -39,13 +39,13 @@ To switch locales, either create a custom build by editing [index.js](https://gi
 
 <a name="format" href="#format">#</a> <b>format</b>(<i>specifier</i>)
 
-Equivalent to [*format*.format](#format_format) on the default U.S. English locale. Use [localeFormat](#localeFormat) to specify a different locale.
+Equivalent to [*locale*.format](#locale_format) on the default U.S. English locale. Use [localeFormat](#localeFormat) to specify a different locale.
 
 <a name="formatPrefix" href="#formatPrefix">#</a> <b>formatPrefix</b>(<i>specifier</i>)
 
-Equivalent to [*format*.formatPrefix](#format_formatPrefix) on the default U.S. English locale. Use [localeFormat](#localeFormat) to specify a different locale.
+Equivalent to [*locale*.formatPrefix](#locale_formatPrefix) on the default U.S. English locale. Use [localeFormat](#localeFormat) to specify a different locale.
 
-<a name="format_format" href="#format_format">#</a> <i>format</i>.<b>format</b>(<i>specifier</i>)
+<a name="locale_format" href="#locale_format">#</a> <i>locale</i>.<b>format</b>(<i>specifier</i>)
 
 Returns a new format function with the given string *specifier*. The returned function takes a number as the only argument, and returns a string representing the formatted number. The format specifier is modeled after Python 3.1’s [format specification mini-language](http://docs.python.org/release/3.1.3/library/string.html#formatspec). The general form of a specifier is:
 
@@ -98,9 +98,9 @@ The available *type* values are:
 
 The type `n` is also supported as shorthand for `,g`. If no *precision* is specified for `r`, `g` is used instead; if no *precision* is specified for `p`, `%` is used instead.
 
-<a name="format_formatPrefix" href="#format_formatPrefix">#</a> <i>format</i>.<b>formatPrefix</b>(<i>value</i>, <i>prefix</i>)
+<a name="locale_formatPrefix" href="#locale_formatPrefix">#</a> <i>locale</i>.<b>formatPrefix</b>(<i>value</i>, <i>prefix</i>)
 
-Equivalent to [*format*.format](#format_format), except converts the value to the units of the specified SI *prefix*. The following prefixes are supported:
+Equivalent to [*locale*.format](#locale_format), except converts the value to the units of the specified SI *prefix*. The following prefixes are supported:
 
 `y` - yocto, 10^-24
 `z` - zepto, 10^-21
@@ -127,9 +127,9 @@ var f = formatPrefix(".0s", "µ");
 f(.00042); // "420µ"
 ```
 
-<a name="localeFormat" href="#localeFormat">#</a> <b>localeFormat</b>(<i>locale</i>)
+<a name="localeFormat" href="#localeFormat">#</a> <b>localeFormat</b>(<i>definition</i>)
 
-Returns a *format* object localized for the specified *locale*, with [*format*.format](#format_format) and [*format*.formatPrefix](#format_formatPrefix) methods. The *locale* definition must include the following properties:
+Returns a *locale* object localized for the specified *definition*, with [*locale*.format](#locale_format) and [*locale*.formatPrefix](#locale_formatPrefix) methods. The locale *definition* must include the following properties:
 
 * `decimal` - the decimal point (e.g., `"."`).
 * `thousands` - the group separator (e.g., `","`).
