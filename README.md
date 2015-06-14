@@ -123,8 +123,9 @@ Equivalent to [*locale*.format](#locale_format), except converts the value to th
 For example:
 
 ```js
-var f = formatPrefix(".0s", "µ");
+var f = formatPrefix(",.0s", "µ");
 f(.00042); // "420µ"
+f(.0042); // "4,200µ"
 ```
 
 <a name="localeFormat" href="#localeFormat">#</a> <b>localeFormat</b>(<i>definition</i>)
