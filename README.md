@@ -188,7 +188,7 @@ f(.55); // 55%
 
 <a name="precisionRound" href="#precisionRound">#</a> <b>precisionRound</b>(<i>step</i>, <i>max</i>)
 
-Returns a suggested decimal precision for format types that round to significant digits, given numeric *step* and *max* values*. The *step* represents the minimum absolute difference between values that will be formatted, and the *max* represents the largest absolute value that will be formatted. For example, given the numbers 0.99, 1.0, and 1.01, the minimum absolute difference is 0.01, the largest absolute value is 1.01, and the suggested precision is 3:
+Returns a suggested decimal precision for format types that round to significant digits, given numeric *step* and *max* values. The *step* represents the minimum absolute difference between values that will be formatted, and the *max* represents the largest absolute value that will be formatted. For example, given the numbers 0.99, 1.0, and 1.01, the minimum absolute difference is 0.01, the largest absolute value is 1.01, and the suggested precision is 3:
 
 ```js
 var p = precisionRound(0.01, 1.01),
