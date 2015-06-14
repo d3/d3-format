@@ -51,7 +51,7 @@ The *symbol* can be:
 * `$` - apply currency symbols per the locale definition.
 * `#` - for binary, octal, or hexadecimal notation, prefix by `0b`, `0o`, or `0x`, respectively.
 
-The *zero* (`0`) option enables zero-padding. This is equivalent to setting *fill* to `0` and *align* to `=`.
+The *zero* (`0`) option enables zero-padding. This implicitly sets *fill* to `0` and *align* to `=`.
 
 The *width* defines the minimum field width. If not specified, then the width will be determined by the content.
 
