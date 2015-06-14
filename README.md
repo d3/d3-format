@@ -110,7 +110,7 @@ Equivalent to [*locale*.format](#locale_format), except converts the value to th
 * `n` - nano, 10⁻⁹
 * `µ` - micro, 10⁻⁶
 * `m` - milli, 10⁻³
-* `​` - 10⁰
+* `​` (empty string) - 10⁰
 * `k` - kilo, 10³
 * `M` - mega, 10⁶
 * `G` - giga, 10⁹
