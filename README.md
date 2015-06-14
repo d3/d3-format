@@ -59,11 +59,11 @@ The available *type* values are:
 
 * `e` - exponent notation.
 * `f` - fixed point notation.
-* `g` - round significant digits, and then either decimal or exponent notation.
-* `r` - round significant digits, and then decimal notation.
-* `s` - round significant digits, and then decimal notation with an [SI prefix](#locale_formatPrefix).
+* `g` - round to significant digits, and then either decimal or exponent notation.
+* `r` - round to significant digits, and then decimal notation.
+* `s` - round to significant digits, and then decimal notation with an [SI prefix](#locale_formatPrefix).
 * `%` - multiply by 100, and then decimal notation with a percent sign.
-* `p` - multiply by 100, round significant digits, and then decimal notation with a percent sign.
+* `p` - multiply by 100, round to significant digits, and then decimal notation with a percent sign.
 * `b` - binary notation; ignores non-integers.
 * `o` - octal notation; ignores non-integers.
 * `d` - decimal notation; ignores non-integers.
@@ -137,49 +137,6 @@ Returns a *locale* object for the specified *definition*, with [*locale*.format]
 
 To change the default locale, edit [index.js](https://github.com/d3/d3-format/tree/master/index.js) and run `npm run prepublish`.
 
-<a name="formatPrecision" href="#formatPrecision">#</a> <b>formatPrecision</b>(<i>value</i>)
-
-Returns a suggested decimal precision for fixed point notation for the specified numeric *value*. The *value* represents the minimum difference between values that will be formatted. For example, given the numbers 1, 1.5, and 2, the minimum difference is 0.5 and the suggested precision is 1:
-
-```js
-var p = formatPrecision(0.5),
-    f = format("." + p + "f");
-f(1);   // 1.0
-f(1.5); // 1.5
-f(2);   // 2.0
-```
-
-This method can also be used to compute significant-digit precision, such as when using the `e` format type. In this case, *value* should be the minimum value divided by the largest value that will be formatted. For example:
-
-```js
-var p = formatPrecision(0.5e8 / 2e8),
-    f = format("." + p + "e");
-f(0.5e8); // 5.0e+7
-f(1e8);   // 1.0e+8
-f(1.5e8); // 1.5e+8
-f(2e8);   // 2.0e+8
-```
-
-For `​` (none), `g`, `p`, `r` and `s`, the principle is the same, except you should add one:
-
-```
-var p = formatPrecision(0.45 / 0.55) + 1,
-    f = format("." + p);
-f(0.45); // 0.45
-f(0.50); // 0.50
-f(0.55); // 0.55
-```
-
-Some format types may require a small adjustment to the suggested precision. The `%` format multiplies formatted values by 100 to convert to percentages, and so you should subtract two from the suggested precision.
-
-```js
-var p = Math.max(0, formatPrecision(0.05) - 2),
-    f = format("." + p + "%");
-f(.45); // 45%
-f(.50); // 50%
-f(.55); // 55%
-```
-
 <a name="formatSpecifier" href="#formatSpecifier">#</a> <b>formatSpecifier</b>(<i>specifier</i>)
 
 Parses the specified *specifier*, returning an object with exposed fields that correspond to the [format specification mini-language](#locale_format). For example, `formatSpecifier("s")` returns:
@@ -205,4 +162,46 @@ var s = formatSpecifier("f");
 s.precision = 2;
 var f = format(s);
 f(42); // "42.00";
+```
+
+<a name="precisionFixed" href="#precisionFixed">#</a> <b>precisionFixed</b>(<i>step</i>)
+
+Returns a suggested decimal precision for fixed point notation for the specified numeric *step* value. The *step* represents the minimum absolute difference between values that will be formatted. For example, given the numbers 1, 1.5, and 2, the minimum difference is 0.5 and the suggested precision is 1:
+
+```js
+var p = precisionFixed(0.5),
+    f = format("." + p + "f");
+f(1);   // 1.0
+f(1.5); // 1.5
+f(2);   // 2.0
+```
+
+Note: for the `%` format type, subtract two:
+
+```js
+var p = Math.max(0, precisionFixed(0.05) - 2),
+    f = format("." + p + "%");
+f(.45); // 45%
+f(.50); // 50%
+f(.55); // 55%
+```
+
+<a name="precisionRound" href="#precisionRound">#</a> <b>precisionRound</b>(<i>step</i>, <i>max</i>)
+
+Returns a suggested decimal precision for format types that round to significant digits, given numeric *step* and *max* values*. The *step* represents the minimum absolute difference between values that will be formatted, and the *max* represents the largest absolute value that will be formatted. For example:
+
+```js
+var p = precisionRound(0.01, 1.01),
+    f = format("." + p + "r");
+f(0.01); // 0.0100
+f(1.01); // 1.01
+```
+
+Note: for the `e` format type, subtract one:
+
+```js
+var p = Math.max(0, precisionRound(0.01, 1.01) - 1),
+    f = format("." + p + "e");
+f(0.01); // 1.00e-2
+f(1.01); // 1.01e+0
 ```
