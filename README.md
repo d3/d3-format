@@ -51,7 +51,7 @@ Now you get this:
 0.9
 ```
 
-But d3-format is much more than [number.toFixed](https://developer.mozilla.org/en-US/docs/Web/JavaScript/Reference/Global_Objects/Number/toFixed). Here are a few more examples:
+But d3-format is much more than an alias for [number.toFixed](https://developer.mozilla.org/en-US/docs/Web/JavaScript/Reference/Global_Objects/Number/toFixed). A few more examples:
 
 ```js
 format(".0%")(.12);   // "12%"
