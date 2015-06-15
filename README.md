@@ -67,13 +67,11 @@ See [*locale*.format](#locale_format) for a detailed specification, and try runn
 
 <a name="format" href="#format">#</a> <b>format</b>(<i>specifier</i>)
 
-An alias for [*locale*.format](#locale_format) on the default locale; use [localeFormat](#localeFormat) to specify a different locale.
-
-While [format](#format) generates output for U.S. English-speaking humans ([`en-US`](https://github.com/d3/d3-format/tree/master/src/format-en-US.js)) by default, humans in other locales may be supported by using [localeFormat](#localeFormat) or by editing [index.js](https://github.com/d3/d3-format/tree/master/index.js) and rebuilding.
+An alias for [*locale*.format](#locale_format) on the default locale. While this method generates output for U.S. English-speaking humans ([`en-US`](https://github.com/d3/d3-format/tree/master/src/format-en-US.js)) by default, humans in other locales may be supported by using [localeFormat](#localeFormat) or by editing [index.js](https://github.com/d3/d3-format/tree/master/index.js) and rebuilding.
 
 <a name="formatPrefix" href="#formatPrefix">#</a> <b>formatPrefix</b>(<i>specifier</i>)
 
-An alias for [*locale*.formatPrefix](#locale_formatPrefix) on the default locale; use [localeFormat](#localeFormat) to specify a different locale.
+An alias for [*locale*.formatPrefix](#locale_formatPrefix) on the default locale. While this method generates output for U.S. English-speaking humans ([`en-US`](https://github.com/d3/d3-format/tree/master/src/format-en-US.js)) by default, humans in other locales may be supported by using [localeFormat](#localeFormat) or by editing [index.js](https://github.com/d3/d3-format/tree/master/index.js) and rebuilding.
 
 <a name="locale_format" href="#locale_format">#</a> <i>locale</i>.<b>format</b>(<i>specifier</i>)
 
