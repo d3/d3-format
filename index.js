@@ -1,5 +1,5 @@
 import formatSpecifier from "./src/formatSpecifier";
-import locale from "./src/format-en-US";
+import locale from "./src/locale/en-US";
 import localeFormat from "./src/localeFormat";
 import precisionFixed from "./src/precisionFixed";
 import precisionPrefix from "./src/precisionPrefix";

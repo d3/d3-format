@@ -1,4 +1,4 @@
-import localeFormat from "./localeFormat";
+import localeFormat from "../localeFormat";
 
 export default localeFormat({
   decimal: ".",
