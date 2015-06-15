@@ -244,7 +244,7 @@ f(.50); // "50%"
 f(.55); // "55%"
 ```
 
-<a name="precisionPrefix" href="#precisionPrefix">#</a> <b>precisionRound</b>(<i>step</i>, <i>value</i>)
+<a name="precisionPrefix" href="#precisionPrefix">#</a> <b>precisionPrefix</b>(<i>step</i>, <i>value</i>)
 
 Returns a suggested decimal precision for use with [*locale*.formatPrefix](#locale_formatPrefix) given the specified numeric *step* and reference *value*. The *step* represents the minimum absolute difference between values that will be formatted, and *value* determines which SI prefix will be used. (This assumes that the values to be formatted are also multiples of *step*.) For example, given the numbers 1.1e6, 1.2e6, and 1.3e6, the *step* should be 1e5, the *value* could be 1.3e6, and the suggested precision is 1:
 
