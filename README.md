@@ -65,6 +65,12 @@ format(",.2r")(4223); // grouped thousands with two significant digits, "4,200"
 
 See [*locale*.format](#locale_format) for a detailed specification, and try running [formatSpecifier](#formatSpecifier) on the above formats to decode their meaning.
 
+### Installing
+
+If you use NPM, `npm install d3-format`. Or, download the [latest release](https://github.com/d3/d3-format/releases/latest).
+
+### API Reference
+
 <a name="format" href="#format">#</a> <b>format</b>(<i>specifier</i>)
 
 An alias for [*locale*.format](#locale_format) on the default locale. While this method generates output for U.S. English-speaking humans ([`en-US`](https://github.com/d3/d3-format/tree/master/src/format-en-US.js)) by default, humans in other locales may be served using [localeFormat](#localeFormat) or by editing [index.js](https://github.com/d3/d3-format/tree/master/index.js) and rebuilding.
