@@ -1,6 +1,6 @@
 # d3-format
 
-Ever noticed how sometimes JavaScript doesn’t display numbers the way you expect? Like, you tried to print 0.1, 0.2, … 0.9 with a simple loop:
+Ever noticed how sometimes JavaScript doesn’t display numbers the way you expect? Like, you tried to print tenths with a simple loop:
 
 ```js
 for (var i = 0; i < 10; i++) {
