@@ -56,7 +56,7 @@ But d3-format is much more than an alias for [number.toFixed](https://developer.
 ```js
 format(".0%")(.123);  // rounded percentage, "12%"
 format("$.2f")(3.5);  // localized fixed-point currency, "£3.50"
-format("+20")(42);    // space-filled with sign, "                 +42"
+format("+20")(42);    // space-filled and + or - sign, "                 +42"
 format("*^20")(42);   // asterisk-filled and centered, "*********42*********"
 format(".2s")(42e6);  // SI-prefix with two significant digits, "42M"
 format("#x")(48879);  // prefixed lowercase hexadecimal, "0xbeef"
