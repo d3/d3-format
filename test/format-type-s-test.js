@@ -42,26 +42,26 @@ tape("format(\"[.precision]s\") outputs SI-prefix notation with precision signif
 
 tape("format(\"s\") formats numbers smaller than 1e-24 with yocto", function(test) {
   var f = format.format(".8s");
-  test.equal(f(1.23e-30), "0.0000012y");
-  test.equal(f(1.23e-29), "0.0000123y");
-  test.equal(f(1.23e-28), "0.0001230y");
-  test.equal(f(1.23e-27), "0.0012300y");
-  test.equal(f(1.23e-26), "0.0123000y");
-  test.equal(f(1.23e-25), "0.1230000y");
-  test.equal(f(1.23e-24), "1.2300000y");
-  test.equal(f(1.23e-23), "12.300000y");
-  test.equal(f(1.23e-22), "123.00000y");
-  test.equal(f(1.23e-21), "1.2300000z");
-  test.equal(f(-1.23e-30), "-0.0000012y");
-  test.equal(f(-1.23e-29), "-0.0000123y");
-  test.equal(f(-1.23e-28), "-0.0001230y");
-  test.equal(f(-1.23e-27), "-0.0012300y");
-  test.equal(f(-1.23e-26), "-0.0123000y");
-  test.equal(f(-1.23e-25), "-0.1230000y");
-  test.equal(f(-1.23e-24), "-1.2300000y");
-  test.equal(f(-1.23e-23), "-12.300000y");
-  test.equal(f(-1.23e-22), "-123.00000y");
-  test.equal(f(-1.23e-21), "-1.2300000z");
+  test.equal(f(1.29e-30), "0.0000013y"); // Note: rounded!
+  test.equal(f(1.29e-29), "0.0000129y");
+  test.equal(f(1.29e-28), "0.0001290y");
+  test.equal(f(1.29e-27), "0.0012900y");
+  test.equal(f(1.29e-26), "0.0129000y");
+  test.equal(f(1.29e-25), "0.1290000y");
+  test.equal(f(1.29e-24), "1.2900000y");
+  test.equal(f(1.29e-23), "12.900000y");
+  test.equal(f(1.29e-22), "129.00000y");
+  test.equal(f(1.29e-21), "1.2900000z");
+  test.equal(f(-1.29e-30), "-0.0000013y"); // Note: rounded!
+  test.equal(f(-1.29e-29), "-0.0000129y");
+  test.equal(f(-1.29e-28), "-0.0001290y");
+  test.equal(f(-1.29e-27), "-0.0012900y");
+  test.equal(f(-1.29e-26), "-0.0129000y");
+  test.equal(f(-1.29e-25), "-0.1290000y");
+  test.equal(f(-1.29e-24), "-1.2900000y");
+  test.equal(f(-1.29e-23), "-12.900000y");
+  test.equal(f(-1.29e-22), "-129.00000y");
+  test.equal(f(-1.29e-21), "-1.2900000z");
   test.end();
 });
 

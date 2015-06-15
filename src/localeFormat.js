@@ -2,7 +2,7 @@ import exponent from "./exponent";
 import formatGroup from "./formatGroup";
 import formatSpecifier from "./formatSpecifier";
 import formatTypes from "./formatTypes";
-import {prefixExponent} from "./formatAutoPrefix";
+import {prefixExponent} from "./formatPrefixAuto";
 
 var prefixes = ["y","z","a","f","p","n","µ","m","","k","M","G","T","P","E","Z","Y"];
 

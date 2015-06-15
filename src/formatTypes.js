@@ -1,7 +1,6 @@
-import formatAutoPrefix from "./formatAutoPrefix";
 import formatDefault from "./formatDefault";
+import formatPrefixAuto from "./formatPrefixAuto";
 import formatRounded from "./formatRounded";
-import formatRoundedPercentage from "./formatRoundedPercentage";
 
 export default {
   "": formatDefault,
@@ -13,9 +12,9 @@ export default {
   "f": function(x, p) { return x.toFixed(p); },
   "g": function(x, p) { return x.toPrecision(p); },
   "o": function(x) { return x.toString(8); },
-  "p": formatRoundedPercentage,
+  "p": function(x, p) { return formatRounded(x * 100, p); },
   "r": formatRounded,
-  "s": formatAutoPrefix,
+  "s": formatPrefixAuto,
   "X": function(x) { return x.toString(16).toUpperCase(); },
   "x": function(x) { return x.toString(16); }
 };
