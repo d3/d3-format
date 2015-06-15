@@ -123,8 +123,10 @@ The available *type* values are:
 The type `n` is also supported as shorthand for `,g`. For the `g`, `n` and `​` (none) types, decimal notation is used if the resulting string would have *precision* or fewer digits; otherwise, exponent notation is used. For example:
 
 ```js
-format(".2")(42); // "42"
-format(".1")(42); // "4e+1"
+format(".2")(42);  // "42"
+format(".2")(4.2); // "4.2"
+format(".1")(42);  // "4e+1"
+format(".1")(4.2); // "4"
 ```
 
 <a name="locale_formatPrefix" href="#locale_formatPrefix">#</a> <i>locale</i>.<b>formatPrefix</b>(<i>specifier</i>, <i>value</i>)
