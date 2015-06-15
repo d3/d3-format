@@ -151,7 +151,7 @@ Equivalent to [*locale*.format](#locale_format), except the returned function wi
 * `k` - kilo, 10³
 * `M` - mega, 10⁶
 * `G` - giga, 10⁹
-* `T` - peta, 10¹²
+* `T` - tera, 10¹²
 * `P` - peta, 10¹⁵
 * `E` - exa, 10¹⁸
 * `Z` - zetta, 10²¹
