@@ -55,7 +55,7 @@ But d3-format is much more than an alias for [number.toFixed](https://developer.
 
 ```js
 format(".0%")(.12);   // "12%"
-format("$.2f")(3.5);  // "$3.50"
+format("$.2f")(3.5);  // "£3.50"
 format("+20")(42);    // "                 +42"
 format("*^20")(42);   // "*********42*********"
 format(".2s")(42e6);  // "42M"
