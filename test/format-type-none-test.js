@@ -15,10 +15,19 @@ tape("format(\".[precision]\") uses significant precision and trims insignifican
   test.end();
 });
 
-tape("format(\".[precision]\") also trims the decimal point if there are only zeros after", function(test) {
-  test.equal(format.format(".1")(100), "1e+2");
-  test.equal(format.format(".3")(100), "100");
-  test.equal(format.format(".5")(100), "100");
+tape("format(\".[precision]\") does not trim significant zeros", function(test) {
+  test.equal(format.format(".5")(1.10001), "1.1");
+  test.equal(format.format(".5")(1.10001e6), "1.1e+6");
+  test.equal(format.format(".6")(1.10001), "1.10001");
+  test.equal(format.format(".6")(1.10001e6), "1.10001e+6");
+  test.end();
+});
+
+tape("format(\".[precision]\") also trims the decimal point if there are only insignificant zeros", function(test) {
+  test.equal(format.format(".5")(1.00001), "1");
+  test.equal(format.format(".5")(1.00001e6), "1e+6");
+  test.equal(format.format(".6")(1.00001), "1.00001");
+  test.equal(format.format(".6")(1.00001e6), "1.00001e+6");
   test.end();
 });
 
