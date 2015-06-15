@@ -63,7 +63,7 @@ format("#x")(48879);  // "0xbeef"
 format(",.2r")(4223); // "4,200"
 ```
 
-See [*locale*.format](#locale_format) for more detail, and try running [formatSpecifier](#formatSpecifier) on the above formats to decode their meaning.
+See [*locale*.format](#locale_format) for a detailed specification, and try running [formatSpecifier](#formatSpecifier) on the above formats to decode their meaning.
 
 <a name="format" href="#format">#</a> <b>format</b>(<i>specifier</i>)
 
