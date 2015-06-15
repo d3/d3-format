@@ -25,9 +25,7 @@ And you got this:
 
 Welcome to binary floating point! ಠ_ಠ
 
-Yet rounding error is not the only reason to customize number formatting. When comparing numbers, you want them to be formatted consistently; so above, 0.0 would be better than 0. Grouping thousands improves the legibility of large numbers (e.g., 42,000) without resorting to technical notation (4.2e+4). Currencies often need fixed precision ($3.50). And sometimes you want to round to significant digits (4021 ↦ 4000).
-
-And different cultures have different conventions for formatting numbers: some prefer 42.000,00 to 42,000.00.
+Yet rounding error is not the only reason to customize number formatting. When comparing numbers, you want them to be formatted consistently; so above, 0.0 would be better than 0. Grouping thousands improves the legibility of large numbers (e.g., 42,000) without resorting to technical notation (4.2e+4). Currencies often need fixed precision ($3.50). Rounding to significant digits (4021 ↦ 4000) may avoid exaggerating accuracy. And different cultures have different conventions for formatting numbers: some prefer 42.000,00 to 42,000.00.
 
 Formatting numbers for human consumption is the purpose of d3-format, which is modeled after Python 3’s [format specification mini-language](https://docs.python.org/3/library/string.html#format-specification-mini-language) ([PEP 3101](https://www.python.org/dev/peps/pep-3101/)). Revisiting the example above:
 
