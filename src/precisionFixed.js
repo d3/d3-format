@@ -1,3 +1,5 @@
+import exponent from "./exponent";
+
 export default function(step) {
-  return Math.max(0, -Math.floor(Math.log(Math.abs(step)) / Math.LN10));
+  return Math.max(0, -exponent(Math.abs(step)));
 };

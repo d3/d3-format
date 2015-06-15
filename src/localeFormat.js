@@ -1,7 +1,8 @@
+import exponent from "./exponent";
 import formatGroup from "./formatGroup";
 import formatSpecifier from "./formatSpecifier";
 import formatTypes from "./formatTypes";
-import {exponent, exponentOf} from "./formatAutoPrefix";
+import {prefixExponent} from "./formatAutoPrefix";
 
 var prefixes = ["y","z","a","f","p","n","µ","m","","k","M","G","T","P","E","Z","Y"];
 
@@ -62,7 +63,7 @@ export default function(locale) {
       value = formatType(value, precision);
 
       // Compute the suffix.
-      var valueSuffix = suffix + (type === "s" ? prefixes[8 + exponent / 3] : "");
+      var valueSuffix = suffix + (type === "s" ? prefixes[8 + prefixExponent / 3] : "");
 
       // Break the formatted value into the integer “value” part that can be
       // grouped, and fractional or exponential “suffix” part that is not.
@@ -102,7 +103,7 @@ export default function(locale) {
 
   function formatPrefix(specifier, value) {
     var f = format((specifier = formatSpecifier(specifier), specifier.type = "f", specifier)),
-        e = exponentOf(value),
+        e = Math.max(-8, Math.min(8, Math.floor(exponent(value) / 3))) * 3,
         k = Math.pow(10, -e),
         prefix = prefixes[8 + e / 3];
     return function(value) {

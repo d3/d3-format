@@ -1,10 +1,6 @@
 import btod from "./btod";
 
-export var exponent;
-
-export function exponentOf(value) { // Fast approximation.
-  return Math.max(-8, Math.min(8, Math.floor((Math.log(value) / (Math.LN10 * 3) + 1e-12)))) * 3;
-};
+export var prefixExponent;
 
 export default function(x, p) {
   var d = btod(x, p);
@@ -15,7 +11,7 @@ export default function(x, p) {
   else i %= 3;
   if (!i) i = 3;
   else if (i < 0) i += 3;
-  exponent = Math.max(-24, Math.min(24, Math.floor((d.exponent - 1) / 3) * 3));
+  prefixExponent = Math.max(-24, Math.min(24, Math.floor((d.exponent - 1) / 3) * 3));
   return d.coefficient.slice(0, i)
       + (d.coefficient.length > i
       ? "." + d.coefficient.slice(i)
