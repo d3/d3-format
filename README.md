@@ -120,7 +120,12 @@ The available *type* values are:
 * `c` - converts the integer to the corresponding unicode character before printing.
 * `​` (none) - like `g`, but trim insignificant trailing zeros.
 
-The type `n` is also supported as shorthand for `,g`.
+The type `n` is also supported as shorthand for `,g`. For the `g`, `n` and `​` (none) types, decimal notation is used if the resulting string would have *precision* or fewer digits; otherwise, exponent notation is used. For example:
+
+```js
+format(".2")(42); // "42"
+format(".1")(42); // "4e+1"
+```
 
 <a name="locale_formatPrefix" href="#locale_formatPrefix">#</a> <i>locale</i>.<b>formatPrefix</b>(<i>specifier</i>, <i>value</i>)
 
