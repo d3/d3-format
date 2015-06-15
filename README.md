@@ -124,7 +124,7 @@ The type `n` is also supported as shorthand for `,g`.
 
 <a name="locale_formatPrefix" href="#locale_formatPrefix">#</a> <i>locale</i>.<b>formatPrefix</b>(<i>specifier</i>, <i>prefix</i>)
 
-Equivalent to [*locale*.format](#locale_format), except the returned function will convert values to the units of the specified SI *prefix* before formatting. The following prefixes are supported:
+Equivalent to [*locale*.format](#locale_format), except the returned function will convert values to the units of the specified SI *prefix* before formatting in fixed point notation. The following prefixes are supported:
 
 * `y` - yocto, 10⁻²⁴
 * `z` - zepto, 10⁻²¹
