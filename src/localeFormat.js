@@ -100,10 +100,11 @@ export default function(locale) {
     };
   }
 
-  function formatPrefix(specifier, prefix) {
+  function formatPrefix(specifier, value) {
     var f = format((specifier = formatSpecifier(specifier), specifier.type = "f", specifier)),
-        i = prefixes.indexOf(prefix),
-        k = Math.pow(10, (i < 0 ? (prefix = "", 0) : 8 - i) * 3);
+        i = Math.max(-8, Math.min(8, Math.floor((Math.log(value) / (Math.LN10 * 3) + 1e-12)))),
+        k = Math.pow(10, -i * 3),
+        prefix = prefixes[8 + i];
     return function(value) {
       return f(k * value) + prefix;
     };
