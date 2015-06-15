@@ -1,7 +1,7 @@
 import formatGroup from "./formatGroup";
 import formatSpecifier from "./formatSpecifier";
 import formatTypes from "./formatTypes";
-import {exponent} from "./formatAutoPrefix";
+import {exponent, exponentOf} from "./formatAutoPrefix";
 
 var prefixes = ["y","z","a","f","p","n","µ","m","","k","M","G","T","P","E","Z","Y"];
 
@@ -102,9 +102,9 @@ export default function(locale) {
 
   function formatPrefix(specifier, value) {
     var f = format((specifier = formatSpecifier(specifier), specifier.type = "f", specifier)),
-        i = Math.max(-8, Math.min(8, Math.floor((Math.log(value) / (Math.LN10 * 3) + 1e-12)))),
-        k = Math.pow(10, -i * 3),
-        prefix = prefixes[8 + i];
+        e = exponentOf(value),
+        k = Math.pow(10, -e),
+        prefix = prefixes[8 + e / 3];
     return function(value) {
       return f(k * value) + prefix;
     };

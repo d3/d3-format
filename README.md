@@ -101,7 +101,7 @@ The *symbol* can be:
 
 The *zero* (`0`) option enables zero-padding; this implicitly sets *fill* to `0` and *align* to `=`. The *width* defines the minimum field width. If not specified, then the width will be determined by the content. The *comma* (`,`) option enables the use of a group separator, such as a comma for thousands.
 
-Depending on the *type*, the *precision* either indicates the number of digits that follow the decimal point (types `f` and `%`), or the number of significant digits (types `​`, `e`, `g`, `r`, `s` and `p`). If the precision is not specified, it defaults to 6 for all types except `​` (none), which defaults to 12. Precision is ignored for integer formats (types `b`, `o`, `d`, `x`, `X` and `c`).
+Depending on the *type*, the *precision* either indicates the number of digits that follow the decimal point (types `f` and `%`), or the number of significant digits (types `​`, `e`, `g`, `r`, `s` and `p`). If the precision is not specified, it defaults to 6 for all types except `​` (none), which defaults to 12. Precision is ignored for integer formats (types `b`, `o`, `d`, `x`, `X` and `c`). See [precisionFixed](#precisionFixed) and [precisionRound](#precisionRound) for help picking an appropriate precision.
 
 The available *type* values are:
 
@@ -152,7 +152,7 @@ f(.00042); // "420µ"
 f(.0042); // "4,200µ"
 ```
 
-This method is useful when formatting multiple numbers in the same units for easy comparison.
+This method is useful when formatting multiple numbers in the same units for easy comparison. See [precisionPrefix](#precisionPrefix) for help picking an appropriate precision.
 
 <a name="localeFormat" href="#localeFormat">#</a> <b>localeFormat</b>(<i>definition</i>)
 
@@ -242,6 +242,18 @@ var p = Math.max(0, precisionFixed(0.05) - 2),
 f(.45); // "45%"
 f(.50); // "50%"
 f(.55); // "55%"
+```
+
+<a name="precisionPrefix" href="#precisionPrefix">#</a> <b>precisionRound</b>(<i>step</i>, <i>value</i>)
+
+Returns a suggested decimal precision for use with [*locale*.formatPrefix](#locale_formatPrefix) given the specified numeric *step* and reference *value*. The *step* represents the minimum absolute difference between values that will be formatted, and *value* determines which SI prefix will be used. For example, given the numbers 1.1e6, 1.2e6, and 1.3e6, the *step* should be 1e5, the *value* could be 1.3e6, and the suggested precision is 1:
+
+```js
+var p = precisionPrefix(1e5, 1.3e6),
+    f = formatPrefix("." + p, 1.3e6);
+f(1.1e6); // "1.1M"
+f(1.2e6); // "1.2M"
+f(1.3e6); // "1.3M"
 ```
 
 <a name="precisionRound" href="#precisionRound">#</a> <b>precisionRound</b>(<i>step</i>, <i>max</i>)

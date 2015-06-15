@@ -2,6 +2,10 @@ import btod from "./btod";
 
 export var exponent;
 
+export function exponentOf(value) { // Fast approximation.
+  return Math.max(-8, Math.min(8, Math.floor((Math.log(value) / (Math.LN10 * 3) + 1e-12)))) * 3;
+};
+
 export default function(x, p) {
   var d = btod(x, p);
   if (!d) return x + "";
