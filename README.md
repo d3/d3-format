@@ -36,7 +36,7 @@ for (var i = 0; i < 10; i++) {
 }
 ```
 
-And now you get this:
+Now you get this:
 
 ```js
 0.0
