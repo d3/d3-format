@@ -1,3 +1,5 @@
-export default function(value) {
-  return Math.floor(Math.log(value) / Math.LN10 + 1e-12);
+import formatDecimal from "./formatDecimal";
+
+export default function(x) {
+  return x = formatDecimal(Math.abs(x)), x ? x[1] : NaN;
 };
