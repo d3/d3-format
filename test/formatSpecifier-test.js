@@ -1,6 +1,13 @@
 var tape = require("tape"),
     format = require("../");
 
+tape("formatSpecifier(specifier) throws an error for invalid formats", function(test) {
+  test.throws(function() { format.formatSpecifier("foo"); }, /invalid format: foo/);
+  test.throws(function() { format.formatSpecifier(".-2s"); }, /invalid format: \.-2s/);
+  test.throws(function() { format.formatSpecifier(".f"); }, /invalid format: \.f/);
+  test.end();
+});
+
 tape("formatSpecifier(\"\") has the expected defaults", function(test) {
   var s = format.formatSpecifier("");
   test.equal(s.fill, " ");
