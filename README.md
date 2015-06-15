@@ -51,11 +51,25 @@ And now you get this:
 0.9
 ```
 
-While [format](#format) generates output for U.S. English-speaking humans ([`en-US`](https://github.com/d3/d3-format/tree/master/src/format-en-US.js)) by default, humans in other locales may be supported by using [localeFormat](#localeFormat) or by editing [index.js](https://github.com/d3/d3-format/tree/master/index.js) and rebuilding.
+But d3-format is much more than [number.toFixed](https://developer.mozilla.org/en-US/docs/Web/JavaScript/Reference/Global_Objects/Number/toFixed). Here are a few more examples:
+
+```js
+format(".0%")(.12);   // "12%"
+format("$.2f")(3.5);  // "$3.50"
+format("+20")(42);    // "                 +42"
+format("*^20")(42);   // "*********42*********"
+format(".2s")(42e6);  // "42M"
+format("#x")(48879);  // "0xbeef"
+format(",.2r")(4223); // "4,200"
+```
+
+See [*locale*.format](#locale_format) for explanation of the above formats.
 
 <a name="format" href="#format">#</a> <b>format</b>(<i>specifier</i>)
 
 An alias for [*locale*.format](#locale_format) on the default locale; use [localeFormat](#localeFormat) to specify a different locale.
+
+While [format](#format) generates output for U.S. English-speaking humans ([`en-US`](https://github.com/d3/d3-format/tree/master/src/format-en-US.js)) by default, humans in other locales may be supported by using [localeFormat](#localeFormat) or by editing [index.js](https://github.com/d3/d3-format/tree/master/index.js) and rebuilding.
 
 <a name="formatPrefix" href="#formatPrefix">#</a> <b>formatPrefix</b>(<i>specifier</i>)
 
@@ -207,9 +221,9 @@ Returns a suggested decimal precision for fixed point notation given the specifi
 ```js
 var p = precisionFixed(0.5),
     f = format("." + p + "f");
-f(1);   // 1.0
-f(1.5); // 1.5
-f(2);   // 2.0
+f(1);   // "1.0"
+f(1.5); // "1.5"
+f(2);   // "2.0"
 ```
 
 Whereas for the numbers 1, 2 and 3, the *step* should be 1 and the suggested precision is 0:
@@ -217,9 +231,9 @@ Whereas for the numbers 1, 2 and 3, the *step* should be 1 and the suggested pre
 ```js
 var p = precisionFixed(1),
     f = format("." + p + "f");
-f(1); // 1
-f(2); // 2
-f(3); // 3
+f(1); // "1"
+f(2); // "2"
+f(3); // "3"
 ```
 
 Note: for the `%` format type, subtract two:
@@ -227,9 +241,9 @@ Note: for the `%` format type, subtract two:
 ```js
 var p = Math.max(0, precisionFixed(0.05) - 2),
     f = format("." + p + "%");
-f(.45); // 45%
-f(.50); // 50%
-f(.55); // 55%
+f(.45); // "45%"
+f(.50); // "50%"
+f(.55); // "55%"
 ```
 
 <a name="precisionRound" href="#precisionRound">#</a> <b>precisionRound</b>(<i>step</i>, <i>max</i>)
@@ -239,9 +253,9 @@ Returns a suggested decimal precision for format types that round to significant
 ```js
 var p = precisionRound(0.01, 1.01),
     f = format("." + p + "r");
-f(0.99); // 0.990
-f(1.0);  // 1.00
-f(1.01); // 1.01
+f(0.99); // "0.990"
+f(1.0);  // "1.00"
+f(1.01); // "1.01"
 ```
 
 Whereas for the numbers 0.9, 1.0, and 1.1, the *step* should be 0.1, the *max* should be 1.1, and the suggested precision is 2:
@@ -249,9 +263,9 @@ Whereas for the numbers 0.9, 1.0, and 1.1, the *step* should be 0.1, the *max* s
 ```js
 var p = precisionRound(0.1, 1.1),
     f = format("." + p + "r");
-f(0.9); // 0.90
-f(1.0); // 1.0
-f(1.1); // 1.1
+f(0.9); // "0.90"
+f(1.0); // "1.0"
+f(1.1); // "1.1"
 ```
 
 Note: for the `e` format type, subtract one:
@@ -259,6 +273,6 @@ Note: for the `e` format type, subtract one:
 ```js
 var p = Math.max(0, precisionRound(0.01, 1.01) - 1),
     f = format("." + p + "e");
-f(0.01); // 1.00e-2
-f(1.01); // 1.01e+0
+f(0.01); // "1.00e-2"
+f(1.01); // "1.01e+0"
 ```
