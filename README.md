@@ -67,7 +67,7 @@ See [*locale*.format](#locale_format) for a detailed specification, and try runn
 
 ## Installing
 
-If you use NPM, `npm install [d3-format](https://www.npmjs.com/package/d3-format)`. Otherwise, download the [latest release](https://github.com/d3/d3-format/releases/latest).
+If you use NPM, `npm install d3-format`. Otherwise, download the [latest release](https://github.com/d3/d3-format/releases/latest).
 
 ## API Reference
 
