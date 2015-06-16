@@ -1,6 +1,6 @@
 {
   "name": "d3-format",
-  "version": "0.2.0",
+  "version": "0.2.1",
   "description": "Format numbers for human consumption.",
   "keywords": [
     "d3",
@@ -21,8 +21,7 @@
   "scripts": {
     "pretest": "mkdir -p build && d3-bundler --format=umd --name=format -- index.js > build/format.js",
     "test": "faucet `find test -name '*-test.js'`",
-    "prepublish": "npm run test && uglifyjs build/format.js -c -m -o build/format.min.js",
-    "release": "npm run prepublish && rm -f format.zip && zip -j build/format.zip -- LICENSE build/format.js build/format.min.js"
+    "prepublish": "npm run test && uglifyjs build/format.js -c -m -o build/format.min.js && rm -f build/format.zip && zip -j build/format.zip -- LICENSE README.md build/format.js build/format.min.js"
   },
   "devDependencies": {
     "d3-bundler": "~0.2.5",
