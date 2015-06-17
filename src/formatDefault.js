@@ -10,5 +10,11 @@ export default function(x, p) {
     }
   }
 
-  return i0 > 0 ? x.slice(0, i0) + x.slice(i1 + 1) : x;
+  if (i0 > 0) x = x.slice(0, i0) + x.slice(i1 + 1);
+
+  return [
+    x[0] === "-" ? x[0] : "",
+    x.slice(x[0] === "-" ? 1 : 0, i),
+    x.slice(i)
+  ];
 };

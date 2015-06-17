@@ -37,7 +37,7 @@ export default function(locale) {
     // Is this an integer type?
     // Can this type generate exponential notation?
     var formatType = formatTypes[type],
-        integer = /[bcdoxX]/.test(type),
+        // integer = /[bcdoxX]/.test(type),
         maybeExponent = !type || /[deg]/.test(type),
         maybeDecimal = maybeExponent || /[fprs%]/.test(type);
 
@@ -50,54 +50,74 @@ export default function(locale) {
         : Math.max(0, Math.min(20, precision));
 
     return function(value) {
-      value = +value;
+      if (!type
+          || type === "b"
+          || type === "c"
+          || type === "d"
+          || type === "o"
+          || type === "x"
+          || type === "X") {
+        var parts = formatType(value, precision);
 
-      // Return the empty string for floats formatted as ints.
-      if (integer && (value % 1)) return "";
+        if (!parts) return "";
 
-      // Convert negative to positive, and compute the prefix.
-      // Note that -0 is not less than 0, but 1 / -0 is!
-      var valuePrefix = (value < 0 || 1 / value < 0 ? (value *= -1, "-") : sign === "-" ? "" : sign) + prefix;
+        var pre = parts[0], // sign: true if negative
+            mid = parts[1], // part of formatted value that needs grouping
+            post = parts[2]; // remainder of formatter value
+      } else {
+        value = +value;
 
-      // Perform the initial formatting.
-      value = formatType(value, precision);
+        // Return the empty string for floats formatted as ints.
+        // if (integer && (value % 1)) return "";
 
-      // Compute the suffix.
-      var valueSuffix = suffix + (type === "s" ? prefixes[8 + prefixExponent / 3] : "");
+        // Convert negative to positive, and compute the prefix.
+        // Note that -0 is not less than 0, but 1 / -0 is!
+        pre = value < 0 || 1 / value < 0 ? (value *= -1, "-") : "";
 
-      // Break the formatted value into the integer “value” part that can be
-      // grouped, and fractional or exponential “suffix” part that is not.
-      if (maybeDecimal) {
-        var i = value.indexOf(".");
-        if (i >= 0) {
-          valueSuffix = decimal + value.slice(i + 1) + valueSuffix;
-          value = value.slice(0, i);
-        } else if (maybeExponent) {
-          i = value.indexOf("e");
+        // Perform the initial formatting.
+        mid = formatType(value, precision);
+
+        // Compute the suffix.
+        post = "";
+
+        // Break the formatted value into the integer “mid” part that can be
+        // grouped, and fractional or exponential “post” part that is not.
+        if (maybeDecimal) {
+          var i = mid.indexOf(".");
           if (i >= 0) {
-            valueSuffix = value.slice(i) + valueSuffix;
-            value = value.slice(0, i);
+            post = decimal + mid.slice(i + 1) + post;
+            mid = mid.slice(0, i);
+          } else if (maybeExponent) {
+            i = mid.indexOf("e");
+            if (i >= 0) {
+              post = mid.slice(i) + post;
+              mid = mid.slice(0, i);
+            }
           }
         }
       }
 
+      if (sign !== "-" && !pre) pre = sign;
+      pre += prefix;
+      post += suffix + (type === "s" ? prefixes[8 + prefixExponent / 3] : "");
+
       // If the fill character is not "0", grouping is applied before padding.
-      if (comma && !zero) value = group(value, Infinity);
+      if (comma && !zero) mid = group(mid, Infinity);
 
       // Compute the padding.
-      var length = valuePrefix.length + value.length + valueSuffix.length,
+      var length = pre.length + mid.length + post.length,
           padding = length < width ? new Array(width - length + 1).join(fill) : "";
 
       // If the fill character is "0", grouping is applied after padding.
-      if (comma && zero) value = group(padding + value, padding.length ? width - valueSuffix.length : Infinity), padding = "";
+      if (comma && zero) mid = group(padding + mid, padding.length ? width - post.length : Infinity), padding = "";
 
       // Reconstruct the final output based on the desired alignment.
       switch (align) {
-        case "<": return valuePrefix + value + valueSuffix + padding;
-        case "=": return valuePrefix + padding + value + valueSuffix;
-        case "^": return padding.slice(0, length = padding.length >> 1) + valuePrefix + value + valueSuffix + padding.slice(length);
+        case "<": return pre + mid + post + padding;
+        case "=": return pre + padding + mid + post;
+        case "^": return padding.slice(0, length = padding.length >> 1) + pre + mid + post + padding.slice(length);
+        default: return padding + pre + mid + post;
       }
-      return padding + valuePrefix + value + valueSuffix;
     };
   }
 
