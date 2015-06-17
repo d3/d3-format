@@ -57,13 +57,14 @@ export default function(locale) {
 
       // Convert negative to positive, and compute the prefix.
       // Note that -0 is not less than 0, but 1 / -0 is!
-      var valuePrefix = (value < 0 || 1 / value < 0 ? (value *= -1, "-") : sign === "-" ? "" : sign) + prefix;
+      var valueNegative = (value < 0 || 1 / value < 0) && (value *= -1, true),
+          valuePrefix = (valueNegative ? (sign === "(" ? sign : "-") : sign === "-" || sign === "(" ? "" : sign) + prefix;
 
       // Perform the initial formatting.
       value = formatType(value, precision);
 
       // Compute the suffix.
-      var valueSuffix = suffix + (type === "s" ? prefixes[8 + prefixExponent / 3] : "");
+      var valueSuffix = suffix + (type === "s" ? prefixes[8 + prefixExponent / 3] : "") + (valueNegative && sign === "(" ? ")" : "");
 
       // Break the formatted value into the integer “value” part that can be
       // grouped, and fractional or exponential “suffix” part that is not.
