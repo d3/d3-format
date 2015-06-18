@@ -15,3 +15,8 @@ tape("format(\"e\") can output exponent notation", function(test) {
   test.equal(format.format(".3e")(42), "4.200e+1")
   test.end();
 });
+
+tape("format(\",e\") does not group Infinity", function(test) {
+  test.equal(format.format(",e")(Infinity), "Infinity");
+  test.end();
+});

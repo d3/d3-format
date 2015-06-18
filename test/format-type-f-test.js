@@ -44,3 +44,8 @@ tape("format(\"f\") can format negative zero", function(test) {
   test.equal(format.format("1f")(-0), "-0.000000");
   test.end();
 });
+
+tape("format(\",f\") does not group Infinity", function(test) {
+  test.equal(format.format(",f")(Infinity), "Infinity");
+  test.end();
+});

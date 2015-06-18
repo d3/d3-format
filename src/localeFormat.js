@@ -38,8 +38,7 @@ export default function(locale) {
     // Can this type generate exponential notation?
     var formatType = formatTypes[type],
         integer = /[bcdoxX]/.test(type),
-        maybeExponent = !type || /[deg]/.test(type),
-        maybeDecimal = maybeExponent || /[fprs%]/.test(type);
+        maybeSuffix = !type || /[defgprs%]/.test(type);
 
     // Set the default precision if not specified,
     // or clamp the specified precision to the supported range.
@@ -67,16 +66,13 @@ export default function(locale) {
 
       // Break the formatted value into the integer “value” part that can be
       // grouped, and fractional or exponential “suffix” part that is not.
-      if (maybeDecimal) {
-        var i = value.indexOf(".");
-        if (i >= 0) {
-          valueSuffix = decimal + value.slice(i + 1) + valueSuffix;
-          value = value.slice(0, i);
-        } else if (maybeExponent) {
-          i = value.indexOf("e");
-          if (i >= 0) {
-            valueSuffix = value.slice(i) + valueSuffix;
+      if (maybeSuffix) {
+        var i = -1, n = value.length, c;
+        while (++i < n) {
+          if (c = value.charCodeAt(i), 48 > c || c > 57) {
+            valueSuffix = (c === 46 ? decimal + value.slice(i + 1) : value.slice(i)) + valueSuffix;
             value = value.slice(0, i);
+            break;
           }
         }
       }
