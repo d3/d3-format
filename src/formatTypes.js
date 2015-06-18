@@ -14,7 +14,7 @@ var formatBinary = formatInteger(2),
 
 export default {
   "": formatDefault,
-  "%": function(x, p) { x = formatFixed(x * 100, p); return x && (x[2] = "%", x); },
+  "%": function(x, p) { x = formatFixed(x * 100, p); return x && (x[2] += "%", x); },
   "b": formatBinary,
   "c": formatCharacter,
   "d": formatDecimal,
@@ -22,7 +22,7 @@ export default {
   "f": formatFixed,
   "g": formatGeneral,
   "o": formatOctal,
-  "p": function(x, p) { x = formatRounded(x * 100, p); return x && (x[2] = "%", x); },
+  "p": function(x, p) { x = formatRounded(x * 100, p); return x && (x[2] += "%", x); },
   "r": formatRounded,
   "s": formatPrefixAuto,
   "x": formatHexadecimal,
