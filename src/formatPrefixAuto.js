@@ -1,9 +1,9 @@
-import formatDecimal from "./formatDecimal";
+import formatDigits from "./formatDigits";
 
 export var prefixExponent;
 
 export default function(x, p) {
-  var d = formatDecimal(x, p);
+  var d = formatDigits(x, p);
   if (!d) return x + "";
   var coefficient = d[0],
       exponent = d[1],
@@ -12,5 +12,5 @@ export default function(x, p) {
   return i === n ? coefficient
       : i > n ? coefficient + new Array(i - n + 1).join("0")
       : i > 0 ? coefficient.slice(0, i) + "." + coefficient.slice(i)
-      : "0." + new Array(1 - i).join("0") + formatDecimal(x, p + i - 1)[0]; // less than 1y!
+      : "0." + new Array(1 - i).join("0") + formatDigits(x, p + i - 1)[0]; // less than 1y!
 };

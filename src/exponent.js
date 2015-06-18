@@ -1,5 +1,5 @@
-import formatDecimal from "./formatDecimal";
+import formatDigits from "./formatDigits";
 
 export default function(x) {
-  return x = formatDecimal(Math.abs(x)), x ? x[1] : NaN;
+  return x = formatDigits(Math.abs(x)), x ? x[1] : NaN;
 };

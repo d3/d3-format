@@ -30,16 +30,13 @@ export default function(locale) {
 
     // Compute the prefix and suffix.
     // For SI-prefix, the suffix is lazily computed.
-    var prefix = symbol === "$" ? currency[0] : symbol === "#" && /[boxX]/.test(type) ? "0" + type.toLowerCase() : "",
-        suffix = symbol === "$" ? currency[1] : /[%p]/.test(type) ? "%" : "";
+    var prefix = symbol === "$" ? currency[0] : symbol === "#" && /[boxX]/.test(type) ? "0" + type.toLowerCase() : "", // TODO remove regex
+        suffix = symbol === "$" ? currency[1] : "";
 
     // What format function should we use?
     // Is this an integer type?
     // Can this type generate exponential notation?
-    var formatType = formatTypes[type],
-        // integer = /[bcdoxX]/.test(type),
-        maybeExponent = !type || /[deg]/.test(type),
-        maybeDecimal = maybeExponent || /[fprs%]/.test(type);
+    var formatType = formatTypes[type];
 
     // Set the default precision if not specified,
     // or clamp the specified precision to the supported range.
@@ -50,56 +47,13 @@ export default function(locale) {
         : Math.max(0, Math.min(20, precision));
 
     return function(value) {
-      if (!type
-          || type === "b"
-          || type === "c"
-          || type === "d"
-          || type === "o"
-          || type === "x"
-          || type === "X") {
-        var parts = formatType(value, precision);
+      var parts = formatType(value, precision);
 
-        if (!parts) return "";
+      if (!parts) return "";
 
-        var pre = parts[0], // sign: true if negative
-            mid = parts[1], // part of formatted value that needs grouping
-            post = parts[2]; // remainder of formatter value
-      } else {
-        value = +value;
-
-        // Return the empty string for floats formatted as ints.
-        // if (integer && (value % 1)) return "";
-
-        // Convert negative to positive, and compute the prefix.
-        // Note that -0 is not less than 0, but 1 / -0 is!
-        pre = value < 0 || 1 / value < 0 ? (value *= -1, "-") : "";
-
-        // Perform the initial formatting.
-        mid = formatType(value, precision);
-
-        // Compute the suffix.
-        post = "";
-
-        // Break the formatted value into the integer “mid” part that can be
-        // grouped, and fractional or exponential “post” part that is not.
-        if (maybeDecimal) {
-          var i = mid.indexOf(".");
-          if (i >= 0) {
-            post = decimal + mid.slice(i + 1) + post;
-            mid = mid.slice(0, i);
-          } else if (maybeExponent) {
-            i = mid.indexOf("e");
-            if (i >= 0) {
-              post = mid.slice(i) + post;
-              mid = mid.slice(0, i);
-            }
-          }
-        }
-      }
-
-      if (sign !== "-" && !pre) pre = sign;
-      pre += prefix;
-      post += suffix + (type === "s" ? prefixes[8 + prefixExponent / 3] : "");
+      var pre = (parts[0] ? "-" : sign === "-" ? "" : sign) + prefix,
+          mid = parts[1],
+          post = parts[2] + suffix;
 
       // If the fill character is not "0", grouping is applied before padding.
       if (comma && !zero) mid = group(mid, Infinity);

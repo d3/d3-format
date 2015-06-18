@@ -1,52 +1,30 @@
+import formatCharacter from "./formatCharacter";
+import formatDecimal from "./formatDecimal";
 import formatDefault from "./formatDefault";
+import formatExponential from "./formatExponential";
+import formatFixed from "./formatFixed";
+import formatGeneral from "./formatGeneral";
+import formatInteger from "./formatInteger";
 import formatPrefixAuto from "./formatPrefixAuto";
 import formatRounded from "./formatRounded";
 
-var formatHexadecimal = formatInteger(16);
+var formatBinary = formatInteger(2),
+    formatOctal = formatInteger(8),
+    formatHexadecimal = formatInteger(16);
 
 export default {
   "": formatDefault,
-  "%": function(x, p) { return (x * 100).toFixed(p); },
-  "b": formatInteger(2),
-  "c": function(x) { var i = Math.floor(x); return +x === i ? ["", String.fromCharCode(x), ""] : null; },
+  "%": function(x, p) { x = formatFixed(x * 100, p); return x && (x[2] = "%", x); },
+  "b": formatBinary,
+  "c": formatCharacter,
   "d": formatDecimal,
-  "e": function(x, p) { return x.toExponential(p); },
-  "f": function(x, p) { return x.toFixed(p); },
-  "g": function(x, p) { return x.toPrecision(p); },
-  "o": formatInteger(8),
-  "p": function(x, p) { return formatRounded(x * 100, p); },
+  "e": formatExponential,
+  "f": formatFixed,
+  "g": formatGeneral,
+  "o": formatOctal,
+  "p": function(x, p) { x = formatRounded(x * 100, p); return x && (x[2] = "%", x); },
   "r": formatRounded,
   "s": formatPrefixAuto,
-  "X": function(x) { x = formatHexadecimal(x); return x && (x[1] = x[1].toUpperCase(), x); },
-  "x": formatInteger(16),
+  "x": formatHexadecimal,
+  "X": function(x) { x = formatHexadecimal(x); return x && (x[1] = x[1].toUpperCase(), x); }
 };
-
-function formatInteger(b) {
-  return function(x) {
-    var i = Math.floor(x);
-    if (+x !== i) return null;
-    x = i.toString(b);
-    return [
-      x[0] === "-" ? "-" : "",
-      x.slice(x[0] === "-" ? 1 : 0),
-      ""
-    ];
-  };
-}
-
-function formatDecimal(x) {
-  if (Math.floor(x) !== (x = +x)) return null;
-
-  x = x.toFixed(0);
-
-  var i = x.indexOf("e");
-  return i > 0 ? [
-    x[0] === "-" ? "-" : "",
-    x.slice(x[0] === "-" ? 1 : 0, i),
-    x.slice(i)
-  ] : [
-    x[0] === "-" ? "-" : "",
-    x.slice(x[0] === "-" ? 1 : 0),
-    ""
-  ];
-}

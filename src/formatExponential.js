@@ -1,8 +1,6 @@
-export default function(x) {
-  var i = Math.floor(x);
-  if (+x !== i) return null;
-  x = i.toFixed(0);
-  i = x.indexOf("e");
+export default function(x, p) {
+  x = (+x).toExponential(p);
+  var i = x.indexOf("e");
   if (i < 0) i = x.length;
   return [
     x[0] === "-" ? "-" : "",
