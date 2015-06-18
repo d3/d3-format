@@ -46,3 +46,15 @@ tape("format(\"$\") can output a currency", function(test) {
   test.equal(f(-4.2), "-$4.2");
   test.end();
 });
+
+tape("format(\"($\") can output a currency with parentheses for negative values", function(test) {
+  var f = format.format("($");
+  test.equal(f(0), "$0");
+  test.equal(f(.042), "$0.042");
+  test.equal(f(.42), "$0.42");
+  test.equal(f(4.2), "$4.2");
+  test.equal(f(-.042), "($0.042)");
+  test.equal(f(-.42), "($0.42)");
+  test.equal(f(-4.2), "($4.2)");
+  test.end();
+});
