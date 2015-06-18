@@ -57,3 +57,15 @@ tape("formatSpecifier(specifier).toString() reflects current field values", func
   test.equal(format.format(s)(42), "+$0,000,042.00");
   test.end();
 });
+
+tape("formatSpecifier(specifier).toString() clamps precision to zero", function(test) {
+  var s = format.formatSpecifier("");
+  test.equal((s.precision = -1, s) + "", " >-.0");
+  test.end();
+});
+
+tape("formatSpecifier(specifier).toString() clamps width to one", function(test) {
+  var s = format.formatSpecifier("");
+  test.equal((s.width = -1, s) + "", " >-1");
+  test.end();
+});

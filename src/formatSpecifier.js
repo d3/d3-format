@@ -47,8 +47,8 @@ FormatSpecifier.prototype.toString = function() {
       + this.sign
       + this.symbol
       + (this.zero ? "0" : "")
-      + (this.width == null ? "" : this.width | 0)
+      + (this.width == null ? "" : Math.max(1, this.width | 0))
       + (this.comma ? "," : "")
-      + (this.precision == null ? "" : "." + (this.precision | 0))
+      + (this.precision == null ? "" : "." + Math.max(0, this.precision | 0))
       + this.type;
 };
