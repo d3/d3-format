@@ -119,11 +119,11 @@ The available *type* values are:
 * `s` - decimal notation with an [SI prefix](#locale_formatPrefix), rounded to significant digits.
 * `%` - multiply by 100, and then decimal notation with a percent sign.
 * `p` - multiply by 100, round to significant digits, and then decimal notation with a percent sign.
-* `b` - binary notation, rounded to integer (ignores precision).
-* `o` - octal notation, rounded to integer (ignores precision).
-* `d` - decimal notation, rounded to integer (ignores precision).
-* `x` - hexadecimal notation, using lower-case letters, rounded to integer (ignores precision).
-* `X` - hexadecimal notation, using upper-case letters, rounded to integer (ignores precision).
+* `b` - binary notation, rounded to integer.
+* `o` - octal notation, rounded to integer.
+* `d` - decimal notation, rounded to integer.
+* `x` - hexadecimal notation, using lower-case letters, rounded to integer.
+* `X` - hexadecimal notation, using upper-case letters, rounded to integer.
 * `c` - converts the integer to the corresponding unicode character before printing.
 * `​` (none) - like `g`, but trim insignificant trailing zeros.
 
