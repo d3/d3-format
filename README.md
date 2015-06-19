@@ -54,13 +54,13 @@ Now you get this:
 But d3-format is much more than an alias for [number.toFixed](https://developer.mozilla.org/en-US/docs/Web/JavaScript/Reference/Global_Objects/Number/toFixed)! A few more examples:
 
 ```js
-format(".0%")(.123);  // rounded percentage, "12%"
-format("$.2f")(3.5);  // localized fixed-point currency, "£3.50"
-format("+20")(42);    // space-filled and signed, "                 +42"
-format(".^20")(42);   // dot-filled and centered, ".........42........."
-format(".2s")(42e6);  // SI-prefix with two significant digits, "42M"
-format("#x")(48879);  // prefixed lowercase hexadecimal, "0xbeef"
-format(",.2r")(4223); // grouped thousands with two significant digits, "4,200"
+format(".0%")(.123);   // rounded percentage, "12%"
+format("($.2f")(-3.5); // localized fixed-point currency, "(£3.50)"
+format("+20")(42);     // space-filled and signed, "                 +42"
+format(".^20")(42);    // dot-filled and centered, ".........42........."
+format(".2s")(42e6);   // SI-prefix with two significant digits, "42M"
+format("#x")(48879);   // prefixed lowercase hexadecimal, "0xbeef"
+format(",.2r")(4223);  // grouped thousands with two significant digits, "4,200"
 ```
 
 See [*locale*.format](#locale_format) for a detailed specification, and try running [formatSpecifier](#formatSpecifier) on the above formats to decode their meaning.
