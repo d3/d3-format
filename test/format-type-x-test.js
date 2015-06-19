@@ -1,11 +1,6 @@
 var tape = require("tape"),
     format = require("../");
 
-tape("format(\"x\") returns the empty string for non-integers", function(test) {
-  test.equal(format.format("x")(2.4), "");
-  test.end();
-});
-
 tape("format(\"x\") returns the expected hexadecimal (lowercase) string", function(test) {
   test.equal(format.format("x")(0xdeadbeef), "deadbeef");
   test.end();
@@ -46,6 +41,12 @@ tape("format(\"$,x\") formats hexadecimal currency", function(test) {
 
 tape("format(\"[.precision]x\") always has precision zero", function(test) {
   test.equal(format.format(".2x")(0xdeadbeef), "deadbeef");
+  test.equal(format.format(".2x")(-4.2), "-4");
+  test.end();
+});
+
+tape("format(\"x\") rounds non-integers", function(test) {
+  test.equal(format.format("x")(2.4), "2");
   test.end();
 });
 

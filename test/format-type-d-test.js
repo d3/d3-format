@@ -1,11 +1,6 @@
 var tape = require("tape"),
     format = require("../");
 
-tape("format(\"d\") will not display non-integers in integer format", function(test) {
-  test.equal(format.format("d")(4.2), "");
-  test.end();
-});
-
 tape("format(\"d\") can zero fill", function(test) {
   var f = format.format("08d");
   test.equal(f(0), "00000000");
@@ -62,13 +57,13 @@ tape("format(\"d\") always uses zero precision", function(test) {
   var f = format.format(".2d");
   test.equal(f(0), "0");
   test.equal(f(42), "42");
-  test.equal(f(-4.2), "");
+  test.equal(f(-4.2), "-4");
   test.end();
 });
 
-tape("format(\"d\") returns the empty string for non-integers", function(test) {
+tape("format(\"d\") rounds non-integers", function(test) {
   var f = format.format("d");
-  test.equal(f(4.2), "");
+  test.equal(f(4.2), "4");
   test.end();
 });
 
