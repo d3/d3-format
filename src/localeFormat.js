@@ -37,7 +37,6 @@ export default function(locale) {
     // Is this an integer type?
     // Can this type generate exponential notation?
     var formatType = formatTypes[type],
-        integer = /[bcdoxX]/.test(type),
         maybeSuffix = !type || /[defgprs%]/.test(type);
 
     // Set the default precision if not specified,
@@ -49,31 +48,36 @@ export default function(locale) {
         : Math.max(0, Math.min(20, precision));
 
     return function(value) {
-      value = +value;
+      var valuePrefix = prefix,
+          valueSuffix = suffix;
 
-      // Return the empty string for floats formatted as ints.
-      if (integer && (value % 1)) return "";
+      if (type === "c") {
+        valueSuffix = formatType(value) + valueSuffix;
+        value = "";
+      } else {
+        value = +value;
 
-      // Convert negative to positive, and compute the prefix.
-      // Note that -0 is not less than 0, but 1 / -0 is!
-      var valueNegative = (value < 0 || 1 / value < 0) && (value *= -1, true),
-          valuePrefix = (valueNegative ? (sign === "(" ? sign : "-") : sign === "-" || sign === "(" ? "" : sign) + prefix;
+        // Convert negative to positive, and compute the prefix.
+        // Note that -0 is not less than 0, but 1 / -0 is!
+        var valueNegative = (value < 0 || 1 / value < 0) && (value *= -1, true);
 
-      // Perform the initial formatting.
-      value = formatType(value, precision);
+        // Perform the initial formatting.
+        value = formatType(value, precision);
 
-      // Compute the suffix.
-      var valueSuffix = suffix + (type === "s" ? prefixes[8 + prefixExponent / 3] : "") + (valueNegative && sign === "(" ? ")" : "");
+        // Compute the prefix and suffix.
+        valuePrefix = (valueNegative ? (sign === "(" ? sign : "-") : sign === "-" || sign === "(" ? "" : sign) + valuePrefix;
+        valueSuffix = valueSuffix + (type === "s" ? prefixes[8 + prefixExponent / 3] : "") + (valueNegative && sign === "(" ? ")" : "");
 
-      // Break the formatted value into the integer “value” part that can be
-      // grouped, and fractional or exponential “suffix” part that is not.
-      if (maybeSuffix) {
-        var i = -1, n = value.length, c;
-        while (++i < n) {
-          if (c = value.charCodeAt(i), 48 > c || c > 57) {
-            valueSuffix = (c === 46 ? decimal + value.slice(i + 1) : value.slice(i)) + valueSuffix;
-            value = value.slice(0, i);
-            break;
+        // Break the formatted value into the integer “value” part that can be
+        // grouped, and fractional or exponential “suffix” part that is not.
+        if (maybeSuffix) {
+          var i = -1, n = value.length, c;
+          while (++i < n) {
+            if (c = value.charCodeAt(i), 48 > c || c > 57) {
+              valueSuffix = (c === 46 ? decimal + value.slice(i + 1) : value.slice(i)) + valueSuffix;
+              value = value.slice(0, i);
+              break;
+            }
           }
         }
       }

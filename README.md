@@ -114,16 +114,16 @@ The available *type* values are:
 
 * `e` - exponent notation.
 * `f` - fixed point notation.
-* `g` - round to significant digits, and then either decimal or exponent notation.
-* `r` - round to significant digits, and then decimal notation.
-* `s` - round to significant digits, and then decimal notation with an [SI prefix](#locale_formatPrefix).
+* `g` - either decimal or exponent notation, rounded to significant digits.
+* `r` - decimal notation, rounded to significant digits.
+* `s` - decimal notation with an [SI prefix](#locale_formatPrefix), rounded to significant digits.
 * `%` - multiply by 100, and then decimal notation with a percent sign.
 * `p` - multiply by 100, round to significant digits, and then decimal notation with a percent sign.
-* `b` - binary notation; ignores non-integers.
-* `o` - octal notation; ignores non-integers.
-* `d` - decimal notation; ignores non-integers.
-* `x` - hexadecimal notation, using lower-case letters; ignores non-integers.
-* `X` - hexadecimal notation, using upper-case letters; ignores non-integers.
+* `b` - binary notation, rounded to integer (ignores precision).
+* `o` - octal notation, rounded to integer (ignores precision).
+* `d` - decimal notation, rounded to integer (ignores precision).
+* `x` - hexadecimal notation, using lower-case letters, rounded to integer (ignores precision).
+* `X` - hexadecimal notation, using upper-case letters, rounded to integer (ignores precision).
 * `c` - converts the integer to the corresponding unicode character before printing.
 * `​` (none) - like `g`, but trim insignificant trailing zeros.
 
