@@ -73,11 +73,11 @@ If you use NPM, `npm install d3-format`. Otherwise, download the [latest release
 
 <a name="format" href="#format">#</a> <b>format</b>(<i>specifier</i>)
 
-An alias for [*locale*.format](#locale_format) on the default locale. While this method generates output for U.S. English-speaking humans ([en-US](https://github.com/d3/d3-format/tree/master/src/locale/en-US.js)) by default, humans in other locales may be served using [localeFormat](#localeFormat) or by editing [index.js](https://github.com/d3/d3-format/tree/master/index.js) and rebuilding.
+An alias for [*locale*.format](#locale_format) on the default locale. While this method generates output for [U.S. English](https://github.com/d3/d3-format/tree/master/src/locale/en-US.js)-speaking humans by default, humans in other locales may be served using [localeFormat](#localeFormat) or by editing [index.js](https://github.com/d3/d3-format/tree/master/index.js) and rebuilding.
 
 <a name="formatPrefix" href="#formatPrefix">#</a> <b>formatPrefix</b>(<i>specifier</i>, <i>value</i>)
 
-An alias for [*locale*.formatPrefix](#locale_formatPrefix) on the default locale. While this method generates output for U.S. English-speaking humans ([en-US](https://github.com/d3/d3-format/tree/master/src/locale/en-US.js)) by default, humans in other locales may be served using [localeFormat](#localeFormat) or by editing [index.js](https://github.com/d3/d3-format/tree/master/index.js) and rebuilding.
+An alias for [*locale*.formatPrefix](#locale_formatPrefix) on the default locale. While this method generates output for [U.S. English](https://github.com/d3/d3-format/tree/master/src/locale/en-US.js)-speaking humans by default, humans in other locales may be served using [localeFormat](#localeFormat) or by editing [index.js](https://github.com/d3/d3-format/tree/master/index.js) and rebuilding.
 
 <a name="locale_format" href="#locale_format">#</a> <i>locale</i>.<b>format</b>(<i>specifier</i>)
 
@@ -179,23 +179,23 @@ Returns a *locale* object for the specified *definition*, with [*locale*.format]
 
 (Note that the *thousands* property is a misnomer, as the grouping definition allows groups other than thousands.) The following locale definitions are available in the source:
 
-* [ca-ES](https://github.com/d3/d3-format/tree/master/src/locale/ca-ES.js) - Catalan (Spain)
-* [de-DE](https://github.com/d3/d3-format/tree/master/src/locale/de-DE.js) - German (Germany)
-* [en-CA](https://github.com/d3/d3-format/tree/master/src/locale/en-CA.js) - English (Canada)
-* [en-GB](https://github.com/d3/d3-format/tree/master/src/locale/en-GB.js) - English (United Kingdom)
-* [en-US](https://github.com/d3/d3-format/tree/master/src/locale/en-US.js) - English (United States)
-* [es-ES](https://github.com/d3/d3-format/tree/master/src/locale/es-ES.js) - Spanish (Spain)
-* [fi-FI](https://github.com/d3/d3-format/tree/master/src/locale/fi-FI.js) - Finnish (Finland)
-* [fr-CA](https://github.com/d3/d3-format/tree/master/src/locale/fr-CA.js) - French (Canada)
-* [fr-FR](https://github.com/d3/d3-format/tree/master/src/locale/fr-FR.js) - French (France)
-* [he-IL](https://github.com/d3/d3-format/tree/master/src/locale/he-IL.js) - Hebrew (Israel)
-* [it-IT](https://github.com/d3/d3-format/tree/master/src/locale/it-IT.js) - Italian (Italy)
-* [mk-MK](https://github.com/d3/d3-format/tree/master/src/locale/mk-MK.js) - Macedonian (Macedonia)
-* [nl-NL](https://github.com/d3/d3-format/tree/master/src/locale/nl-NL.js) - Dutch (Netherlands)
-* [pl-PL](https://github.com/d3/d3-format/tree/master/src/locale/pl-PL.js) - Polish (Poland)
-* [pt-BR](https://github.com/d3/d3-format/tree/master/src/locale/pt-BR.js) - Portuguese (Brazil)
-* [ru-RU](https://github.com/d3/d3-format/tree/master/src/locale/ru-RU.js) - Russian (Russia)
-* [zh-CN](https://github.com/d3/d3-format/tree/master/src/locale/zh-CN.js) - Chinese (China)
+* [Catalan (Spain)](https://github.com/d3/d3-format/tree/master/src/locale/ca-ES.js)
+* [German (Germany)](https://github.com/d3/d3-format/tree/master/src/locale/de-DE.js)
+* [English (Canada)](https://github.com/d3/d3-format/tree/master/src/locale/en-CA.js)
+* [English (United Kingdom)](https://github.com/d3/d3-format/tree/master/src/locale/en-GB.js)
+* [English (United States)](https://github.com/d3/d3-format/tree/master/src/locale/en-US.js)
+* [Spanish (Spain)](https://github.com/d3/d3-format/tree/master/src/locale/es-ES.js)
+* [Finnish (Finland)](https://github.com/d3/d3-format/tree/master/src/locale/fi-FI.js)
+* [French (Canada)](https://github.com/d3/d3-format/tree/master/src/locale/fr-CA.js)
+* [French (France)](https://github.com/d3/d3-format/tree/master/src/locale/fr-FR.js)
+* [Hebrew (Israel)](https://github.com/d3/d3-format/tree/master/src/locale/he-IL.js)
+* [Italian (Italy)](https://github.com/d3/d3-format/tree/master/src/locale/it-IT.js)
+* [Macedonian (Macedonia)](https://github.com/d3/d3-format/tree/master/src/locale/mk-MK.js)
+* [Dutch (Netherlands)](https://github.com/d3/d3-format/tree/master/src/locale/nl-NL.js)
+* [Polish (Poland)](https://github.com/d3/d3-format/tree/master/src/locale/pl-PL.js)
+* [Portuguese (Brazil)](https://github.com/d3/d3-format/tree/master/src/locale/pt-BR.js)
+* [Russian (Russia)](https://github.com/d3/d3-format/tree/master/src/locale/ru-RU.js)
+* [Chinese (China)](https://github.com/d3/d3-format/tree/master/src/locale/zh-CN.js)
 
 To change the default locale, edit [index.js](https://github.com/d3/d3-format/tree/master/index.js) and run `npm run prepublish`.
 
