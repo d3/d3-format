@@ -81,7 +81,7 @@ An alias for [*locale*.formatPrefix](#locale_formatPrefix) on the default locale
 
 <a name="locale_format" href="#locale_format">#</a> <i>locale</i>.<b>format</b>(<i>specifier</i>)
 
-Returns a new format function with the given string *specifier*. The returned function takes a number as the only argument, and returns a string representing the formatted number. The general form of a specifier is:
+Returns a new format function for the given string *specifier*. The returned function takes a number as the only argument, and returns a string representing the formatted number. The general form of a specifier is:
 
 ```
 [​[fill]align][sign][symbol][0][width][,][.precision][type]
