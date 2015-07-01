@@ -27,6 +27,6 @@
     "d3-bundler": "~0.2.5",
     "faucet": "0.0",
     "tape": "4",
-    "uglifyjs": "2"
+    "uglify-js": "2"
   }
 }
