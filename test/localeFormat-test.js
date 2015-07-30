@@ -1,6 +1,23 @@
 var tape = require("tape"),
     format = require("../");
 
+tape("localeFormat(\"en-US\") returns a U.S. English format", function(test) {
+  var locale = format.localeFormat("en-US");
+  test.equal(locale.format("$,.2f")(1234.56), "$1,234.56");
+  test.end();
+});
+
+tape("localeFormat(\"fr-FR\") returns a French format", function(test) {
+  var locale = format.localeFormat("fr-FR");
+  test.equal(locale.format("$,.2f")(1234.56), "1.234,56 €");
+  test.end();
+});
+
+tape("localeFormat(\"invalid\") returns null", function(test) {
+  test.equal(format.localeFormat("invalid"), null);
+  test.end();
+});
+
 tape("localeFormat({decimal: decimal}) observes the specified decimal point", function(test) {
   test.equal(format.localeFormat({decimal: "|"}).format("06.2f")(2), "002|00");
   test.equal(format.localeFormat({decimal: "/"}).format("06.2f")(2), "002/00");

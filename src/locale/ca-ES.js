@@ -1,8 +1,6 @@
-import localeFormat from "../localeFormat";
-
-export default localeFormat({
+export default {
   decimal: ",",
   thousands: ".",
   grouping: [3],
   currency: ["", "\xa0€"]
-});
+};
