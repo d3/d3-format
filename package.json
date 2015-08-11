@@ -19,7 +19,7 @@
     "url": "https://github.com/d3/d3-format.git"
   },
   "scripts": {
-    "pretest": "mkdir -p build && d3-bundler --polyfill-map --format=umd --name=format -- index.js > build/format.js",
+    "pretest": "mkdir -p build && d3-bundler --format=umd --name=format -- index.js > build/format.js",
     "test": "faucet `find test -name '*-test.js'`",
     "prepublish": "npm run test && uglifyjs build/format.js -c -m -o build/format.min.js && rm -f build/format.zip && zip -j build/format.zip -- LICENSE README.md build/format.js build/format.min.js"
   },
