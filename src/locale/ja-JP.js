@@ -1,5 +1,5 @@
 export default {
-  decimal: ",",
+  decimal: ".",
   thousands: ",",
   grouping: [3],
   currency: ["", "円"]
