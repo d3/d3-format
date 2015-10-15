@@ -23,25 +23,26 @@ import ptBr from "./src/locale/pt-BR";
 import ruRu from "./src/locale/ru-RU";
 import zhCn from "./src/locale/zh-CN";
 
-var localeDefinitions = (new Map)
-    .set("ca-ES", caEs)
-    .set("de-DE", deDe)
-    .set("en-CA", enCa)
-    .set("en-GB", enGb)
-    .set("en-US", enUs)
-    .set("es-ES", esEs)
-    .set("fi-FI", fiFi)
-    .set("fr-CA", frCa)
-    .set("fr-FR", frFr)
-    .set("he-IL", heIl)
-    .set("it-IT", itIt)
-    .set("ja-JP", jaJp)
-    .set("mk-MK", mkMk)
-    .set("nl-NL", nlNl)
-    .set("pl-PL", plPl)
-    .set("pt-BR", ptBr)
-    .set("ru-RU", ruRu)
-    .set("zh-CN", zhCn);
+var localeDefinitions = {
+  "ca-ES": caEs,
+  "de-DE": deDe,
+  "en-CA": enCa,
+  "en-GB": enGb,
+  "en-US": enUs,
+  "es-ES": esEs,
+  "fi-FI": fiFi,
+  "fr-CA": frCa,
+  "fr-FR": frFr,
+  "he-IL": heIl,
+  "it-IT": itIt,
+  "ja-JP": jaJp,
+  "mk-MK": mkMk,
+  "nl-NL": nlNl,
+  "pl-PL": plPl,
+  "pt-BR": ptBr,
+  "ru-RU": ruRu,
+  "zh-CN": zhCn
+};
 
 var defaultLocale = locale(enUs);
 export var format = defaultLocale.format;
@@ -49,8 +50,8 @@ export var formatPrefix = defaultLocale.formatPrefix;
 
 export function localeFormat(definition) {
   if (typeof definition === "string") {
-    definition = localeDefinitions.get(definition);
-    if (!definition) return null;
+    if (!localeDefinitions.hasOwnProperty(definition)) return null;
+    definition = localeDefinitions[definition];
   }
   return locale(definition);
 };
