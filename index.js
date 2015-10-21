@@ -16,6 +16,7 @@ import frFr from "./src/locale/fr-FR";
 import heIl from "./src/locale/he-IL";
 import itIt from "./src/locale/it-IT";
 import jaJp from "./src/locale/ja-JP";
+import koKr from "./src/locale/ko-KR";
 import mkMk from "./src/locale/mk-MK";
 import nlNl from "./src/locale/nl-NL";
 import plPl from "./src/locale/pl-PL";
@@ -37,6 +38,7 @@ var localeDefinitions = {
   "he-IL": heIl,
   "it-IT": itIt,
   "ja-JP": jaJp,
+  "ko-KR": koKr,
   "mk-MK": mkMk,
   "nl-NL": nlNl,
   "pl-PL": plPl,

@@ -184,6 +184,7 @@ Returns a *locale* object for the specified *definition* with [*locale*.format](
 * `"he-IL"` - [Hebrew (Israel)](https://github.com/d3/d3-format/tree/master/src/locale/he-IL.js)
 * `"it-IT"` - [Italian (Italy)](https://github.com/d3/d3-format/tree/master/src/locale/it-IT.js)
 * `"ja-JP"` - [Japanese (Japan)](https://github.com/d3/d3-format/tree/master/src/locale/ja-JP.js)
+* `"ko-KR"` - [Korean (South Korea)](https://github.com/d3/d3-format/tree/master/src/locale/ko-KR.js)
 * `"mk-MK"` - [Macedonian (Macedonia)](https://github.com/d3/d3-format/tree/master/src/locale/mk-MK.js)
 * `"nl-NL"` - [Dutch (Netherlands)](https://github.com/d3/d3-format/tree/master/src/locale/nl-NL.js)
 * `"pl-PL"` - [Polish (Poland)](https://github.com/d3/d3-format/tree/master/src/locale/pl-PL.js)
