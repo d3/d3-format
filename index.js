@@ -21,6 +21,7 @@ import nlNl from "./src/locale/nl-NL";
 import plPl from "./src/locale/pl-PL";
 import ptBr from "./src/locale/pt-BR";
 import ruRu from "./src/locale/ru-RU";
+import svSE from "./src/locale/sv-SE";
 import zhCn from "./src/locale/zh-CN";
 
 var localeDefinitions = {
@@ -41,6 +42,7 @@ var localeDefinitions = {
   "pl-PL": plPl,
   "pt-BR": ptBr,
   "ru-RU": ruRu,
+  "sv-SE": svSE,
   "zh-CN": zhCn
 };
 

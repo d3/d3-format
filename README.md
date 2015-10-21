@@ -189,6 +189,7 @@ Returns a *locale* object for the specified *definition* with [*locale*.format](
 * `"pl-PL"` - [Polish (Poland)](https://github.com/d3/d3-format/tree/master/src/locale/pl-PL.js)
 * `"pt-BR"` - [Portuguese (Brazil)](https://github.com/d3/d3-format/tree/master/src/locale/pt-BR.js)
 * `"ru-RU"` - [Russian (Russia)](https://github.com/d3/d3-format/tree/master/src/locale/ru-RU.js)
+* `"sv-SE"` - [Swedish (Sweden)](https://github.com/d3/d3-format/tree/master/src/locale/sv-SE.js)
 * `"zh-CN"` - [Chinese (China)](https://github.com/d3/d3-format/tree/master/src/locale/zh-CN.js)
 
 Otherwise, the locale *definition* must include the following properties:
