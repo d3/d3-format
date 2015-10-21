@@ -173,6 +173,7 @@ This method is useful when formatting multiple numbers in the same units for eas
 Returns a *locale* object for the specified *definition* with [*locale*.format](#locale_format) and [*locale*.formatPrefix](#locale_formatPrefix) methods. If *definition* is a string, it is the name of a built-in locale:
 
 * `"ca-ES"` - [Catalan (Spain)](https://github.com/d3/d3-format/tree/master/src/locale/ca-ES.js)
+* `"de-CH"` - [German (Switzerland)](https://github.com/d3/d3-format/tree/master/src/locale/de-CH.js)
 * `"de-DE"` - [German (Germany)](https://github.com/d3/d3-format/tree/master/src/locale/de-DE.js)
 * `"en-CA"` - [English (Canada)](https://github.com/d3/d3-format/tree/master/src/locale/en-CA.js)
 * `"en-GB"` - [English (United Kingdom)](https://github.com/d3/d3-format/tree/master/src/locale/en-GB.js)

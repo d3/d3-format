@@ -5,6 +5,7 @@ import precisionPrefix from "./src/precisionPrefix";
 import precisionRound from "./src/precisionRound";
 
 import caEs from "./src/locale/ca-ES";
+import deCh from "./src/locale/de-CH";
 import deDe from "./src/locale/de-DE";
 import enCa from "./src/locale/en-CA";
 import enGb from "./src/locale/en-GB";
@@ -27,6 +28,7 @@ import zhCn from "./src/locale/zh-CN";
 
 var localeDefinitions = {
   "ca-ES": caEs,
+  "de-CH": deCh,
   "de-DE": deDe,
   "en-CA": enCa,
   "en-GB": enGb,
