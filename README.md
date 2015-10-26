@@ -183,6 +183,7 @@ Returns a *locale* object for the specified *definition* with [*locale*.format](
 * `"fr-CA"` - [French (Canada)](https://github.com/d3/d3-format/tree/master/src/locale/fr-CA.js)
 * `"fr-FR"` - [French (France)](https://github.com/d3/d3-format/tree/master/src/locale/fr-FR.js)
 * `"he-IL"` - [Hebrew (Israel)](https://github.com/d3/d3-format/tree/master/src/locale/he-IL.js)
+* `"hu-HU"` - [Hungarian (Hungary)](https://github.com/d3/d3-format/tree/master/src/locale/hu-HU.js)
 * `"it-IT"` - [Italian (Italy)](https://github.com/d3/d3-format/tree/master/src/locale/it-IT.js)
 * `"ja-JP"` - [Japanese (Japan)](https://github.com/d3/d3-format/tree/master/src/locale/ja-JP.js)
 * `"ko-KR"` - [Korean (South Korea)](https://github.com/d3/d3-format/tree/master/src/locale/ko-KR.js)

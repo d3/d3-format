@@ -15,6 +15,7 @@ import fiFi from "./src/locale/fi-FI";
 import frCa from "./src/locale/fr-CA";
 import frFr from "./src/locale/fr-FR";
 import heIl from "./src/locale/he-IL";
+import huHu from "./src/locale/hu-HU";
 import itIt from "./src/locale/it-IT";
 import jaJp from "./src/locale/ja-JP";
 import koKr from "./src/locale/ko-KR";
@@ -38,6 +39,7 @@ var localeDefinitions = {
   "fr-CA": frCa,
   "fr-FR": frFr,
   "he-IL": heIl,
+  "hu-HU": huHu,
   "it-IT": itIt,
   "ja-JP": jaJp,
   "ko-KR": koKr,
