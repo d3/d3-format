@@ -1,6 +1,6 @@
 {
   "name": "d3-format",
-  "version": "0.3.3",
+  "version": "0.3.4",
   "description": "Format numbers for human consumption.",
   "keywords": [
     "d3",
@@ -12,19 +12,19 @@
     "name": "Mike Bostock",
     "url": "http://bost.ocks.org/mike"
   },
-  "main": "build/format",
+  "main": "build/format.cjs",
   "jsnext:main": "index",
   "repository": {
     "type": "git",
     "url": "https://github.com/d3/d3-format.git"
   },
   "scripts": {
-    "pretest": "mkdir -p build && d3-bundler --format=umd --name=format -- index.js > build/format.js",
+    "pretest": "mkdir -p build && d3-bundler -x -f cjs -o build/format.cjs.js",
     "test": "faucet `find test -name '*-test.js'`",
-    "prepublish": "npm run test && uglifyjs build/format.js -c -m -o build/format.min.js && rm -f build/format.zip && zip -j build/format.zip -- LICENSE README.md build/format.js build/format.min.js"
+    "prepublish": "npm run test && d3-bundler -n format -o build/format.js && uglifyjs build/format.js -c -m -o build/format.min.js && rm -f build/format.zip && zip -j build/format.zip -- LICENSE README.md build/format.js build/format.min.js"
   },
   "devDependencies": {
-    "d3-bundler": "~0.2.5",
+    "d3-bundler": "~0.4.0",
     "faucet": "0.0",
     "tape": "4",
     "uglify-js": "2"
