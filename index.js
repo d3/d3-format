@@ -1,9 +1,4 @@
-import formatSpecifier from "./src/formatSpecifier";
 import locale from "./src/locale";
-import precisionFixed from "./src/precisionFixed";
-import precisionPrefix from "./src/precisionPrefix";
-import precisionRound from "./src/precisionRound";
-
 import caEs from "./src/locale/ca-ES";
 import deCh from "./src/locale/de-CH";
 import deDe from "./src/locale/de-DE";
@@ -64,9 +59,7 @@ export function localeFormat(definition) {
   return locale(definition);
 };
 
-export {
-  formatSpecifier,
-  precisionFixed,
-  precisionPrefix,
-  precisionRound
-};
+export {default as formatSpecifier} from "./src/formatSpecifier";
+export {default as precisionFixed} from "./src/precisionFixed";
+export {default as precisionPrefix} from "./src/precisionPrefix";
+export {default as precisionRound} from "./src/precisionRound";
