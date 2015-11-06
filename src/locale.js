@@ -64,6 +64,21 @@ export default function(locale) {
         // Perform the initial formatting.
         value = formatType(value, precision);
 
+        // If the original value was negative, it may be rounded to zero during
+        // formatting; treat this as (positive) zero.
+        if (valueNegative) {
+          var i = -1, n = value.length, c;
+          valueNegative = false;
+          while (++i < n) {
+            if (c = value.charCodeAt(i), (48 < c && c < 58)
+                || (type === "x" && 96 < c && c < 103)
+                || (type === "X" && 64 < c && c < 71)) {
+              valueNegative = true;
+              break;
+            }
+          }
+        }
+
         // Compute the prefix and suffix.
         valuePrefix = (valueNegative ? (sign === "(" ? sign : "-") : sign === "-" || sign === "(" ? "" : sign) + valuePrefix;
         valueSuffix = valueSuffix + (type === "s" ? prefixes[8 + prefixExponent / 3] : "") + (valueNegative && sign === "(" ? ")" : "");

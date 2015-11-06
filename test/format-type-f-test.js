@@ -40,8 +40,9 @@ tape("format(\"f\") can display integers in fixed-point notation", function(test
   test.end();
 });
 
-tape("format(\"f\") can format negative zero", function(test) {
-  test.equal(format.format("1f")(-0), "-0.000000");
+tape("format(\"f\") can format negative zero as zero", function(test) {
+  test.equal(format.format("1f")(-0), "0.000000");
+  test.equal(format.format("1f")(-1e-12), "0.000000");
   test.end();
 });
 

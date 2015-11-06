@@ -16,6 +16,12 @@ tape("format(\"e\") can output exponent notation", function(test) {
   test.end();
 });
 
+tape("format(\"e\") can format negative zero as zero", function(test) {
+  test.equal(format.format("1e")(-0), "0.000000e+0");
+  test.equal(format.format("1e")(-1e-12), "-1.000000e-12");
+  test.end();
+});
+
 tape("format(\",e\") does not group Infinity", function(test) {
   test.equal(format.format(",e")(Infinity), "Infinity");
   test.end();

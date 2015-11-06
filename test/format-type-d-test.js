@@ -225,7 +225,8 @@ tape("format(\"-,d\") explicitly only use a sign for negative numbers", function
   test.end();
 });
 
-tape("format(\"d\") can format negative zero", function(test) {
-  test.equal(format.format("1d")(-0), "-0");
+tape("format(\"d\") can format negative zero as zero", function(test) {
+  test.equal(format.format("1d")(-0), "0");
+  test.equal(format.format("1d")(-1e-12), "0");
   test.end();
 });
