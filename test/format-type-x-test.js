@@ -50,6 +50,12 @@ tape("format(\"x\") rounds non-integers", function(test) {
   test.end();
 });
 
+tape("format(\"x\") can format negative zero as zero", function(test) {
+  test.equal(format.format("x")(-0), "0");
+  test.equal(format.format("x")(-1e-12), "0");
+  test.end();
+});
+
 tape("format(\"x\") does not consider -0xeee to be positive", function(test) {
   test.equal(format.format("x")(-0xeee), "-eee");
   test.end();
@@ -62,6 +68,12 @@ tape("format(\"X\") returns the expected hexadecimal (uppercase) string", functi
 
 tape("format(\"#X\") returns the expected hexadecimal (uppercase) string with prefix", function(test) {
   test.equal(format.format("#X")(0xdeadbeef), "0xDEADBEEF");
+  test.end();
+});
+
+tape("format(\"X\") can format negative zero as zero", function(test) {
+  test.equal(format.format("X")(-0), "0");
+  test.equal(format.format("X")(-1e-12), "0");
   test.end();
 });
 
