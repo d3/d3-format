@@ -1,6 +1,6 @@
 {
   "name": "d3-format",
-  "version": "0.3.5",
+  "version": "0.3.6",
   "description": "Format numbers for human consumption.",
   "keywords": [
     "d3",
@@ -12,20 +12,20 @@
     "name": "Mike Bostock",
     "url": "http://bost.ocks.org/mike"
   },
-  "main": "build/format.cjs",
+  "main": "build/d3-format.js",
   "jsnext:main": "index",
   "repository": {
     "type": "git",
     "url": "https://github.com/d3/d3-format.git"
   },
   "scripts": {
-    "pretest": "mkdir -p build && d3-bundler -x -f cjs -o build/format.cjs.js",
+    "pretest": "mkdir -p build && node -e 'process.stdout.write(\"var version = \\\"\" + require(\"./package.json\").version + \"\\\"; export * from \\\"../index\\\"; export {version};\");' > build/bundle.js && rollup -f umd -u d3-format -n d3_format -o build/d3-format.js -- build/bundle.js",
     "test": "faucet `find test -name '*-test.js'`",
-    "prepublish": "npm run test && d3-bundler -n format -o build/format.js && uglifyjs build/format.js -c -m -o build/format.min.js && rm -f build/format.zip && zip -j build/format.zip -- LICENSE README.md build/format.js build/format.min.js"
+    "prepublish": "npm run test && uglifyjs build/d3-format.js -c -m -o build/d3-format.min.js && rm -f build/d3-format.zip && zip -j build/d3-format.zip -- LICENSE README.md build/d3-format.js build/d3-format.min.js"
   },
   "devDependencies": {
-    "d3-bundler": "~0.4.0",
     "faucet": "0.0",
+    "rollup": "0.20.5",
     "tape": "4",
     "uglify-js": "2"
   }
