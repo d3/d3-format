@@ -73,11 +73,11 @@ If you use NPM, `npm install d3-format`. Otherwise, download the [latest release
 
 <a name="format" href="#format">#</a> <b>format</b>(<i>specifier</i>)
 
-An alias for [*locale*.format](#locale_format) on the [U.S. English](#enUs) locale. See the other [locales](#locales), or use [locale](#locale) to define a new locale.
+An alias for [*locale*.format](#locale_format) on the [U.S. English locale](#localeEnUs). See the other [locales](#locales), or use [locale](#locale) to define a new locale.
 
 <a name="formatPrefix" href="#formatPrefix">#</a> <b>formatPrefix</b>(<i>specifier</i>, <i>value</i>)
 
-An alias for [*locale*.formatPrefix](#locale_formatPrefix) on the [U.S. English](#enUs) locale. See the other [locales](#locales), or use [locale](#locale) to define a new locale.
+An alias for [*locale*.formatPrefix](#locale_formatPrefix) on the [U.S. English locale](#localeEnUs). See the other [locales](#locales), or use [locale](#locale) to define a new locale.
 
 <a name="locale_format" href="#locale_format">#</a> <i>locale</i>.<b>format</b>(<i>specifier</i>)
 
