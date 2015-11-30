@@ -4,7 +4,7 @@ Ever noticed how sometimes JavaScript doesn’t display numbers the way you expe
 
 ```js
 for (var i = 0; i < 10; i++) {
-  console.log(.1 * i);
+  console.log(0.1 * i);
 }
 ```
 
@@ -32,7 +32,7 @@ Formatting numbers for human consumption is the purpose of d3-format, which is m
 ```js
 var f = format(".1f");
 for (var i = 0; i < 10; i++) {
-  console.log(f(.1 * i));
+  console.log(f(0.1 * i));
 }
 ```
 
@@ -54,7 +54,7 @@ Now you get this:
 But d3-format is much more than an alias for [number.toFixed](https://developer.mozilla.org/en-US/docs/Web/JavaScript/Reference/Global_Objects/Number/toFixed)! A few more examples:
 
 ```js
-format(".0%")(.123);   // rounded percentage, "12%"
+format(".0%")(0.123);  // rounded percentage, "12%"
 format("($.2f")(-3.5); // localized fixed-point currency, "(£3.50)"
 format("+20")(42);     // space-filled and signed, "                 +42"
 format(".^20")(42);    // dot-filled and centered, ".........42........."
@@ -73,11 +73,11 @@ If you use NPM, `npm install d3-format`. Otherwise, download the [latest release
 
 <a name="format" href="#format">#</a> <b>format</b>(<i>specifier</i>)
 
-An alias for [*locale*.format](#locale_format) on the default [U.S. English](https://github.com/d3/d3-format/tree/master/src/locale/en-US.js) locale. Use [localeFormat](#localeFormat) for a different built-in locale or to define a new locale.
+An alias for [*locale*.format](#locale_format) on the [U.S. English](#enUs) locale. See the other [locales](#locales), or use [locale](#locale) to define a new locale.
 
 <a name="formatPrefix" href="#formatPrefix">#</a> <b>formatPrefix</b>(<i>specifier</i>, <i>value</i>)
 
-An alias for [*locale*.formatPrefix](#locale_formatPrefix) on the default [U.S. English](https://github.com/d3/d3-format/tree/master/src/locale/en-US.js) locale. Use [localeFormat](#localeFormat) for a different built-in locale or to define a new locale.
+An alias for [*locale*.formatPrefix](#locale_formatPrefix) on the [U.S. English](#enUs) locale. See the other [locales](#locales), or use [locale](#locale) to define a new locale.
 
 <a name="locale_format" href="#locale_format">#</a> <i>locale</i>.<b>format</b>(<i>specifier</i>)
 
@@ -162,47 +162,11 @@ Unlike [*locale*.format](#locale_format) with the `s` format type, this method r
 
 ```js
 var f = formatPrefix(",.0", 1e-6);
-f(.00042); // "420µ"
-f(.0042); // "4,200µ"
+f(0.00042); // "420µ"
+f(0.0042); // "4,200µ"
 ```
 
 This method is useful when formatting multiple numbers in the same units for easy comparison. See [precisionPrefix](#precisionPrefix) for help picking an appropriate precision, and [bl.ocks.org/9764126](http://bl.ocks.org/mbostock/9764126) for an example.
-
-<a name="localeFormat" href="#localeFormat">#</a> <b>localeFormat</b>(<i>definition</i>)
-
-Returns a *locale* object for the specified *definition* with [*locale*.format](#locale_format) and [*locale*.formatPrefix](#locale_formatPrefix) methods. If *definition* is a string, it is the name of a built-in locale:
-
-* `"ca-ES"` - [Catalan (Spain)](https://github.com/d3/d3-format/tree/master/src/locale/ca-ES.js)
-* `"de-CH"` - [German (Switzerland)](https://github.com/d3/d3-format/tree/master/src/locale/de-CH.js)
-* `"de-DE"` - [German (Germany)](https://github.com/d3/d3-format/tree/master/src/locale/de-DE.js)
-* `"en-CA"` - [English (Canada)](https://github.com/d3/d3-format/tree/master/src/locale/en-CA.js)
-* `"en-GB"` - [English (United Kingdom)](https://github.com/d3/d3-format/tree/master/src/locale/en-GB.js)
-* `"en-US"` - [English (United States)](https://github.com/d3/d3-format/tree/master/src/locale/en-US.js)
-* `"es-ES"` - [Spanish (Spain)](https://github.com/d3/d3-format/tree/master/src/locale/es-ES.js)
-* `"fi-FI"` - [Finnish (Finland)](https://github.com/d3/d3-format/tree/master/src/locale/fi-FI.js)
-* `"fr-CA"` - [French (Canada)](https://github.com/d3/d3-format/tree/master/src/locale/fr-CA.js)
-* `"fr-FR"` - [French (France)](https://github.com/d3/d3-format/tree/master/src/locale/fr-FR.js)
-* `"he-IL"` - [Hebrew (Israel)](https://github.com/d3/d3-format/tree/master/src/locale/he-IL.js)
-* `"hu-HU"` - [Hungarian (Hungary)](https://github.com/d3/d3-format/tree/master/src/locale/hu-HU.js)
-* `"it-IT"` - [Italian (Italy)](https://github.com/d3/d3-format/tree/master/src/locale/it-IT.js)
-* `"ja-JP"` - [Japanese (Japan)](https://github.com/d3/d3-format/tree/master/src/locale/ja-JP.js)
-* `"ko-KR"` - [Korean (South Korea)](https://github.com/d3/d3-format/tree/master/src/locale/ko-KR.js)
-* `"mk-MK"` - [Macedonian (Macedonia)](https://github.com/d3/d3-format/tree/master/src/locale/mk-MK.js)
-* `"nl-NL"` - [Dutch (Netherlands)](https://github.com/d3/d3-format/tree/master/src/locale/nl-NL.js)
-* `"pl-PL"` - [Polish (Poland)](https://github.com/d3/d3-format/tree/master/src/locale/pl-PL.js)
-* `"pt-BR"` - [Portuguese (Brazil)](https://github.com/d3/d3-format/tree/master/src/locale/pt-BR.js)
-* `"ru-RU"` - [Russian (Russia)](https://github.com/d3/d3-format/tree/master/src/locale/ru-RU.js)
-* `"sv-SE"` - [Swedish (Sweden)](https://github.com/d3/d3-format/tree/master/src/locale/sv-SE.js)
-* `"zh-CN"` - [Chinese (China)](https://github.com/d3/d3-format/tree/master/src/locale/zh-CN.js)
-
-Otherwise, the locale *definition* must include the following properties:
-
-* `decimal` - the decimal point (e.g., `"."`).
-* `thousands` - the group separator (e.g., `","`).
-* `grouping` - the array of group sizes (e.g., `[3]`), cycled as needed.
-* `currency` - the currency prefix and suffix (e.g., `["$", ""]`).
-
-Note that the *thousands* property is a misnomer, as the grouping definition allows groups other than thousands.
 
 <a name="formatSpecifier" href="#formatSpecifier">#</a> <b>formatSpecifier</b>(<i>specifier</i>)
 
@@ -226,7 +190,7 @@ This method is useful for understanding how format specifiers are parsed and for
 
 ```js
 var s = formatSpecifier("f");
-s.precision = precisionFixed(.01);
+s.precision = precisionFixed(0.01);
 var f = format(s);
 f(42); // "42.00";
 ```
@@ -258,9 +222,9 @@ Note: for the `%` format type, subtract two:
 ```js
 var p = Math.max(0, precisionFixed(0.05) - 2),
     f = format("." + p + "%");
-f(.45); // "45%"
-f(.50); // "50%"
-f(.55); // "55%"
+f(0.45); // "45%"
+f(0.50); // "50%"
+f(0.55); // "55%"
 ```
 
 <a name="precisionPrefix" href="#precisionPrefix">#</a> <b>precisionPrefix</b>(<i>step</i>, <i>value</i>)
@@ -305,3 +269,105 @@ var p = Math.max(0, precisionRound(0.01, 1.01) - 1),
 f(0.01); // "1.00e-2"
 f(1.01); // "1.01e+0"
 ```
+
+### Locales
+
+<a name="locale" href="#locale">#</a> <b>locale</b>(<i>definition</i>)
+
+Returns a *locale* object for the specified *definition* with [*locale*.format](#locale_format) and [*locale*.formatPrefix](#locale_formatPrefix) methods. The *definition* must include the following properties:
+
+* `decimal` - the decimal point (e.g., `"."`).
+* `thousands` - the group separator (e.g., `","`).
+* `grouping` - the array of group sizes (e.g., `[3]`), cycled as needed.
+* `currency` - the currency prefix and suffix (e.g., `["$", ""]`).
+
+Note that the *thousands* property is a misnomer, as the grouping definition allows groups other than thousands.
+
+<a name="localeCaEs" href="#localeCaEs">#</a> <b>localeCaEs</b>
+
+[Catalan (Spain)](https://github.com/d3/d3-format/tree/master/src/locale/ca-ES.js)
+
+<a name="localeDeCh" href="#localeDeCh">#</a> <b>localeDeCh</b>
+
+[German (Switzerland)](https://github.com/d3/d3-format/tree/master/src/locale/de-CH.js)
+
+<a name="localeDeDe" href="#localeDeDe">#</a> <b>localeDeDe</b>
+
+[German (Germany)](https://github.com/d3/d3-format/tree/master/src/locale/de-DE.js)
+
+<a name="localeEnCa" href="#localeEnCa">#</a> <b>localeEnCa</b>
+
+[English (Canada)](https://github.com/d3/d3-format/tree/master/src/locale/en-CA.js)
+
+<a name="localeEnGb" href="#localeEnGb">#</a> <b>localeEnGb</b>
+
+[English (United Kingdom)](https://github.com/d3/d3-format/tree/master/src/locale/en-GB.js)
+
+<a name="localeEnUs" href="#localeEnUs">#</a> <b>localeEnUs</b>
+
+[English (United States)](https://github.com/d3/d3-format/tree/master/src/locale/en-US.js)
+
+<a name="localeEsEs" href="#localeEsEs">#</a> <b>localeEsEs</b>
+
+[Spanish (Spain)](https://github.com/d3/d3-format/tree/master/src/locale/es-ES.js)
+
+<a name="localeFiFi" href="#localeFiFi">#</a> <b>localeFiFi</b>
+
+[Finnish (Finland)](https://github.com/d3/d3-format/tree/master/src/locale/fi-FI.js)
+
+<a name="localeFrCa" href="#localeFrCa">#</a> <b>localeFrCa</b>
+
+[French (Canada)](https://github.com/d3/d3-format/tree/master/src/locale/fr-CA.js)
+
+<a name="localeFrFr" href="#localeFrFr">#</a> <b>localeFrFr</b>
+
+[French (France)](https://github.com/d3/d3-format/tree/master/src/locale/fr-FR.js)
+
+<a name="localeHeIl" href="#localeHeIl">#</a> <b>localeHeIl</b>
+
+[Hebrew (Israel)](https://github.com/d3/d3-format/tree/master/src/locale/he-IL.js)
+
+<a name="localeHuHu" href="#localeHuHu">#</a> <b>localeHuHu</b>
+
+[Hungarian (Hungary)](https://github.com/d3/d3-format/tree/master/src/locale/hu-HU.js)
+
+<a name="localeItIt" href="#localeItIt">#</a> <b>localeItIt</b>
+
+[Italian (Italy)](https://github.com/d3/d3-format/tree/master/src/locale/it-IT.js)
+
+<a name="localeJaJp" href="#localeJaJp">#</a> <b>localeJaJp</b>
+
+[Japanese (Japan)](https://github.com/d3/d3-format/tree/master/src/locale/ja-JP.js)
+
+<a name="localeKoKr" href="#localeKoKr">#</a> <b>localeKoKr</b>
+
+[Korean (South Korea)](https://github.com/d3/d3-format/tree/master/src/locale/ko-KR.js)
+
+<a name="localeMkMk" href="#localeMkMk">#</a> <b>localeMkMk</b>
+
+[Macedonian (Macedonia)](https://github.com/d3/d3-format/tree/master/src/locale/mk-MK.js)
+
+<a name="localeNlNl" href="#localeNlNl">#</a> <b>localeNlNl</b>
+
+[Dutch (Netherlands)](https://github.com/d3/d3-format/tree/master/src/locale/nl-NL.js)
+
+<a name="localePlPl" href="#localePlPl">#</a> <b>localePlPl</b>
+
+[Polish (Poland)](https://github.com/d3/d3-format/tree/master/src/locale/pl-PL.js)
+
+<a name="localePtBr" href="#localePtBr">#</a> <b>localePtBr</b>
+
+[Portuguese (Brazil)](https://github.com/d3/d3-format/tree/master/src/locale/pt-BR.js)
+
+<a name="localeRuRu" href="#localeRuRu">#</a> <b>localeRuRu</b>
+
+[Russian (Russia)](https://github.com/d3/d3-format/tree/master/src/locale/ru-RU.js)
+
+<a name="localeSvSe" href="#localeSvSe">#</a> <b>localeSvSe</b>
+
+[Swedish (Sweden)](https://github.com/d3/d3-format/tree/master/src/locale/sv-SE.js)
+
+<a name="localeZhCn" href="#localeZhCn">#</a> <b>localeZhCn</b>
+
+[Chinese (China)](https://github.com/d3/d3-format/tree/master/src/locale/zh-CN.js)
+

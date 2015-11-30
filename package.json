@@ -1,10 +1,11 @@
 {
   "name": "d3-format",
-  "version": "0.3.6",
+  "version": "0.4.0",
   "description": "Format numbers for human consumption.",
   "keywords": [
     "d3",
-    "format"
+    "format",
+    "localization"
   ],
   "homepage": "https://github.com/d3/d3-format",
   "license": "BSD-3-Clause",
