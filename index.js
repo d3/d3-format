@@ -1,6 +1,7 @@
 import defaultLocale from "./src/locale/en-US";
 export {default as locale} from "./src/locale";
 export {default as localeCaEs} from "./src/locale/ca-ES";
+export {default as localeCsCz} from "./src/locale/cs-CZ";
 export {default as localeDeCh} from "./src/locale/de-CH";
 export {default as localeDeDe} from "./src/locale/de-DE";
 export {default as localeEnCa} from "./src/locale/en-CA";

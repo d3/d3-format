@@ -293,6 +293,10 @@ Note that the *thousands* property is a misnomer, as the grouping definition all
 
 [Catalan (Spain)](https://github.com/d3/d3-format/tree/master/src/locale/ca-ES.js)
 
+<a name="localeCsCz" href="#localeCsCz">#</a> d3_format.<b>localeCsCz</b>
+
+[Czech (Czech Republic)](https://github.com/d3/d3-format/tree/master/src/locale/cs-CZ.js)
+
 <a name="localeDeCh" href="#localeDeCh">#</a> d3_format.<b>localeDeCh</b>
 
 [German (Switzerland)](https://github.com/d3/d3-format/tree/master/src/locale/de-CH.js)
