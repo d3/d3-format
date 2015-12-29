@@ -1,5 +1,6 @@
 import exponent from "./exponent";
 
 export default function(step, max) {
-  return Math.max(0, exponent(Math.abs(max)) - exponent(Math.abs(step))) + 1;
+  step = Math.abs(step), max = Math.abs(max) - step;
+  return Math.max(0, exponent(max) - exponent(step)) + 1;
 };
