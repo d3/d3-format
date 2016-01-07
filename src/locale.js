@@ -15,7 +15,7 @@ export default function(locale) {
       currency = locale.currency,
       decimal = locale.decimal;
 
-  function format(specifier) {
+  function newFormat(specifier) {
     specifier = formatSpecifier(specifier);
 
     var fill = specifier.fill,
@@ -47,7 +47,7 @@ export default function(locale) {
         : /[gprs]/.test(type) ? Math.max(1, Math.min(21, precision))
         : Math.max(0, Math.min(20, precision));
 
-    return function(value) {
+    function format(value) {
       var valuePrefix = prefix,
           valueSuffix = suffix;
 
@@ -115,10 +115,16 @@ export default function(locale) {
       }
       return padding + valuePrefix + value + valueSuffix;
     };
+
+    format.toString = function() {
+      return specifier + "";
+    };
+
+    return format;
   }
 
   function formatPrefix(specifier, value) {
-    var f = format((specifier = formatSpecifier(specifier), specifier.type = "f", specifier)),
+    var f = newFormat((specifier = formatSpecifier(specifier), specifier.type = "f", specifier)),
         e = Math.max(-8, Math.min(8, Math.floor(exponent(value) / 3))) * 3,
         k = Math.pow(10, -e),
         prefix = prefixes[8 + e / 3];
@@ -128,7 +134,7 @@ export default function(locale) {
   }
 
   return {
-    format: format,
+    format: newFormat,
     formatPrefix: formatPrefix
   };
 };

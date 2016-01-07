@@ -6,6 +6,11 @@ tape("format(specifier)(number) returns a string", function(test) {
   test.end();
 });
 
+tape("format(specifier).toString() returns the normalized specifier", function(test) {
+  test.equal(format.format("d") + "", " >-d");
+  test.end();
+});
+
 tape("format(specifier) throws an error for invalid formats", function(test) {
   test.throws(function() { format.format("foo"); }, /invalid format: foo/);
   test.throws(function() { format.format(".-2s"); }, /invalid format: \.-2s/);
