@@ -1,6 +1,6 @@
 {
   "name": "d3-format",
-  "version": "0.4.2",
+  "version": "0.5.0",
   "description": "Format numbers for human consumption.",
   "keywords": [
     "d3",

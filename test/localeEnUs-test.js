@@ -1,8 +1,8 @@
 var tape = require("tape"),
     format = require("../");
 
-tape("localeEnUs is a U.S. English format", function(test) {
-  var locale = format.localeEnUs;
+tape("formatEnUs is a U.S. English format locale", function(test) {
+  var locale = format.formatEnUs;
   test.equal(locale.format("$,.2f")(1234.56), "$1,234.56");
   test.end();
 });

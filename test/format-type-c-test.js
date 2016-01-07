@@ -10,6 +10,6 @@ tape("format(\"c\") unicode character", function(test) {
 });
 
 tape("format(\"c\") does not localize a decimal point", function(test) {
-  test.equal(format.locale({decimal: "/"}).format("c")("."), ".");
+  test.equal(format.formatLocale({decimal: "/"}).format("c")("."), ".");
   test.end();
 });
