@@ -49,7 +49,8 @@ export default function(locale) {
 
     function format(value) {
       var valuePrefix = prefix,
-          valueSuffix = suffix;
+          valueSuffix = suffix,
+          i, n, c;
 
       if (type === "c") {
         valueSuffix = formatType(value) + valueSuffix;
@@ -67,7 +68,7 @@ export default function(locale) {
         // If the original value was negative, it may be rounded to zero during
         // formatting; treat this as (positive) zero.
         if (valueNegative) {
-          var i = -1, n = value.length, c;
+          i = -1, n = value.length;
           valueNegative = false;
           while (++i < n) {
             if (c = value.charCodeAt(i), (48 < c && c < 58)
@@ -86,7 +87,7 @@ export default function(locale) {
         // Break the formatted value into the integer “value” part that can be
         // grouped, and fractional or exponential “suffix” part that is not.
         if (maybeSuffix) {
-          var i = -1, n = value.length, c;
+          i = -1, n = value.length;
           while (++i < n) {
             if (c = value.charCodeAt(i), 48 > c || c > 57) {
               valueSuffix = (c === 46 ? decimal + value.slice(i + 1) : value.slice(i)) + valueSuffix;
@@ -114,7 +115,7 @@ export default function(locale) {
         case "^": return padding.slice(0, length = padding.length >> 1) + valuePrefix + value + valueSuffix + padding.slice(length);
       }
       return padding + valuePrefix + value + valueSuffix;
-    };
+    }
 
     format.toString = function() {
       return specifier + "";
@@ -137,4 +138,4 @@ export default function(locale) {
     format: newFormat,
     formatPrefix: formatPrefix
   };
-};
+}

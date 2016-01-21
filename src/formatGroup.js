@@ -15,4 +15,4 @@ export default function(grouping, thousands) {
 
     return t.reverse().join(thousands);
   };
-};
+}
