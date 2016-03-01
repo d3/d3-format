@@ -1,3 +1,4 @@
+export {version} from "./build/version";
 import defaultLocale from "./src/locale/en-US";
 export {default as formatLocale} from "./src/locale";
 export {default as formatCaEs} from "./src/locale/ca-ES";
