@@ -326,6 +326,10 @@ Note that the *thousands* property is a misnomer, as the grouping definition all
 
 [Spanish (Spain)](https://github.com/d3/d3-format/tree/master/src/locale/es-ES.js)
 
+<a name="formatEsMx" href="#formatEsMx">#</a> d3.<b>formatEsMx</b>
+
+[Spanish (Mexico)](https://github.com/d3/d3-format/tree/master/src/locale/es-MX.js)
+
 <a name="formatFiFi" href="#formatFiFi">#</a> d3.<b>formatFiFi</b>
 
 [Finnish (Finland)](https://github.com/d3/d3-format/tree/master/src/locale/fi-FI.js)

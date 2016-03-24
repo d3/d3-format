@@ -9,6 +9,7 @@ export {default as formatEnCa} from "./src/locale/en-CA";
 export {default as formatEnGb} from "./src/locale/en-GB";
 export {default as formatEnUs} from "./src/locale/en-US";
 export {default as formatEsEs} from "./src/locale/es-ES";
+export {default as formatEsMx} from "./src/locale/es-MX";
 export {default as formatFiFi} from "./src/locale/fi-FI";
 export {default as formatFrCa} from "./src/locale/fr-CA";
 export {default as formatFrFr} from "./src/locale/fr-FR";
