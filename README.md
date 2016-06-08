@@ -84,11 +84,11 @@ var format = d3.format(".2s");
 
 <a name="format" href="#format">#</a> d3.<b>format</b>(<i>specifier</i>)
 
-An alias for [*locale*.format](#locale_format) on the [U.S. English locale](#formatEnUs). See the other [locales](#locales), or use [formatLocale](#formatLocale) to define a new locale.
+An alias for [*locale*.format](#locale_format) on the U.S. English locale. See [formatLocale](#formatLocale) to define a new locale.
 
 <a name="formatPrefix" href="#formatPrefix">#</a> d3.<b>formatPrefix</b>(<i>specifier</i>, <i>value</i>)
 
-An alias for [*locale*.formatPrefix](#locale_formatPrefix) on the [U.S. English locale](#formatEnUs). See the other [locales](#locales), or use [formatLocale](#formatLocale) to define a new locale.
+An alias for [*locale*.formatPrefix](#locale_formatPrefix) on the U.S. English locale. See [formatLocale](#formatLocale) to define a new locale.
 
 <a name="locale_format" href="#locale_format">#</a> <i>locale</i>.<b>format</b>(<i>specifier</i>)
 
@@ -293,99 +293,3 @@ Returns a *locale* object for the specified *definition* with [*locale*.format](
 * `currency` - the currency prefix and suffix (e.g., `["$", ""]`).
 
 Note that the *thousands* property is a misnomer, as the grouping definition allows groups other than thousands.
-
-<a name="formatCaEs" href="#formatCaEs">#</a> d3.<b>formatCaEs</b>
-
-[Catalan (Spain)](https://github.com/d3/d3-format/tree/master/src/locale/ca-ES.js)
-
-<a name="formatCsCz" href="#formatCsCz">#</a> d3.<b>formatCsCz</b>
-
-[Czech (Czech Republic)](https://github.com/d3/d3-format/tree/master/src/locale/cs-CZ.js)
-
-<a name="formatDeCh" href="#formatDeCh">#</a> d3.<b>formatDeCh</b>
-
-[German (Switzerland)](https://github.com/d3/d3-format/tree/master/src/locale/de-CH.js)
-
-<a name="formatDeDe" href="#formatDeDe">#</a> d3.<b>formatDeDe</b>
-
-[German (Germany)](https://github.com/d3/d3-format/tree/master/src/locale/de-DE.js)
-
-<a name="formatEnCa" href="#formatEnCa">#</a> d3.<b>formatEnCa</b>
-
-[English (Canada)](https://github.com/d3/d3-format/tree/master/src/locale/en-CA.js)
-
-<a name="formatEnGb" href="#formatEnGb">#</a> d3.<b>formatEnGb</b>
-
-[English (United Kingdom)](https://github.com/d3/d3-format/tree/master/src/locale/en-GB.js)
-
-<a name="formatEnUs" href="#formatEnUs">#</a> d3.<b>formatEnUs</b>
-
-[English (United States)](https://github.com/d3/d3-format/tree/master/src/locale/en-US.js)
-
-<a name="formatEsEs" href="#formatEsEs">#</a> d3.<b>formatEsEs</b>
-
-[Spanish (Spain)](https://github.com/d3/d3-format/tree/master/src/locale/es-ES.js)
-
-<a name="formatEsMx" href="#formatEsMx">#</a> d3.<b>formatEsMx</b>
-
-[Spanish (Mexico)](https://github.com/d3/d3-format/tree/master/src/locale/es-MX.js)
-
-<a name="formatFiFi" href="#formatFiFi">#</a> d3.<b>formatFiFi</b>
-
-[Finnish (Finland)](https://github.com/d3/d3-format/tree/master/src/locale/fi-FI.js)
-
-<a name="formatFrCa" href="#formatFrCa">#</a> d3.<b>formatFrCa</b>
-
-[French (Canada)](https://github.com/d3/d3-format/tree/master/src/locale/fr-CA.js)
-
-<a name="formatFrFr" href="#formatFrFr">#</a> d3.<b>formatFrFr</b>
-
-[French (France)](https://github.com/d3/d3-format/tree/master/src/locale/fr-FR.js)
-
-<a name="formatHeIl" href="#formatHeIl">#</a> d3.<b>formatHeIl</b>
-
-[Hebrew (Israel)](https://github.com/d3/d3-format/tree/master/src/locale/he-IL.js)
-
-<a name="formatHuHu" href="#formatHuHu">#</a> d3.<b>formatHuHu</b>
-
-[Hungarian (Hungary)](https://github.com/d3/d3-format/tree/master/src/locale/hu-HU.js)
-
-<a name="formatItIt" href="#formatItIt">#</a> d3.<b>formatItIt</b>
-
-[Italian (Italy)](https://github.com/d3/d3-format/tree/master/src/locale/it-IT.js)
-
-<a name="formatJaJp" href="#formatJaJp">#</a> d3.<b>formatJaJp</b>
-
-[Japanese (Japan)](https://github.com/d3/d3-format/tree/master/src/locale/ja-JP.js)
-
-<a name="formatKoKr" href="#formatKoKr">#</a> d3.<b>formatKoKr</b>
-
-[Korean (South Korea)](https://github.com/d3/d3-format/tree/master/src/locale/ko-KR.js)
-
-<a name="formatMkMk" href="#formatMkMk">#</a> d3.<b>formatMkMk</b>
-
-[Macedonian (Macedonia)](https://github.com/d3/d3-format/tree/master/src/locale/mk-MK.js)
-
-<a name="formatNlNl" href="#formatNlNl">#</a> d3.<b>formatNlNl</b>
-
-[Dutch (Netherlands)](https://github.com/d3/d3-format/tree/master/src/locale/nl-NL.js)
-
-<a name="formatPlPl" href="#formatPlPl">#</a> d3.<b>formatPlPl</b>
-
-[Polish (Poland)](https://github.com/d3/d3-format/tree/master/src/locale/pl-PL.js)
-
-<a name="formatPtBr" href="#formatPtBr">#</a> d3.<b>formatPtBr</b>
-
-[Portuguese (Brazil)](https://github.com/d3/d3-format/tree/master/src/locale/pt-BR.js)
-
-<a name="formatRuRu" href="#formatRuRu">#</a> d3.<b>formatRuRu</b>
-
-[Russian (Russia)](https://github.com/d3/d3-format/tree/master/src/locale/ru-RU.js)
-
-<a name="formatSvSe" href="#formatSvSe">#</a> d3.<b>formatSvSe</b>
-
-[Swedish (Sweden)](https://github.com/d3/d3-format/tree/master/src/locale/sv-SE.js)
-
-<a name="formatZhCn" href="#formatZhCn">#</a> d3.<b>formatZhCn</b>
-
-[Chinese (China)](https://github.com/d3/d3-format/tree/master/src/locale/zh-CN.js)

@@ -10,7 +10,17 @@ function identity(x) {
   return x;
 }
 
-export default function(locale) {
+var defaultLocale = formatLocale({
+  decimal: ".",
+  thousands: ",",
+  grouping: [3],
+  currency: ["$", ""]
+});
+
+export var format = defaultLocale.format;
+export var formatPrefix = defaultLocale.formatPrefix;
+
+export default function formatLocale(locale) {
   var group = locale.grouping && locale.thousands ? formatGroup(locale.grouping, locale.thousands) : identity,
       currency = locale.currency,
       decimal = locale.decimal;
