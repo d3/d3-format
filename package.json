@@ -4,6 +4,7 @@
   "description": "Format numbers for human consumption.",
   "keywords": [
     "d3",
+    "d3-module",
     "format",
     "localization"
   ],
