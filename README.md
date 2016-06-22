@@ -84,11 +84,11 @@ var format = d3.format(".2s");
 
 <a name="format" href="#format">#</a> d3.<b>format</b>(<i>specifier</i>)
 
-An alias for [*locale*.format](#locale_format) on the [default locale](#formatDefaultLocale). See [d3.formatLocale](#formatLocale) to define a new locale.
+An alias for [*locale*.format](#locale_format) on the [default locale](#formatDefaultLocale).
 
 <a name="formatPrefix" href="#formatPrefix">#</a> d3.<b>formatPrefix</b>(<i>specifier</i>, <i>value</i>)
 
-An alias for [*locale*.formatPrefix](#locale_formatPrefix) on the [default locale](#formatDefaultLocale). See [d3.formatLocale](#formatLocale) to define a new locale.
+An alias for [*locale*.formatPrefix](#locale_formatPrefix) on the [default locale](#formatDefaultLocale).
 
 <a name="locale_format" href="#locale_format">#</a> <i>locale</i>.<b>format</b>(<i>specifier</i>)
 
