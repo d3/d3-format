@@ -63,7 +63,7 @@ d3.format("#x")(48879);   // prefixed lowercase hexadecimal, "0xbeef"
 d3.format(",.2r")(4223);  // grouped thousands with two significant digits, "4,200"
 ```
 
-See [*locale*.format](#locale_format) for a detailed specification, and try running [formatSpecifier](#formatSpecifier) on the above formats to decode their meaning.
+See [*locale*.format](#locale_format) for a detailed specification, and try running [d3.formatSpecifier](#formatSpecifier) on the above formats to decode their meaning.
 
 ## Installing
 
@@ -84,11 +84,11 @@ var format = d3.format(".2s");
 
 <a name="format" href="#format">#</a> d3.<b>format</b>(<i>specifier</i>)
 
-An alias for [*locale*.format](#locale_format) on the U.S. English locale. See [formatLocale](#formatLocale) to define a new locale.
+An alias for [*locale*.format](#locale_format) on the default locale. See [d3.formatDefaultLocale](#formatDefaultLocale) to set the default locale, and [d3.formatLocale](#formatLocale) to define a new locale.
 
 <a name="formatPrefix" href="#formatPrefix">#</a> d3.<b>formatPrefix</b>(<i>specifier</i>, <i>value</i>)
 
-An alias for [*locale*.formatPrefix](#locale_formatPrefix) on the U.S. English locale. See [formatLocale](#formatLocale) to define a new locale.
+An alias for [*locale*.formatPrefix](#locale_formatPrefix) on the default locale. See [d3.formatDefaultLocale](#formatDefaultLocale) to set the default locale, and [d3.formatLocale](#formatLocale) to define a new locale.
 
 <a name="locale_format" href="#locale_format">#</a> <i>locale</i>.<b>format</b>(<i>specifier</i>)
 
@@ -293,3 +293,7 @@ Returns a *locale* object for the specified *definition* with [*locale*.format](
 * `currency` - the currency prefix and suffix (e.g., `["$", ""]`).
 
 Note that the *thousands* property is a misnomer, as the grouping definition allows groups other than thousands.
+
+<a name="formatDefaultLocale" href="#formatDefaultLocale">#</a> d3.<b>formatDefaultLocale</b>(<i>definition</i>)
+
+Equivalent to [d3.formatLocale](#formatLocale), except it also redefines [d3.format](#format) and [d3.formatPrefix](#formatPrefix) to the new locale’s [*locale*.format](#locale_format) and [*locale*.formatPrefix](#locale_formatPrefix). If you do not set a default locale, it defaults to [U.S. English](https://github.com/d3/d3-format/blob/master/locale/en-US.json).
