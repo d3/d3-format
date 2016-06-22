@@ -1,6 +1,6 @@
 {
   "decimal": ",",
-  "thousands": "\xa0",
+  "thousands": "\u00a0",
   "grouping": [3],
-  "currency": ["", "\xa0Ft"]
+  "currency": ["", "\u00a0Ft"]
 }
