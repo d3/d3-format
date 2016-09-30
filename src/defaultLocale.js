@@ -4,6 +4,13 @@ var locale;
 export var format;
 export var formatPrefix;
 
+function defaultLocale(definition) {
+  locale = formatLocale(definition);
+  format = locale.format;
+  formatPrefix = locale.formatPrefix;
+  return locale;
+}
+
 defaultLocale({
   decimal: ".",
   thousands: ",",
@@ -11,9 +18,4 @@ defaultLocale({
   currency: ["$", ""]
 });
 
-export default function defaultLocale(definition) {
-  locale = formatLocale(definition);
-  format = locale.format;
-  formatPrefix = locale.formatPrefix;
-  return locale;
-}
+export default defaultLocale; 
