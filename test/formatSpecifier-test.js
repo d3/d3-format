@@ -8,6 +8,12 @@ tape("formatSpecifier(specifier) throws an error for invalid formats", function(
   test.end();
 });
 
+tape("formatSpecifier(specifier) returns an instanceof formatSpecifier", function(test) {
+  var s = format.formatSpecifier("");
+  test.equal(s instanceof format.formatSpecifier, true);
+  test.end();
+});
+
 tape("formatSpecifier(\"\") has the expected defaults", function(test) {
   var s = format.formatSpecifier("");
   test.equal(s.fill, " ");
