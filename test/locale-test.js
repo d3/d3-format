@@ -29,6 +29,31 @@ tape("formatLocale({grouping: [sizes…]}) observes the specified group sizes", 
   test.end();
 });
 
+tape("formatLocale(…) can format numbers using the Indian numbering system.", function(test) {
+  var format = d3.formatLocale(require("../locale/en-IN")).format(",");
+  test.equal(format(10), "10");
+  test.equal(format(100), "100");
+  test.equal(format(1000), "1,000");
+  test.equal(format(10000), "10,000");
+  test.equal(format(100000), "1,00,000");
+  test.equal(format(1000000), "10,00,000");
+  test.equal(format(10000000), "1,00,00,000");
+  test.equal(format(10000000.4543), "1,00,00,000.4543");
+  test.equal(format(1000.321), "1,000.321");
+  test.equal(format(10.5), "10.5");
+  test.equal(format(-10), "-10");
+  test.equal(format(-100), "-100");
+  test.equal(format(-1000), "-1,000");
+  test.equal(format(-10000), "-10,000");
+  test.equal(format(-100000), "-1,00,000");
+  test.equal(format(-1000000), "-10,00,000");
+  test.equal(format(-10000000), "-1,00,00,000");
+  test.equal(format(-10000000.4543), "-1,00,00,000.4543");
+  test.equal(format(-1000.321), "-1,000.321");
+  test.equal(format(-10.5), "-10.5");
+  test.end();
+});
+
 tape("formatLocale({thousands: separator}) observes the specified group separator", function(test) {
   test.equal(d3.formatLocale({decimal: ".", grouping: [3], thousands: " "}).format("012,.2f")(2), "0 000 002.00");
   test.equal(d3.formatLocale({decimal: ".", grouping: [3], thousands: "/"}).format("012,.2f")(2), "0/000/002.00");
