@@ -14,7 +14,7 @@ export default function(locale) {
   var group = locale.grouping && locale.thousands ? formatGroup(locale.grouping, locale.thousands) : identity,
       currency = locale.currency,
       decimal = locale.decimal;
-
+        
   function newFormat(specifier) {
     specifier = formatSpecifier(specifier);
 
@@ -114,9 +114,15 @@ export default function(locale) {
         case "=": return valuePrefix + padding + value + valueSuffix;
         case "^": return padding.slice(0, length = padding.length >> 1) + valuePrefix + value + valueSuffix + padding.slice(length);
       }
-      return padding + valuePrefix + value + valueSuffix;
+      if (locale.numerals) {
+        var numerals = locale.numerals;
+        return numeralReplacer( numerals, padding + valuePrefix +  value + valueSuffix);
+      }
+      return padding + valuePrefix +  value + valueSuffix;
+      
     }
-
+    
+    
     format.toString = function() {
       return specifier + "";
     };
@@ -133,6 +139,12 @@ export default function(locale) {
       return f(k * value) + prefix;
     };
   }
+  
+  function numeralReplacer(numerals, number) {
+    return number.replace(/[0-9]/g, (function (i) { 
+        return numerals[+i];
+    }));
+ }
 
   return {
     format: newFormat,
