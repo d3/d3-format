@@ -119,12 +119,13 @@ export default function(locale) {
 
       // Reconstruct the final output based on the desired alignment.
       switch (align) {
-        case "<": return valuePrefix + value + valueSuffix + padding;
-        case "=": return valuePrefix + padding + value + valueSuffix;
-        case "^": return padding.slice(0, length = padding.length >> 1) + valuePrefix + value + valueSuffix + padding.slice(length);
+        case "<": value = valuePrefix + value + valueSuffix + padding; break;
+        case "=": value = valuePrefix + padding + value + valueSuffix; break;
+        case "^": value = padding.slice(0, length = padding.length >> 1) + valuePrefix + value + valueSuffix + padding.slice(length); break;
+        default: value = padding + valuePrefix + value + valueSuffix; break;
       }
 
-      return numerals(padding + valuePrefix + value + valueSuffix);
+      return numerals(value);
     }
 
     format.toString = function() {
