@@ -10,11 +10,20 @@ function identity(x) {
   return x;
 }
 
+function formatNumerals(numerals) {
+  return function(value) {
+    return value.replace(/[0-9]/g, function(i) {
+      return numerals[+i];
+    });
+  };
+}
+
 export default function(locale) {
   var group = locale.grouping && locale.thousands ? formatGroup(locale.grouping, locale.thousands) : identity,
       currency = locale.currency,
-      decimal = locale.decimal;
-  
+      decimal = locale.decimal,
+      numerals = locale.numerals ? formatNumerals(locale.numerals) : identity;
+
   function newFormat(specifier) {
     specifier = formatSpecifier(specifier);
 
@@ -114,14 +123,10 @@ export default function(locale) {
         case "=": return valuePrefix + padding + value + valueSuffix;
         case "^": return padding.slice(0, length = padding.length >> 1) + valuePrefix + value + valueSuffix + padding.slice(length);
       }
-      if (locale.numerals) {
-        var numerals = locale.numerals;
-        return numeralReplacer( numerals, padding + valuePrefix +  value + valueSuffix);
-      }
-      return padding + valuePrefix +  value + valueSuffix;
-      
+
+      return numerals(padding + valuePrefix + value + valueSuffix);
     }
-    
+
     format.toString = function() {
       return specifier + "";
     };
@@ -138,12 +143,6 @@ export default function(locale) {
       return f(k * value) + prefix;
     };
   }
-  
-  function numeralReplacer(numerals, number) {
-    return number.replace(/[0-9]/g, (function (i) { 
-        return numerals[+i];
-    }));
- }
 
   return {
     format: newFormat,
