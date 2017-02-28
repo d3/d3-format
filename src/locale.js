@@ -1,22 +1,12 @@
 import exponent from "./exponent";
 import formatGroup from "./formatGroup";
+import formatNumerals from "./formatNumerals";
 import formatSpecifier from "./formatSpecifier";
 import formatTypes from "./formatTypes";
 import {prefixExponent} from "./formatPrefixAuto";
+import identity from "./identity";
 
 var prefixes = ["y","z","a","f","p","n","µ","m","","k","M","G","T","P","E","Z","Y"];
-
-function identity(x) {
-  return x;
-}
-
-function formatNumerals(numerals) {
-  return function(value) {
-    return value.replace(/[0-9]/g, function(i) {
-      return numerals[+i];
-    });
-  };
-}
 
 export default function(locale) {
   var group = locale.grouping && locale.thousands ? formatGroup(locale.grouping, locale.thousands) : identity,
