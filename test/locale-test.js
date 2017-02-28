@@ -78,7 +78,10 @@ tape("locale data is valid", function(test) {
     fs.readFile(locale, "utf8", function(error, locale) {
       if (error) return void callback(error);
       locale = JSON.parse(locale);
-      test.deepEqual(Object.keys(locale).sort(), ["currency", "decimal", "grouping", "thousands"]);
+      test.equal("currency" in locale, true);
+      test.equal("decimal" in locale, true);
+      test.equal("grouping" in locale, true);
+      test.equal("thousands" in locale, true);
       locale = d3.formatLocale(locale);
       callback(null);
     });
