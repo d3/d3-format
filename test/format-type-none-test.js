@@ -58,3 +58,13 @@ tape("format(\"($\") can output a currency with parentheses for negative values"
   test.equal(f(-4.2), "($4.2)");
   test.end();
 });
+
+tape("format(\"\") can format negative zero as zero", function(test) {
+  test.equal(format.format("")(-0), "0");
+  test.end();
+});
+
+tape("format(\"\") can format negative infinity", function(test) {
+  test.equal(format.format("")(-Infinity), "-Infinity");
+  test.end();
+});
