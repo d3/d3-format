@@ -4,7 +4,7 @@ import formatSpecifier from "./formatSpecifier";
 import formatTypes from "./formatTypes";
 import {prefixExponent} from "./formatPrefixAuto";
 
-var prefixes = ["y","z","a","f","p","n","µ","m","","k","M","G","T","P","E","Z","Y"];
+var defaultPrefixes = ["y","z","a","f","p","n","µ","m","","k","M","G","T","P","E","Z","Y"];
 
 function identity(x) {
   return x;
@@ -13,7 +13,8 @@ function identity(x) {
 export default function(locale) {
   var group = locale.grouping && locale.thousands ? formatGroup(locale.grouping, locale.thousands) : identity,
       currency = locale.currency,
-      decimal = locale.decimal;
+      decimal = locale.decimal,
+      prefixes = locale.prefixes || defaultPrefixes;
 
   function newFormat(specifier) {
     specifier = formatSpecifier(specifier);
