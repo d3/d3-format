@@ -2,5 +2,6 @@
   "decimal": ",",
   "thousands": ".",
   "grouping": [3],
-  "currency": ["", "\u00a0€"]
+  "currency": ["", "\u00a0€"],
+  "percentage": "\u202f%"
 }
