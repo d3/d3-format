@@ -13,7 +13,7 @@ export default function(locale) {
       currency = locale.currency,
       decimal = locale.decimal,
       numerals = locale.numerals ? formatNumerals(locale.numerals) : identity,
-      percentage = locale.percentage || "%";
+      percent = locale.percent || "%";
 
   function newFormat(specifier) {
     specifier = formatSpecifier(specifier);
@@ -31,7 +31,7 @@ export default function(locale) {
     // Compute the prefix and suffix.
     // For SI-prefix, the suffix is lazily computed.
     var prefix = symbol === "$" ? currency[0] : symbol === "#" && /[boxX]/.test(type) ? "0" + type.toLowerCase() : "",
-        suffix = symbol === "$" ? currency[1] : /[%p]/.test(type) ? percentage : "";
+        suffix = symbol === "$" ? currency[1] : /[%p]/.test(type) ? percent : "";
 
     // What format function should we use?
     // Is this an integer type?

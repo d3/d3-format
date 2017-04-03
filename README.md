@@ -306,6 +306,7 @@ Returns a *locale* object for the specified *definition* with [*locale*.format](
 * `grouping` - the array of group sizes (e.g., `[3]`), cycled as needed.
 * `currency` - the currency prefix and suffix (e.g., `["$", ""]`).
 * `numerals` - optional; an array of ten strings to replace the numerals 0-9.
+* `percent` - optional; the percent suffix (default to `"%"`).
 
 Note that the *thousands* property is a misnomer, as the grouping definition allows groups other than thousands.
 
