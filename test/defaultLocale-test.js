@@ -13,14 +13,14 @@ var frFr = {
   "thousands": ".",
   "grouping": [3],
   "currency": ["", "\u00a0€"],
-  "percentage": "\u202f%"
+  "percent": "\u202f%"
 };
 
 tape("d3.formatDefaultLocale(definition) returns the new default locale", function(test) {
   var locale = d3.formatDefaultLocale(frFr);
   try {
     test.equal(locale.format("$,.2f")(12345678.90), "12.345.678,90 €");
-    test.equal(locale.format(",.0%")(12345678.90), "1.234.567.890 %");
+    test.equal(locale.format(",.0%")(12345678.90), "1.234.567.890\u202f%");
     test.end();
   } finally {
     d3.formatDefaultLocale(enUs);
