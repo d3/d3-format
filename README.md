@@ -121,10 +121,10 @@ The *fill* can be any character. The presence of a fill character is signaled by
 
 The *sign* can be:
 
-* `-` - nothing for positive and a minus sign for negative. (Default behavior.)
-* `+` - a plus sign for positive and a minus sign for negative.
-* `(` - nothing for positive and parentheses for negative.
-* ` ` (space) - a space for positive and a minus sign for negative.
+* `-` - nothing for zero or positive and a minus sign for negative. (Default behavior.)
+* `+` - a plus sign for zero or positive and a minus sign for negative.
+* `(` - nothing for zero or positive and parentheses for negative.
+* ` ` (space) - a space for zero or positive and a minus sign for negative.
 
 The *symbol* can be:
 
