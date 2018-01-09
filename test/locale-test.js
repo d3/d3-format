@@ -16,6 +16,11 @@ tape("formatLocale({currency: [prefix, suffix]}) observes the specified currency
   test.end();
 });
 
+tape("formatLocale({currency: [prefix, suffix]}) places the currency suffix after the SI suffix", function(test) {
+  test.equal(d3.formatLocale({decimal: ",", currency: ["", " €"]}).format("$.3s")(1.2e9), "1,20G €");
+  test.end();
+});
+
 tape("formatLocale({grouping: null}) does not perform any grouping", function(test) {
   test.equal(d3.formatLocale({decimal: ".", grouping: null}).format("012,.2f")(2), "000000002.00");
   test.end();
