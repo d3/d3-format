@@ -215,7 +215,7 @@ This method is useful for understanding how format specifiers are parsed and for
 
 ```js
 var s = d3.formatSpecifier("f");
-s.precision = precisionFixed(0.01);
+s.precision = d3.precisionFixed(0.01);
 var f = d3.format(s);
 f(42); // "42.00";
 ```
