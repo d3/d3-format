@@ -5,6 +5,7 @@ import formatSpecifier from "./formatSpecifier";
 import formatTypes from "./formatTypes";
 import {prefixExponent} from "./formatPrefixAuto";
 import identity from "./identity";
+import trimInsignificantZeros from "./trim";
 
 var prefixes = ["y","z","a","f","p","n","µ","m","","k","M","G","T","P","E","Z","Y"];
 
@@ -26,7 +27,8 @@ export default function(locale) {
         width = specifier.width,
         comma = specifier.comma,
         precision = specifier.precision,
-        type = specifier.type;
+        type = specifier.type,
+        trim = specifier.trim;
 
     // Compute the prefix and suffix.
     // For SI-prefix, the suffix is lazily computed.
@@ -61,6 +63,10 @@ export default function(locale) {
         // Perform the initial formatting.
         var valueNegative = value < 0;
         value = formatType(Math.abs(value), precision);
+
+        if (trim) {
+          value = trimInsignificantZeros(value);
+        }
 
         // If a negative value rounds to zero during formatting, treat as positive.
         if (valueNegative && +value === 0) valueNegative = false;

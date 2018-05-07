@@ -1,7 +1,7 @@
 import formatTypes from "./formatTypes";
 
 // [[fill]align][sign][symbol][0][width][,][.precision][type]
-var re = /^(?:(.)?([<>=^]))?([+\-\( ])?([$#])?(0)?(\d+)?(,)?(\.\d+)?([a-z%])?$/i;
+var re = /^(?:(.)?([<>=^]))?([+\-\( ])?([$#])?(0)?(\d+)?(,)?(\.\d+)?([a-z%])?(t)?$/i;
 
 export default function formatSpecifier(specifier) {
   return new FormatSpecifier(specifier);
@@ -21,7 +21,8 @@ function FormatSpecifier(specifier) {
       width = match[6] && +match[6],
       comma = !!match[7],
       precision = match[8] && +match[8].slice(1),
-      type = match[9] || "";
+      type = match[9] || "",
+      trim = !!match[10];
 
   // The "n" type is an alias for ",g".
   if (type === "n") comma = true, type = "g";
@@ -41,6 +42,7 @@ function FormatSpecifier(specifier) {
   this.comma = comma;
   this.precision = precision;
   this.type = type;
+  this.trim = trim;
 }
 
 FormatSpecifier.prototype.toString = function() {
@@ -52,5 +54,6 @@ FormatSpecifier.prototype.toString = function() {
       + (this.width == null ? "" : Math.max(1, this.width | 0))
       + (this.comma ? "," : "")
       + (this.precision == null ? "" : "." + Math.max(0, this.precision | 0))
-      + this.type;
+      + this.type
+      + (this.trim ? "t" : "");
 };
