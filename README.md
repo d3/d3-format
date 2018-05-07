@@ -109,7 +109,7 @@ An alias for [*locale*.formatPrefix](#locale_formatPrefix) on the [default local
 Returns a new format function for the given string *specifier*. The returned function takes a number as the only argument, and returns a string representing the formatted number. The general form of a specifier is:
 
 ```
-[​[fill]align][sign][symbol][0][width][,][.precision][type]
+[​[fill]align][sign][symbol][0][width][,][.precision][type][t]
 ```
 
 The *fill* can be any character. The presence of a fill character is signaled by the *align* character following it, which must be one of the following:
@@ -160,6 +160,14 @@ d3.format(".2")(4.2); // "4.2"
 d3.format(".1")(42);  // "4e+1"
 d3.format(".1")(4.2); // "4"
 ```
+
+The `t` (trim) option removes insignificant trailing zeros across all format types. This is most commonly used in conjunction with types `r`, `e`, `s` and `%`. For example:
+```js
+d3.format("s")(1500);  // "1.50000k"
+d3.format("st")(1500); // "1.5k"
+```
+
+The default (none) format type is equivalent to `gt`.
 
 <a name="locale_formatPrefix" href="#locale_formatPrefix">#</a> <i>locale</i>.<b>formatPrefix</b>(<i>specifier</i>, <i>value</i>) [<>](https://github.com/d3/d3-format/blob/master/src/locale.js#L127 "Source")
 
