@@ -2,10 +2,10 @@ import exponent from "./exponent";
 import formatGroup from "./formatGroup";
 import formatNumerals from "./formatNumerals";
 import formatSpecifier from "./formatSpecifier";
+import formatTrim from "./formatTrim";
 import formatTypes from "./formatTypes";
 import {prefixExponent} from "./formatPrefixAuto";
 import identity from "./identity";
-import trimInsignificantZeros from "./trim";
 
 var prefixes = ["y","z","a","f","p","n","µ","m","","k","M","G","T","P","E","Z","Y"];
 
@@ -64,9 +64,8 @@ export default function(locale) {
         var valueNegative = value < 0;
         value = formatType(Math.abs(value), precision);
 
-        if (trim) {
-          value = trimInsignificantZeros(value);
-        }
+        // Trim insignificant zeros.
+        if (trim) value = formatTrim(value);
 
         // If a negative value rounds to zero during formatting, treat as positive.
         if (valueNegative && +value === 0) valueNegative = false;

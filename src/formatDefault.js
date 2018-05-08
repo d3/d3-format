@@ -1,5 +1,5 @@
-import trim from "./trim";
+import formatTrim from "./formatTrim";
 
 export default function(x, p) {
-  return trim(x.toPrecision(p));
+  return formatTrim(x.toPrecision(p));
 }
