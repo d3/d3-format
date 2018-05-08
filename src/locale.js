@@ -28,7 +28,7 @@ export default function(locale) {
         comma = specifier.comma,
         precision = specifier.precision,
         type = specifier.type,
-        trim = specifier.trim;
+        trim = specifier.trim || type === "";
 
     // Compute the prefix and suffix.
     // For SI-prefix, the suffix is lazily computed.
