@@ -29,3 +29,15 @@ tape("format(\"s\") handles very small and very large values", function(test) {
   test.equal(format.format("s")(Number.MAX_VALUE), "179769000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000Y");
   test.end();
 });
+
+tape("format(\"n\") is equivalent to format(\",g\")", function(test) {
+  test.equal(format.format("n")(123456.78), "123,457");
+  test.equal(format.format(",g")(123456.78), "123,457");
+  test.end();
+});
+
+tape("format(\"012\") is equivalent to format(\"0=12\")", function(test) {
+  test.equal(format.format("012")(123.456), "00000123.456");
+  test.equal(format.format("0=12")(123.456), "00000123.456");
+  test.end();
+});

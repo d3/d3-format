@@ -28,7 +28,16 @@ export default function(locale) {
         comma = specifier.comma,
         precision = specifier.precision,
         type = specifier.type,
-        trim = specifier.trim || type === "";
+        trim = specifier.trim;
+
+    // The "n" type is an alias for ",g".
+    if (type === "n") comma = true, type = "g";
+
+    // The "" type, and any invalid type, is an alias for ".12~g".
+    else if (!formatTypes[type]) precision == null && (precision = 12), trim = true, type = "g";
+
+    // If zero fill is specified, padding goes after sign and before digits.
+    if (zero || (fill === "0" && align === "=")) zero = true, fill = "0", align = "=";
 
     // Compute the prefix and suffix.
     // For SI-prefix, the suffix is lazily computed.
@@ -39,13 +48,13 @@ export default function(locale) {
     // Is this an integer type?
     // Can this type generate exponential notation?
     var formatType = formatTypes[type],
-        maybeSuffix = !type || /[defgprs%]/.test(type);
+        maybeSuffix = /[defgprs%]/.test(type);
 
     // Set the default precision if not specified,
     // or clamp the specified precision to the supported range.
     // For significant precision, it must be in [1, 21].
     // For fixed precision, it must be in [0, 20].
-    precision = precision == null ? (type ? 6 : 12)
+    precision = precision == null ? 6
         : /[gprs]/.test(type) ? Math.max(1, Math.min(21, precision))
         : Math.max(0, Math.min(20, precision));
 

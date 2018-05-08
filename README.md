@@ -156,9 +156,8 @@ The available *type* values are:
 * `x` - hexadecimal notation, using lower-case letters, rounded to integer.
 * `X` - hexadecimal notation, using upper-case letters, rounded to integer.
 * `c` - converts the integer to the corresponding unicode character before printing.
-* `​` (none) - like `g`, but trim insignificant trailing zeros; equivalent to `~g`.
 
-The type `n` is also supported as shorthand for `,g`. For the `g`, `n` and `​` (none) types, decimal notation is used if the resulting string would have *precision* or fewer digits; otherwise, exponent notation is used. For example:
+The type `​` (none) is also supported as shorthand for `~g` (with a default precision of 12 instead of 6), and the type `n` is shorthand for `,g`. For the `g`, `n` and `​` (none) types, decimal notation is used if the resulting string would have *precision* or fewer digits; otherwise, exponent notation is used. For example:
 
 ```js
 d3.format(".2")(42);  // "42"

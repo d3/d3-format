@@ -1,5 +1,3 @@
-import formatTypes from "./formatTypes";
-
 // [[fill]align][sign][symbol][0][width][,][.precision][~][type]
 var re = /^(?:(.)?([<>=^]))?([+\-\( ])?([$#])?(0)?(\d+)?(,)?(\.\d+)?(~)?([a-z%])?$/i;
 
@@ -11,38 +9,17 @@ formatSpecifier.prototype = FormatSpecifier.prototype; // instanceof
 
 function FormatSpecifier(specifier) {
   if (!(match = re.exec(specifier))) throw new Error("invalid format: " + specifier);
-
-  var match,
-      fill = match[1] || " ",
-      align = match[2] || ">",
-      sign = match[3] || "-",
-      symbol = match[4] || "",
-      zero = !!match[5],
-      width = match[6] && +match[6],
-      comma = !!match[7],
-      precision = match[8] && +match[8].slice(1),
-      trim = !!match[9],
-      type = match[10] || "";
-
-  // The "n" type is an alias for ",g".
-  if (type === "n") comma = true, type = "g";
-
-  // Map invalid types to the default format.
-  else if (!formatTypes[type]) type = "";
-
-  // If zero fill is specified, padding goes after sign and before digits.
-  if (zero || (fill === "0" && align === "=")) zero = true, fill = "0", align = "=";
-
-  this.fill = fill;
-  this.align = align;
-  this.sign = sign;
-  this.symbol = symbol;
-  this.zero = zero;
-  this.width = width;
-  this.comma = comma;
-  this.precision = precision;
-  this.trim = trim;
-  this.type = type;
+  var match;
+  this.fill = match[1] || " ";
+  this.align = match[2] || ">";
+  this.sign = match[3] || "-";
+  this.symbol = match[4] || "";
+  this.zero = !!match[5];
+  this.width = match[6] && +match[6];
+  this.comma = !!match[7];
+  this.precision = match[8] && +match[8].slice(1);
+  this.trim = !!match[9];
+  this.type = match[10] || "";
 }
 
 FormatSpecifier.prototype.toString = function() {

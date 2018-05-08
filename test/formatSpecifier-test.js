@@ -29,24 +29,17 @@ tape("formatSpecifier(\"\") has the expected defaults", function(test) {
   test.end();
 });
 
-tape("formatSpecifier(specifier) uses the none type for unknown types", function(test) {
-  test.equal(format.formatSpecifier("q").type, "");
-  test.equal(format.formatSpecifier("S").type, "");
+tape("formatSpecifier(specifier) preserves unknown types", function(test) {
+  var s = format.formatSpecifier("q");
+  test.equal(s.trim, false);
+  test.equal(s.type, "q");
   test.end();
 });
 
-tape("formatSpecifier(\"n\") is an alias for \",g\"", function(test) {
-  var s = format.formatSpecifier("n")
-  test.equal(s.comma, true);
-  test.equal(s.type, "g");
-  test.end();
-});
-
-tape("formatSpecifier(\"0\") is an alias for \"0=\"", function(test) {
-  var s = format.formatSpecifier("0")
-  test.equal(s.zero, true);
-  test.equal(s.fill, "0");
-  test.equal(s.align, "=");
+tape("formatSpecifier(specifier) preserves shorthand", function(test) {
+  var s = format.formatSpecifier("");
+  test.equal(s.trim, false);
+  test.equal(s.type, "");
   test.end();
 });
 
@@ -61,7 +54,6 @@ tape("formatSpecifier(specifier).toString() reflects current field values", func
   test.equal((s.comma = true, s) + "", "_^+$012,");
   test.equal((s.precision = 2, s) + "", "_^+$012,.2");
   test.equal((s.type = "f", s) + "", "_^+$012,.2f");
-  test.equal(format.format(s)(42), "+$0,000,042.00");
   test.equal((s.trim = true, s) + "", "_^+$012,.2~f");
   test.equal(format.format(s)(42), "+$0,000,000,042");
   test.end();
