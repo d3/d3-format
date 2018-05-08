@@ -27,8 +27,8 @@ export default function(locale) {
         width = specifier.width,
         comma = specifier.comma,
         precision = specifier.precision,
-        type = specifier.type,
-        trim = specifier.trim;
+        trim = specifier.trim,
+        type = specifier.type;
 
     // The "n" type is an alias for ",g".
     if (type === "n") comma = true, type = "g";
