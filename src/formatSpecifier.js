@@ -1,6 +1,6 @@
 import formatTypes from "./formatTypes";
 
-// [[fill]align][sign][symbol][0][width][,][.precision][type]
+// [[fill]align][sign][symbol][0][width][,][.precision][~][type]
 var re = /^(?:(.)?([<>=^]))?([+\-\( ])?([$#])?(0)?(\d+)?(,)?(\.\d+)?(~)?([a-z%])?$/i;
 
 export default function formatSpecifier(specifier) {
