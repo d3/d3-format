@@ -1,8 +1,8 @@
 var tape = require("tape"),
     format = require("../");
 
-tape("format(\"rt\") trims insignificant zeros", function(test) {
-  var f = format.format("rt");
+tape("format(\"~r\") trims insignificant zeros", function(test) {
+  var f = format.format("~r");
   test.equal(f(1), "1");
   test.equal(f(0.1), "0.1");
   test.equal(f(0.01), "0.01");
@@ -19,8 +19,8 @@ tape("format(\"rt\") trims insignificant zeros", function(test) {
   test.end();
 });
 
-tape("format(\"et\") trims insignificant zeros", function(test) {
-  var f = format.format("et");
+tape("format(\"~e\") trims insignificant zeros", function(test) {
+  var f = format.format("~e");
   test.equal(f(0), "0e+0");
   test.equal(f(42), "4.2e+1");
   test.equal(f(42000000), "4.2e+7");
@@ -30,8 +30,8 @@ tape("format(\"et\") trims insignificant zeros", function(test) {
   test.end();
 });
 
-tape("format(\"st\") trims insignificant zeros", function(test) {
-  var f = format.format("st");
+tape("format(\"~s\") trims insignificant zeros", function(test) {
+  var f = format.format("~s");
   test.equal(f(0), "0");
   test.equal(f(1), "1");
   test.equal(f(10), "10");
@@ -56,8 +56,8 @@ tape("format(\"st\") trims insignificant zeros", function(test) {
   test.end();
 });
 
-tape("format(\"%t\") trims insignificant zeros", function(test) {
-  var f = format.format("%t");
+tape("format(\"~%\") trims insignificant zeros", function(test) {
+  var f = format.format("~%");
   test.equal(f(0), "0%");
   test.equal(f(0.1), "10%");
   test.equal(f(0.01), "1%");
@@ -67,7 +67,7 @@ tape("format(\"%t\") trims insignificant zeros", function(test) {
 });
 
 tape("trimming respects commas", function(test) {
-  var f = format.format(",gt");
+  var f = format.format(",~g");
   test.equal(f(10000.0), "10,000");
   test.equal(f(10000.1), "10,000.1");
   test.end();

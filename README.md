@@ -135,6 +135,12 @@ The *zero* (`0`) option enables zero-padding; this implicitly sets *fill* to `0`
 
 Depending on the *type*, the *precision* either indicates the number of digits that follow the decimal point (types `f` and `%`), or the number of significant digits (types `​`, `e`, `g`, `r`, `s` and `p`). If the precision is not specified, it defaults to 6 for all types except `​` (none), which defaults to 12. Precision is ignored for integer formats (types `b`, `o`, `d`, `x`, `X` and `c`). See [precisionFixed](#precisionFixed) and [precisionRound](#precisionRound) for help picking an appropriate precision.
 
+The `~` option trims insignificant trailing zeros across all format types. This is most commonly used in conjunction with types `r`, `e`, `s` and `%`. For example:
+```js
+d3.format("s")(1500);  // "1.50000k"
+d3.format("~s")(1500); // "1.5k"
+```
+
 The available *type* values are:
 
 * `e` - exponent notation.
@@ -150,7 +156,7 @@ The available *type* values are:
 * `x` - hexadecimal notation, using lower-case letters, rounded to integer.
 * `X` - hexadecimal notation, using upper-case letters, rounded to integer.
 * `c` - converts the integer to the corresponding unicode character before printing.
-* `​` (none) - like `g`, but trim insignificant trailing zeros.
+* `​` (none) - like `g`, but trim insignificant trailing zeros. This is equivalent to `~g`.
 
 The type `n` is also supported as shorthand for `,g`. For the `g`, `n` and `​` (none) types, decimal notation is used if the resulting string would have *precision* or fewer digits; otherwise, exponent notation is used. For example:
 
@@ -160,14 +166,6 @@ d3.format(".2")(4.2); // "4.2"
 d3.format(".1")(42);  // "4e+1"
 d3.format(".1")(4.2); // "4"
 ```
-
-The `t` (trim) option removes insignificant trailing zeros across all format types. This is most commonly used in conjunction with types `r`, `e`, `s` and `%`. For example:
-```js
-d3.format("s")(1500);  // "1.50000k"
-d3.format("st")(1500); // "1.5k"
-```
-
-The default (none) format type is equivalent to `gt`.
 
 <a name="locale_formatPrefix" href="#locale_formatPrefix">#</a> <i>locale</i>.<b>formatPrefix</b>(<i>specifier</i>, <i>value</i>) [<>](https://github.com/d3/d3-format/blob/master/src/locale.js#L127 "Source")
 

@@ -24,8 +24,8 @@ tape("formatSpecifier(\"\") has the expected defaults", function(test) {
   test.equal(s.width, undefined);
   test.equal(s.comma, false);
   test.equal(s.precision, undefined);
-  test.equal(s.type, "");
   test.equal(s.trim, false);
+  test.equal(s.type, "");
   test.end();
 });
 
@@ -62,7 +62,7 @@ tape("formatSpecifier(specifier).toString() reflects current field values", func
   test.equal((s.precision = 2, s) + "", "_^+$012,.2");
   test.equal((s.type = "f", s) + "", "_^+$012,.2f");
   test.equal(format.format(s)(42), "+$0,000,042.00");
-  test.equal((s.trim = true, s) + "", "_^+$012,.2ft");
+  test.equal((s.trim = true, s) + "", "_^+$012,.2~f");
   test.equal(format.format(s)(42), "+$0,000,000,042");
   test.end();
 });
