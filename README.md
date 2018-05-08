@@ -156,7 +156,7 @@ The available *type* values are:
 * `x` - hexadecimal notation, using lower-case letters, rounded to integer.
 * `X` - hexadecimal notation, using upper-case letters, rounded to integer.
 * `c` - converts the integer to the corresponding unicode character before printing.
-* `​` (none) - like `g`, but trim insignificant trailing zeros. This is equivalent to `~g`.
+* `​` (none) - like `g`, but trim insignificant trailing zeros; equivalent to `~g`.
 
 The type `n` is also supported as shorthand for `,g`. For the `g`, `n` and `​` (none) types, decimal notation is used if the resulting string would have *precision* or fewer digits; otherwise, exponent notation is used. For example:
 
@@ -213,6 +213,7 @@ Parses the specified *specifier*, returning an object with exposed fields that c
   "width": undefined,
   "comma": false,
   "precision": 6,
+  "trim": false,
   "type": "s"
 }
 ```
