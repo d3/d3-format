@@ -6,7 +6,7 @@ export default function(s) {
       case "0": if (i0 === 0) i0 = i; i1 = i; break;
       default:
         if (i0 > 0) {
-          if (isNaN(s[i])) break out;
+          // if (isNaN(s[i])) break out;
           i0 = 0;
         }
         break;
