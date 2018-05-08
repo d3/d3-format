@@ -109,7 +109,7 @@ An alias for [*locale*.formatPrefix](#locale_formatPrefix) on the [default local
 Returns a new format function for the given string *specifier*. The returned function takes a number as the only argument, and returns a string representing the formatted number. The general form of a specifier is:
 
 ```
-[​[fill]align][sign][symbol][0][width][,][.precision][type][t]
+[​[fill]align][sign][symbol][0][width][,][.precision][~][type]
 ```
 
 The *fill* can be any character. The presence of a fill character is signaled by the *align* character following it, which must be one of the following:
