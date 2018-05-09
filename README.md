@@ -212,7 +212,7 @@ Parses the specified *specifier*, returning an object with exposed fields that c
   "zero": false,
   "width": undefined,
   "comma": false,
-  "precision": 6,
+  "precision": undefined,
   "trim": false,
   "type": "s"
 }
