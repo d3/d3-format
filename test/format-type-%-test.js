@@ -14,10 +14,10 @@ tape("format(\"%\") can output a whole percentage", function(test) {
 });
 
 tape("format(\".%\") can output a percentage with precision", function(test) {
-  var f = format.format(".1%");
-  test.equal(f(.234), "23.4%");
-  var f = format.format(".2%");
-  test.equal(f(.234), "23.40%");
+  var f1 = format.format(".1%");
+  test.equal(f1(.234), "23.4%");
+  var f2 = format.format(".2%");
+  test.equal(f2(.234), "23.40%");
   test.end();
 });
 
