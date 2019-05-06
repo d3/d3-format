@@ -5,10 +5,12 @@ import formatSpecifier from "./formatSpecifier.js";
 import formatTrim from "./formatTrim.js";
 import formatTypes from "./formatTypes.js";
 import {prefixExponent} from "./formatPrefixAuto.js";
+import {binaryPrefixExponent} from "./formatBinaryPrefixAuto.js";
 import identity from "./identity.js";
 
 var map = Array.prototype.map,
-    prefixes = ["y","z","a","f","p","n","µ","m","","k","M","G","T","P","E","Z","Y"];
+    prefixes = ["y","z","a","f","p","n","µ","m","","k","M","G","T","P","E","Z","Y"],
+    binaryPrefixes = ["", "Ki","Mi","Gi","Ti","Pi","Ei","Zi","Yi"];
 
 export default function(locale) {
   var group = locale.grouping === undefined || locale.thousands === undefined ? identity : formatGroup(map.call(locale.grouping, Number), locale.thousands + ""),
@@ -52,14 +54,14 @@ export default function(locale) {
     // Is this an integer type?
     // Can this type generate exponential notation?
     var formatType = formatTypes[type],
-        maybeSuffix = /[defgprs%]/.test(type);
+        maybeSuffix = /[Bdefgprs%]/.test(type);
 
     // Set the default precision if not specified,
     // or clamp the specified precision to the supported range.
     // For significant precision, it must be in [1, 21].
     // For fixed precision, it must be in [0, 20].
     precision = precision === undefined ? 6
-        : /[gprs]/.test(type) ? Math.max(1, Math.min(21, precision))
+        : /[Bgprs]/.test(type) ? Math.max(1, Math.min(21, precision))
         : Math.max(0, Math.min(20, precision));
 
     function format(value) {
@@ -85,8 +87,11 @@ export default function(locale) {
 
         // Compute the prefix and suffix.
         valuePrefix = (valueNegative ? (sign === "(" ? sign : minus) : sign === "-" || sign === "(" ? "" : sign) + valuePrefix;
-
-        valueSuffix = (type === "s" ? prefixes[8 + prefixExponent / 3] : "") + valueSuffix + (valueNegative && sign === "(" ? ")" : "");
+        valueSuffix = (
+          type === "s" ? prefixes[8 + prefixExponent / 3]
+              : type === "B" ? binaryPrefixes[binaryPrefixExponent / 10]
+              : ""
+        ) + valueSuffix + (valueNegative && sign === "(" ? ")" : "");
 
         // Break the formatted value into the integer “value” part that can be
         // grouped, and fractional or exponential “suffix” part that is not.
