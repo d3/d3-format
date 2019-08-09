@@ -1,4 +1,4 @@
-import formatDecimal from "./formatDecimal";
+import formatDecimal from "./formatDecimal.js";
 
 export var prefixExponent;
 

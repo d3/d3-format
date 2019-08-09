@@ -1,6 +1,6 @@
-export {default as formatDefaultLocale, format, formatPrefix} from "./defaultLocale";
-export {default as formatLocale} from "./locale";
-export {default as formatSpecifier} from "./formatSpecifier";
-export {default as precisionFixed} from "./precisionFixed";
-export {default as precisionPrefix} from "./precisionPrefix";
-export {default as precisionRound} from "./precisionRound";
+export {default as formatDefaultLocale, format, formatPrefix} from "./defaultLocale.js";
+export {default as formatLocale} from "./locale.js";
+export {default as formatSpecifier} from "./formatSpecifier.js";
+export {default as precisionFixed} from "./precisionFixed.js";
+export {default as precisionPrefix} from "./precisionPrefix.js";
+export {default as precisionRound} from "./precisionRound.js";

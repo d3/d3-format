@@ -1,4 +1,4 @@
-import formatLocale from "./locale";
+import formatLocale from "./locale.js";
 
 var locale;
 export var format;

@@ -1,11 +1,11 @@
-import exponent from "./exponent";
-import formatGroup from "./formatGroup";
-import formatNumerals from "./formatNumerals";
-import formatSpecifier from "./formatSpecifier";
-import formatTrim from "./formatTrim";
-import formatTypes from "./formatTypes";
-import {prefixExponent} from "./formatPrefixAuto";
-import identity from "./identity";
+import exponent from "./exponent.js";
+import formatGroup from "./formatGroup.js";
+import formatNumerals from "./formatNumerals.js";
+import formatSpecifier from "./formatSpecifier.js";
+import formatTrim from "./formatTrim.js";
+import formatTypes from "./formatTypes.js";
+import {prefixExponent} from "./formatPrefixAuto.js";
+import identity from "./identity.js";
 
 var prefixes = ["y","z","a","f","p","n","µ","m","","k","M","G","T","P","E","Z","Y"];
 

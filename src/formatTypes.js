@@ -1,5 +1,5 @@
-import formatPrefixAuto from "./formatPrefixAuto";
-import formatRounded from "./formatRounded";
+import formatPrefixAuto from "./formatPrefixAuto.js";
+import formatRounded from "./formatRounded.js";
 
 export default {
   "%": function(x, p) { return (x * 100).toFixed(p); },

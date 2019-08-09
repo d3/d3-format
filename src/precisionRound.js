@@ -1,4 +1,4 @@
-import exponent from "./exponent";
+import exponent from "./exponent.js";
 
 export default function(step, max) {
   step = Math.abs(step), max = Math.abs(max) - step;

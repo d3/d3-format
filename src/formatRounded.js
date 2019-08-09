@@ -1,4 +1,4 @@
-import formatDecimal from "./formatDecimal";
+import formatDecimal from "./formatDecimal.js";
 
 export default function(x, p) {
   var d = formatDecimal(x, p);
