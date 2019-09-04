@@ -8,7 +8,8 @@ defaultLocale({
   decimal: ".",
   thousands: ",",
   grouping: [3],
-  currency: ["$", ""]
+  currency: ["$", ""],
+  minusSign: "-"
 });
 
 export default function defaultLocale(definition) {
