@@ -9,7 +9,7 @@ defaultLocale({
   thousands: ",",
   grouping: [3],
   currency: ["$", ""],
-  minusSign: "-"
+  minus: "-"
 });
 
 export default function defaultLocale(definition) {

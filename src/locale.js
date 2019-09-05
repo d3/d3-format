@@ -15,7 +15,7 @@ export default function(locale) {
       decimal = locale.decimal,
       numerals = locale.numerals ? formatNumerals(locale.numerals) : identity,
       percent = locale.percent || "%",
-      minusSign = locale.minusSign || "-"
+      minus = locale.minus || "-"
 
   function newFormat(specifier) {
     specifier = formatSpecifier(specifier);
@@ -81,7 +81,7 @@ export default function(locale) {
         if (valueNegative && +value === 0) valueNegative = false;
 
         // Compute the prefix and suffix.
-        valuePrefix = (valueNegative ? (sign === "(" ? sign : minusSign) : sign === "-" || sign === "(" ? "" : sign) + valuePrefix;
+        valuePrefix = (valueNegative ? (sign === "(" ? sign : minus) : sign === "-" || sign === "(" ? "" : sign) + valuePrefix;
         
         valueSuffix = (type === "s" ? prefixes[8 + prefixExponent / 3] : "") + valueSuffix + (valueNegative && sign === "(" ? ")" : "");
 
