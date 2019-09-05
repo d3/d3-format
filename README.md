@@ -204,7 +204,7 @@ This method is useful when formatting multiple numbers in the same units for eas
 Parses the specified *specifier*, returning an object with exposed fields that correspond to the [format specification mini-language](#locale_format) and a toString method that reconstructs the specifier. For example, `formatSpecifier("s")` returns:
 
 ```js
-{
+FormatSpecifier {
   "fill": " ",
   "align": ">",
   "sign": "-",
@@ -225,6 +225,25 @@ var s = d3.formatSpecifier("f");
 s.precision = d3.precisionFixed(0.01);
 var f = d3.format(s);
 f(42); // "42.00";
+```
+
+<a name="FormatSpecifier" href="#FormatSpecifier">#</a> new d3.<b>FormatSpecifier</b>(<i>specifier</i>) [<>](https://github.com/d3/d3-format/blob/master/src/formatSpecifier.js "Source")
+
+Given the specified *specifier* object, returning an object with exposed fields that correspond to the [format specification mini-language](#locale_format) and a toString method that reconstructs the specifier. For example, `new FormatSpecifier({type: "s"})` returns:
+
+```js
+FormatSpecifier {
+  "fill": " ",
+  "align": ">",
+  "sign": "-",
+  "symbol": "",
+  "zero": false,
+  "width": undefined,
+  "comma": false,
+  "precision": undefined,
+  "trim": false,
+  "type": "s"
+}
 ```
 
 <a name="precisionFixed" href="#precisionFixed">#</a> d3.<b>precisionFixed</b>(<i>step</i>) [<>](https://github.com/d3/d3-format/blob/master/src/precisionFixed.js "Source")

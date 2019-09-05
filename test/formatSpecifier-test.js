@@ -70,3 +70,44 @@ tape("formatSpecifier(specifier).toString() clamps width to one", function(test)
   test.equal((s.width = -1, s) + "", " >-1");
   test.end();
 });
+
+tape("new FormatSpecifier({}) has the expected defaults", function(test) {
+  var s = new format.FormatSpecifier({});
+  test.strictEqual(s.fill, " ");
+  test.strictEqual(s.align, ">");
+  test.strictEqual(s.sign, "-");
+  test.strictEqual(s.symbol, "");
+  test.strictEqual(s.zero, false);
+  test.strictEqual(s.width, undefined);
+  test.strictEqual(s.comma, false);
+  test.strictEqual(s.precision, undefined);
+  test.strictEqual(s.trim, false);
+  test.strictEqual(s.type, "");
+  test.end();
+});
+
+tape("new FormatSpecifier({…}) coerces all inputs to the expected types", function(test) {
+  var s = new format.FormatSpecifier({
+    fill: 1,
+    align: 2,
+    sign: 3,
+    symbol: 4,
+    zero: 5,
+    width: 6,
+    comma: 7,
+    precision: 8,
+    trim: 9,
+    type: 10
+  });
+  test.strictEqual(s.fill, "1");
+  test.strictEqual(s.align, "2");
+  test.strictEqual(s.sign, "3");
+  test.strictEqual(s.symbol, "4");
+  test.strictEqual(s.zero, true);
+  test.strictEqual(s.width, 6);
+  test.strictEqual(s.comma, true);
+  test.strictEqual(s.precision, 8);
+  test.strictEqual(s.trim, true);
+  test.strictEqual(s.type, "10");
+  test.end();
+});
