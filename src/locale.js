@@ -15,7 +15,7 @@ export default function(locale) {
       decimal = locale.decimal,
       numerals = locale.numerals ? formatNumerals(locale.numerals) : identity,
       percent = locale.percent || "%",
-      minus = locale.minus || "-"
+      minus = locale.minus || "-";
 
   function newFormat(specifier) {
     specifier = formatSpecifier(specifier);
