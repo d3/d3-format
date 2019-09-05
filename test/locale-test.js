@@ -21,8 +21,8 @@ tape("formatLocale({currency: [prefix, suffix]}) places the currency suffix afte
   test.end();
 });
 
-tape("formatLocale({grouping: null}) does not perform any grouping", function(test) {
-  test.equal(d3.formatLocale({decimal: ".", grouping: null}).format("012,.2f")(2), "000000002.00");
+tape("formatLocale({grouping: undefined}) does not perform any grouping", function(test) {
+  test.equal(d3.formatLocale({decimal: "."}).format("012,.2f")(2), "000000002.00");
   test.end();
 });
 
