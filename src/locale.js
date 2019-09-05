@@ -15,7 +15,8 @@ export default function(locale) {
       decimal = locale.decimal,
       numerals = locale.numerals ? formatNumerals(locale.numerals) : identity,
       percent = locale.percent || "%",
-      minus = locale.minus || "-";
+      minus = locale.minus || "-",
+      nan = locale.nan || "NaN";
 
   function newFormat(specifier) {
     specifier = formatSpecifier(specifier);
@@ -72,7 +73,7 @@ export default function(locale) {
 
         // Perform the initial formatting.
         var valueNegative = value < 0;
-        value = formatType(Math.abs(value), precision);
+        value = isNaN(value) ? nan : formatType(Math.abs(value), precision);
 
         // Trim insignificant zeros.
         if (trim) value = formatTrim(value);
@@ -82,7 +83,7 @@ export default function(locale) {
 
         // Compute the prefix and suffix.
         valuePrefix = (valueNegative ? (sign === "(" ? sign : minus) : sign === "-" || sign === "(" ? "" : sign) + valuePrefix;
-        
+
         valueSuffix = (type === "s" ? prefixes[8 + prefixExponent / 3] : "") + valueSuffix + (valueNegative && sign === "(" ? ")" : "");
 
         // Break the formatted value into the integer “value” part that can be

@@ -79,6 +79,13 @@ tape("formatLocale({minus: minus}) observes the specified minus sign", function(
   test.end();
 });
 
+tape("formatLocale({nan: nan}) observes the specified not-a-number representation", function(test) {
+  test.equal(d3.formatLocale({nan: "N/A"}).format("6.2f")(undefined), "   N/A");
+  test.equal(d3.formatLocale({nan: "-"}).format("<6.2g")(undefined), "-     ");
+  test.equal(d3.formatLocale({}).format(" 6.2f")(undefined), "   NaN");
+  test.end();
+});
+
 tape("locale data is valid", function(test) {
   fs.readdir("locale", function(error, locales) {
     if (error) throw error;
