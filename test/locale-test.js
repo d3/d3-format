@@ -65,6 +65,20 @@ tape("formatLocale({thousands: separator}) observes the specified group separato
   test.end();
 });
 
+tape("formatLocale({percent: percent}) observes the specified percent sign", function(test) {
+  test.equal(d3.formatLocale({decimal: ".", percent: "!"}).format("06.2%")(2), "200.00!");
+  test.equal(d3.formatLocale({decimal: ".", percent: "﹪"}).format("06.2%")(2), "200.00﹪");
+  test.end();
+});
+
+tape("formatLocale({minus: minus}) observes the specified minus sign", function(test) {
+  test.equal(d3.formatLocale({decimal: ".", minus: "-"}).format("06.2f")(-2), "-02.00");
+  test.equal(d3.formatLocale({decimal: ".", minus: "−"}).format("06.2f")(-2), "−02.00");
+  test.equal(d3.formatLocale({decimal: ".", minus: "➖"}).format("06.2f")(-2), "➖02.00");
+  test.equal(d3.formatLocale({decimal: "."}).format("06.2f")(-2), "-02.00");
+  test.end();
+});
+
 tape("locale data is valid", function(test) {
   fs.readdir("locale", function(error, locales) {
     if (error) throw error;
