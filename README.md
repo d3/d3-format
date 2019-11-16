@@ -67,7 +67,7 @@ See [*locale*.format](#locale_format) for a detailed specification, and try runn
 
 ## Installing
 
-If you use NPM, `npm install d3-format`. Otherwise, download the [latest release](https://github.com/d3/d3-format/releases/latest). You can also load directly from [d3js.org](https://d3js.org), either as a [standalone library](https://d3js.org/d3-format.v1.min.js) or as part of [D3 4.0](https://github.com/d3/d3). AMD, CommonJS, and vanilla environments are supported. In vanilla, a `d3` global is exported:
+If you use NPM, `npm install d3-format`. Otherwise, download the [latest release](https://github.com/d3/d3-format/releases/latest). You can also load directly from [d3js.org](https://d3js.org), either as a [standalone library](https://d3js.org/d3-format.v1.min.js) or as part of [D3](https://github.com/d3/d3). AMD, CommonJS, and vanilla environments are supported. In vanilla, a `d3` global is exported:
 
 ```html
 <script src="https://d3js.org/d3-format.v1.min.js"></script>
@@ -78,10 +78,10 @@ var format = d3.format(".2s");
 </script>
 ```
 
-Locale files are hosted on [unpkg](https://unpkg.com/) and can be loaded using [d3.json](https://github.com/d3/d3-request/blob/master/README.md#json). For example, to set Russian as the default locale:
+Locale files are published to npm and can be loaded using [d3.json](https://github.com/d3/d3-request/blob/master/README.md#json). For example, to set Russian as the default locale:
 
 ```js
-d3.json("https://unpkg.com/d3-format@1/locale/ru-RU.json", function(error, locale) {
+d3.json("https://cdn.jsdelivr.net/npm/d3-format@1/locale/ru-RU.json", function(error, locale) {
   if (error) throw error;
 
   d3.formatDefaultLocale(locale);
@@ -92,7 +92,7 @@ d3.json("https://unpkg.com/d3-format@1/locale/ru-RU.json", function(error, local
 });
 ```
 
-[Try d3-format in your browser.](https://tonicdev.com/npm/d3-format)
+[Try d3-format in your browser.](https://observablehq.com/@d3/d3-format)
 
 ## API Reference
 
