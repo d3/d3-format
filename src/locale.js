@@ -8,7 +8,8 @@ import {prefixExponent} from "./formatPrefixAuto.js";
 import identity from "./identity.js";
 
 var map = Array.prototype.map,
-    prefixes = ["y","z","a","f","p","n","µ","m","","k","M","G","T","P","E","Z","Y"];
+    prefixes = ["y","z","a","f","p","n","µ","m","","k","M","G","T","P","E","Z","Y"],
+    currencyPrefixes = ["", "K", "M", "B", "T"];
 
 export default function(locale) {
   var group = locale.grouping === undefined || locale.thousands === undefined ? identity : formatGroup(map.call(locale.grouping, Number), locale.thousands + ""),
@@ -131,18 +132,24 @@ export default function(locale) {
     return format;
   }
 
-  function formatPrefix(specifier, value) {
-    var f = newFormat((specifier = formatSpecifier(specifier), specifier.type = "f", specifier)),
-        e = Math.max(-8, Math.min(8, Math.floor(exponent(value) / 3))) * 3,
+  function createFormatPrefix(prefixes, minimumPrefixOrder, maximumPrefixOrder) {
+    return function(specifier, value) {
+      var f = newFormat((specifier = formatSpecifier(specifier), specifier.type = "f", specifier)),
+        e = Math.max(minimumPrefixOrder, Math.min(maximumPrefixOrder, Math.floor(exponent(value) / 3))) * 3,
         k = Math.pow(10, -e),
-        prefix = prefixes[8 + e / 3];
-    return function(value) {
-      return f(k * value) + prefix;
-    };
+        prefix = prefixes[(-1 * minimumPrefixOrder) + e / 3];
+      return function (value) {
+        return f(k * value) + prefix;
+      };
+    }
   }
+
+  var formatPrefix = createFormatPrefix(prefixes, -8, 8);
+  var formatCurrencyPrefix = createFormatPrefix(currencyPrefixes, 0, 4);
 
   return {
     format: newFormat,
+    formatCurrencyPrefix: formatCurrencyPrefix,
     formatPrefix: formatPrefix
   };
 }
