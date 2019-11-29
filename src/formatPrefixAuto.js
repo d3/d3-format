@@ -15,8 +15,10 @@ function formatSignificantDigitsForPrefixes(x, p, minPrefixOrder, maxPrefixOrder
       : "0." + new Array(1 - i).join("0") + formatDecimal(x, Math.max(0, p + i - 1))[0]; // less than the smallest prefix
 }
 
-export function formatCurrencyPrefixAuto(x, p) {
-  return formatSignificantDigitsForPrefixes(x, p, 0, 4);
+export function createFormatCurrencyPrefixAutoForLocale(currencyAbbreviations) {
+  return function formatCurrencyPrefixAuto(x, p) {
+    return formatSignificantDigitsForPrefixes(x, p, 0, currencyAbbreviations.length - 1);
+  }
 }
 
 export default function(x, p) {

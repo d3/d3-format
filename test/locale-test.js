@@ -26,6 +26,11 @@ tape("formatLocale({currencyAbbreviations: [list of abbreviations]}) should abbr
   test.end();
 });
 
+tape("formatLocale({currencyAbbreviations: [list of abbreviations]}) should abbreviate only specified levels", function (test) {
+  test.equal(d3.formatLocale({ currencyAbbreviations: ["", "M", "Mio", "Mrd"] }).format("$.3K")(1.2e12), "1200Mrd");
+  test.end();
+});
+
 tape("formatLocale({grouping: undefined}) does not perform any grouping", function(test) {
   test.equal(d3.formatLocale({decimal: "."}).format("012,.2f")(2), "000000002.00");
   test.end();

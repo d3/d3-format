@@ -346,7 +346,7 @@ Returns a *locale* object for the specified *definition* with [*locale*.format](
 * `thousands` - the group separator (e.g., `","`).
 * `grouping` - the array of group sizes (e.g., `[3]`), cycled as needed.
 * `currency` - the currency prefix and suffix (e.g., `["$", ""]`).
-* `currencyAbbreviations` - the list of abbreviated suffixes for currency vales (array of 5 elements: units, thousands, millions, billions and trillions) (default `["", "K", "M", "B", "T"]`).
+* `currencyAbbreviations` - the list of abbreviated suffixes for currency values; an array of elements for each: units, thousands, millions, billions and trillions; defaults to `["", "K", "M", "B", "T"]`. The number of elements can vary.
 * `numerals` - optional; an array of ten strings to replace the numerals 0-9.
 * `percent` - optional; the percent sign (defaults to `"%"`).
 * `minus` - optional; the minus sign (defaults to hyphen-minus, `"-"`).

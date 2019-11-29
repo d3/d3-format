@@ -1,4 +1,4 @@
-import formatPrefixAuto, { formatCurrencyPrefixAuto } from "./formatPrefixAuto.js";
+import formatPrefixAuto, { createFormatCurrencyPrefixAutoForLocale } from "./formatPrefixAuto.js";
 import formatRounded from "./formatRounded.js";
 
 export default {
@@ -9,7 +9,7 @@ export default {
   "e": function(x, p) { return x.toExponential(p); },
   "f": function(x, p) { return x.toFixed(p); },
   "g": function(x, p) { return x.toPrecision(p); },
-  "K": formatCurrencyPrefixAuto,
+  "K": createFormatCurrencyPrefixAutoForLocale, // depends of the current locale
   "o": function(x) { return Math.round(x).toString(8); },
   "p": function(x, p) { return formatRounded(x * 100, p); },
   "r": formatRounded,

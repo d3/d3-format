@@ -56,6 +56,9 @@ export default function(locale) {
     var formatType = formatTypes[type],
         maybeSuffix = /[defgKprs%]/.test(type);
 
+    if (type === 'K')
+      formatType = formatType(currencyAbbreviations);
+
     // Set the default precision if not specified,
     // or clamp the specified precision to the supported range.
     // For significant precision, it must be in [1, 21].
@@ -153,7 +156,7 @@ export default function(locale) {
   }
 
   var formatPrefix = createFormatPrefix(SIprefixes, -8, 8);
-  var formatCurrencyPrefix = createFormatPrefix(currencyAbbreviations, 0, 4);
+  var formatCurrencyPrefix = createFormatPrefix(currencyAbbreviations, 0, currencyAbbreviations.length - 1);
 
   return {
     format: newFormat,
