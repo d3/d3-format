@@ -8,7 +8,7 @@ import {prefixExponent} from "./formatPrefixAuto.js";
 import identity from "./identity.js";
 
 var map = Array.prototype.map,
-    prefixes = ["y","z","a","f","p","n","µ","m","","k","M","G","T","P","E","Z","Y"],
+    SIprefixes = ["y","z","a","f","p","n","µ","m","","k","M","G","T","P","E","Z","Y"],
     currencyPrefixes = ["", "K", "M", "B", "T"];
 
 export default function(locale) {
@@ -53,14 +53,15 @@ export default function(locale) {
     // Is this an integer type?
     // Can this type generate exponential notation?
     var formatType = formatTypes[type],
-        maybeSuffix = /[defgprs%]/.test(type);
+        maybeSuffix = /[defgKprs%]/.test(type);
 
     // Set the default precision if not specified,
     // or clamp the specified precision to the supported range.
     // For significant precision, it must be in [1, 21].
     // For fixed precision, it must be in [0, 20].
-    precision = precision === undefined ? 6
-        : /[gprs]/.test(type) ? Math.max(1, Math.min(21, precision))
+    // For financial type, default precision is 3 significant digits instead of 6.
+    precision = precision === undefined ? (type === "K" ? 3 : 6)
+        : /[gKprs]/.test(type) ? Math.max(1, Math.min(21, precision))
         : Math.max(0, Math.min(20, precision));
 
     function format(value) {
@@ -88,7 +89,13 @@ export default function(locale) {
 
         // Compute the prefix and suffix.
         valuePrefix = (valueNegative ? (sign === "(" ? sign : minus) : sign === "-" || sign === "(" ? "" : sign) + valuePrefix;
-        valueSuffix = (type === "s" ? prefixes[8 + prefixExponent / 3] : "") + valueSuffix + (valueNegative && sign === "(" ? ")" : "");
+
+        if (type === "s")
+          valueSuffix = SIprefixes[8 + prefixExponent / 3] + valueSuffix
+        else if (type === "K")
+          valueSuffix = currencyPrefixes[prefixExponent / 3] + valueSuffix
+
+        valueSuffix = valueSuffix + (valueNegative && sign === "(" ? ")" : "");
 
         // Break the formatted value into the integer “value” part that can be
         // grouped, and fractional or exponential “suffix” part that is not.
@@ -144,7 +151,7 @@ export default function(locale) {
     }
   }
 
-  var formatPrefix = createFormatPrefix(prefixes, -8, 8);
+  var formatPrefix = createFormatPrefix(SIprefixes, -8, 8);
   var formatCurrencyPrefix = createFormatPrefix(currencyPrefixes, 0, 4);
 
   return {
