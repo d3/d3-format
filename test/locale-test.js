@@ -21,6 +21,11 @@ tape("formatLocale({currency: [prefix, suffix]}) places the currency suffix afte
   test.end();
 });
 
+tape("formatLocale({currencyAbbreviations: [list of abbreviations]}) should abbreviate thousands, millions, billions and trillions", function (test) {
+  test.equal(d3.formatLocale({ currencyAbbreviations: ["", "k", "m", "bn", "tn"] }).format("$.3K")(1.2e9), "1.20bn");
+  test.end();
+});
+
 tape("formatLocale({grouping: undefined}) does not perform any grouping", function(test) {
   test.equal(d3.formatLocale({decimal: "."}).format("012,.2f")(2), "000000002.00");
   test.end();

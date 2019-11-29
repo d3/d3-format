@@ -9,10 +9,11 @@ import identity from "./identity.js";
 
 var map = Array.prototype.map,
     SIprefixes = ["y","z","a","f","p","n","µ","m","","k","M","G","T","P","E","Z","Y"],
-    currencyPrefixes = ["", "K", "M", "B", "T"];
+    defaultCurrencyAbbreviations = ["", "K", "M", "B", "T"];
 
 export default function(locale) {
   var group = locale.grouping === undefined || locale.thousands === undefined ? identity : formatGroup(map.call(locale.grouping, Number), locale.thousands + ""),
+      currencyAbbreviations = locale.currencyAbbreviations === undefined ? defaultCurrencyAbbreviations : locale.currencyAbbreviations,
       currencyPrefix = locale.currency === undefined ? "" : locale.currency[0] + "",
       currencySuffix = locale.currency === undefined ? "" : locale.currency[1] + "",
       decimal = locale.decimal === undefined ? "." : locale.decimal + "",
@@ -93,7 +94,7 @@ export default function(locale) {
         if (type === "s")
           valueSuffix = SIprefixes[8 + prefixExponent / 3] + valueSuffix
         else if (type === "K")
-          valueSuffix = currencyPrefixes[prefixExponent / 3] + valueSuffix
+          valueSuffix = currencyAbbreviations[prefixExponent / 3] + valueSuffix
 
         valueSuffix = valueSuffix + (valueNegative && sign === "(" ? ")" : "");
 
@@ -152,7 +153,7 @@ export default function(locale) {
   }
 
   var formatPrefix = createFormatPrefix(SIprefixes, -8, 8);
-  var formatCurrencyPrefix = createFormatPrefix(currencyPrefixes, 0, 4);
+  var formatCurrencyPrefix = createFormatPrefix(currencyAbbreviations, 0, 4);
 
   return {
     format: newFormat,
