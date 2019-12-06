@@ -1,5 +1,5 @@
 // [[fill]align][sign][symbol][0][width][,][.precision][~][type]
-var re = /^(?:(.)?([<>=^]))?([+\-( ])?([$#])?(0)?(\d+)?(,)?(\.\d+)?(~)?([a-z%])?$/i;
+var re = /^(?:(.)?([<>=^]))?([+\-( ])?([$#])?(0)?(\d+)?(,)?(\.\d+)?(~)?([a-z%])?(\*(\d+(\.\d*)?))?$/i;
 
 export default function formatSpecifier(specifier) {
   if (!(match = re.exec(specifier))) throw new Error("invalid format: " + specifier);
@@ -14,7 +14,8 @@ export default function formatSpecifier(specifier) {
     comma: match[7],
     precision: match[8] && match[8].slice(1),
     trim: match[9],
-    type: match[10]
+    type: match[10],
+    scale: parseFloat(match[12]) || 1
   });
 }
 
@@ -31,6 +32,7 @@ export function FormatSpecifier(specifier) {
   this.precision = specifier.precision === undefined ? undefined : +specifier.precision;
   this.trim = !!specifier.trim;
   this.type = specifier.type === undefined ? "" : specifier.type + "";
+  this.scale = specifier.scale;
 }
 
 FormatSpecifier.prototype.toString = function() {
@@ -43,5 +45,6 @@ FormatSpecifier.prototype.toString = function() {
       + (this.comma ? "," : "")
       + (this.precision === undefined ? "" : "." + Math.max(0, this.precision | 0))
       + (this.trim ? "~" : "")
-      + this.type;
+      + this.type
+      + "*" + this.scale;
 };

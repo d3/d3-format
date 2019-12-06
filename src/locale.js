@@ -32,7 +32,8 @@ export default function(locale) {
         comma = specifier.comma,
         precision = specifier.precision,
         trim = specifier.trim,
-        type = specifier.type;
+        type = specifier.type,
+        scale = specifier.scale;
 
     // The "n" type is an alias for ",g".
     if (type === "n") comma = true, type = "g";
@@ -66,6 +67,8 @@ export default function(locale) {
       var valuePrefix = prefix,
           valueSuffix = suffix,
           i, n, c;
+
+      value *= scale;
 
       if (type === "c") {
         valueSuffix = formatType(value) + valueSuffix;
