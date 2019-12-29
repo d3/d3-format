@@ -33,11 +33,19 @@ tape("format(\"~e\") trims insignificant zeros", function(test) {
 });
 
 tape("format(\".4~e\") trims insignificant zeros", function(test) {
-  var f = format.format(".3~e");
-  test.equal(f(0.00000000012345), "1.234e-10");
-  test.equal(f(-0.00000000012345), "-1.234e-10");
-  test.equal(f(12345000000), "1.235e+10");
-  test.equal(f(-12345000000), "-1.235e+10");
+  var f = format.format(".4~e");
+  test.equal(f(0.00000000012345), "1.2345e-10");
+  test.equal(f(0.00000000012340), "1.234e-10");
+  test.equal(f(0.00000000012300), "1.23e-10");
+  test.equal(f(-0.00000000012345), "-1.2345e-10");
+  test.equal(f(-0.00000000012340), "-1.234e-10");
+  test.equal(f(-0.00000000012300), "-1.23e-10");
+  test.equal(f(12345000000), "1.2345e+10");
+  test.equal(f(12340000000), "1.234e+10");
+  test.equal(f(12300000000), "1.23e+10");
+  test.equal(f(-12345000000), "-1.2345e+10");
+  test.equal(f(-12340000000), "-1.234e+10");
+  test.equal(f(-12300000000), "-1.23e+10");
   test.end();
 });
 
