@@ -26,3 +26,8 @@ tape("format(\",e\") does not group Infinity", function(test) {
   test.equal(format.format(",e")(Infinity), "Infinity");
   test.end();
 });
+
+tape("format(\".3e\") can format negative infinity", function(test) {
+  test.equal(format.format(".3e")(-Infinity), "-Infinity");
+  test.end();
+});

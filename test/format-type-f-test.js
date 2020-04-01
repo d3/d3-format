@@ -46,6 +46,14 @@ tape("format(\"f\") can format negative zero as zero", function(test) {
   test.end();
 });
 
+tape("format(\"+f\") signs negative zero correctly", function(test) {
+  test.equal(format.format("+f")(-0), "-0.000000");
+  test.equal(format.format("+f")(+0), "+0.000000");
+  test.equal(format.format("+f")(-1e-12), "-0.000000");
+  test.equal(format.format("+f")(+1e-12), "+0.000000");
+  test.end();
+});
+
 tape("format(\"f\") can format negative infinity", function(test) {
   test.equal(format.format("f")(-Infinity), "-Infinity");
   test.end();
