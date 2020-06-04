@@ -9,7 +9,7 @@ export default function(x, p) {
   }
 
   if (p <= 3 && Math.round(x) >= 1000) {
-    // Unlike SI prefixes, intergers can take three digits.
+    // Unlike SI prefixes, integers can take three digits.
     binaryExponent += 10;
     x /= 1024;
   }
