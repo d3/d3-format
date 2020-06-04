@@ -145,6 +145,7 @@ tape("format(\",B\") will group thousands for very large numbers", function(test
 
 tape("format(\"B\") will not hang on Infinity", function(test) {
   var f = format.format("B");
-  test.equal(f(Infinity), "InfinityYi");
+  test.equal(f(Infinity), "Infinity");
+  test.equal(f(-Infinity), "-Infinity");
   test.end();
 });
