@@ -2,6 +2,7 @@ export var binaryPrefixExponent;
 
 export default function(x, p) {
   var binaryExponent = 0;
+  if (x === Infinity) return binaryPrefixExponent = 0, x;
 
   while (Math.round(x) >= 1024 && binaryExponent < 80) {
     binaryExponent += 10;
