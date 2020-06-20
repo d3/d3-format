@@ -3,5 +3,5 @@
   "thousands": ",",
   "grouping": [3],
   "currency": ["£", ""],
-  "currencyAbbreviations": ["", "k", "m", "bn", "t"]
+  "currencyAbbreviations": ["", "K", "M", "B", "T"]
 }

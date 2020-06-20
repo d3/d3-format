@@ -22,12 +22,12 @@ tape("formatLocale({currency: [prefix, suffix]}) places the currency suffix afte
 });
 
 tape("formatLocale({currencyAbbreviations: [list of abbreviations]}) should abbreviate thousands, millions, billions and trillions", function (test) {
-  test.equal(d3.formatLocale({ currencyAbbreviations: ["", "k", "m", "bn", "tn"] }).format("$.3K")(1.2e9), "1.20bn");
+  test.equal(d3.formatLocale({ currencyAbbreviations: ["", "\u00a0k", "\u00a0M", "\u00a0Md", "\u00a0Bn"] }).format("$.3K")(1.2e9), "1.20\u00a0Md");
   test.end();
 });
 
 tape("formatLocale({currencyAbbreviations: [list of abbreviations]}) should abbreviate only specified levels", function (test) {
-  test.equal(d3.formatLocale({ currencyAbbreviations: ["", "M", "Mio", "Mrd"] }).format("$.3K")(1.2e12), "1200Mrd");
+  test.equal(d3.formatLocale({ currencyAbbreviations: ["", "\u00a0k", "\u00a0M", "\u00a0Md", "\u00a0Bn"] }).format("$.3K")(1.2e15), "1200\u00a0Bn");
   test.end();
 });
 

@@ -4,5 +4,5 @@
   "grouping": [3],
   "currency": ["", "\u00a0€"],
   "percent": "\u202f%",
-  "currencyAbbreviations": ["", "K", "Mio", "Mrd"]
+  "currencyAbbreviations": ["", "\u00a0k", "\u00a0M", "\u00a0Md", "\u00a0Bn"]
 }
