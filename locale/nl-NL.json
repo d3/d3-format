@@ -2,5 +2,6 @@
   "decimal": ",",
   "thousands": ".",
   "grouping": [3],
-  "currency": ["€\u00a0", ""]
+  "currency": ["€\u00a0", ""],
+  "currencyAbbreviations": ["", "K", "\u00a0mln.", "\u00a0mld.", "\u00a0bln."]
 }

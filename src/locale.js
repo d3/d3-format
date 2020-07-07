@@ -8,10 +8,12 @@ import {prefixExponent} from "./formatPrefixAuto.js";
 import identity from "./identity.js";
 
 var map = Array.prototype.map,
-    prefixes = ["y","z","a","f","p","n","µ","m","","k","M","G","T","P","E","Z","Y"];
+    SIprefixes = ["y","z","a","f","p","n","µ","m","","k","M","G","T","P","E","Z","Y"],
+    defaultCurrencyAbbreviations = ["", "K", "M", "B", "T"];
 
 export default function(locale) {
   var group = locale.grouping === undefined || locale.thousands === undefined ? identity : formatGroup(map.call(locale.grouping, Number), locale.thousands + ""),
+      currencyAbbreviations = locale.currencyAbbreviations === undefined ? defaultCurrencyAbbreviations : locale.currencyAbbreviations,
       currencyPrefix = locale.currency === undefined ? "" : locale.currency[0] + "",
       currencySuffix = locale.currency === undefined ? "" : locale.currency[1] + "",
       decimal = locale.decimal === undefined ? "." : locale.decimal + "",
@@ -52,14 +54,18 @@ export default function(locale) {
     // Is this an integer type?
     // Can this type generate exponential notation?
     var formatType = formatTypes[type],
-        maybeSuffix = /[defgprs%]/.test(type);
+        maybeSuffix = /[defgKprs%]/.test(type);
+
+    if (type === 'K')
+      formatType = formatType(currencyAbbreviations);
 
     // Set the default precision if not specified,
     // or clamp the specified precision to the supported range.
     // For significant precision, it must be in [1, 21].
     // For fixed precision, it must be in [0, 20].
-    precision = precision === undefined ? 6
-        : /[gprs]/.test(type) ? Math.max(1, Math.min(21, precision))
+    // For financial type, default precision is 3 significant digits instead of 6.
+    precision = precision === undefined ? (type === "K" ? 3 : 6)
+        : /[gKprs]/.test(type) ? Math.max(1, Math.min(21, precision))
         : Math.max(0, Math.min(20, precision));
 
     function format(value) {
@@ -87,7 +93,13 @@ export default function(locale) {
 
         // Compute the prefix and suffix.
         valuePrefix = (valueNegative ? (sign === "(" ? sign : minus) : sign === "-" || sign === "(" ? "" : sign) + valuePrefix;
-        valueSuffix = (type === "s" ? prefixes[8 + prefixExponent / 3] : "") + valueSuffix + (valueNegative && sign === "(" ? ")" : "");
+
+        if (type === "s")
+          valueSuffix = SIprefixes[8 + prefixExponent / 3] + valueSuffix
+        else if (type === "K")
+          valueSuffix = currencyAbbreviations[prefixExponent / 3] + valueSuffix
+
+        valueSuffix = valueSuffix + (valueNegative && sign === "(" ? ")" : "");
 
         // Break the formatted value into the integer “value” part that can be
         // grouped, and fractional or exponential “suffix” part that is not.
@@ -131,18 +143,24 @@ export default function(locale) {
     return format;
   }
 
-  function formatPrefix(specifier, value) {
-    var f = newFormat((specifier = formatSpecifier(specifier), specifier.type = "f", specifier)),
-        e = Math.max(-8, Math.min(8, Math.floor(exponent(value) / 3))) * 3,
+  function createFormatPrefix(prefixes, minimumPrefixOrder, maximumPrefixOrder) {
+    return function(specifier, value) {
+      var f = newFormat((specifier = formatSpecifier(specifier), specifier.type = "f", specifier)),
+        e = Math.max(minimumPrefixOrder, Math.min(maximumPrefixOrder, Math.floor(exponent(value) / 3))) * 3,
         k = Math.pow(10, -e),
-        prefix = prefixes[8 + e / 3];
-    return function(value) {
-      return f(k * value) + prefix;
-    };
+        prefix = prefixes[(-1 * minimumPrefixOrder) + e / 3];
+      return function (value) {
+        return f(k * value) + prefix;
+      };
+    }
   }
+
+  var formatPrefix = createFormatPrefix(SIprefixes, -8, 8);
+  var formatCurrencyPrefix = createFormatPrefix(currencyAbbreviations, 0, currencyAbbreviations.length - 1);
 
   return {
     format: newFormat,
+    formatCurrencyPrefix: formatCurrencyPrefix,
     formatPrefix: formatPrefix
   };
 }

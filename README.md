@@ -133,9 +133,9 @@ The *symbol* can be:
 
 The *zero* (`0`) option enables zero-padding; this implicitly sets *fill* to `0` and *align* to `=`. The *width* defines the minimum field width; if not specified, then the width will be determined by the content. The *comma* (`,`) option enables the use of a group separator, such as a comma for thousands.
 
-Depending on the *type*, the *precision* either indicates the number of digits that follow the decimal point (types `f` and `%`), or the number of significant digits (types `​`, `e`, `g`, `r`, `s` and `p`). If the precision is not specified, it defaults to 6 for all types except `​` (none), which defaults to 12. Precision is ignored for integer formats (types `b`, `o`, `d`, `x`, `X` and `c`). See [precisionFixed](#precisionFixed) and [precisionRound](#precisionRound) for help picking an appropriate precision.
+Depending on the *type*, the *precision* either indicates the number of digits that follow the decimal point (types `f` and `%`), or the number of significant digits (types `​`, `e`, `g`, `K`, `r`, `s` and `p`). If the precision is not specified, it defaults to 6 for all types except `​` (none), which defaults to 12. Precision is ignored for integer formats (types `b`, `o`, `d`, `x`, `X` and `c`). See [precisionFixed](#precisionFixed) and [precisionRound](#precisionRound) for help picking an appropriate precision.
 
-The `~` option trims insignificant trailing zeros across all format types. This is most commonly used in conjunction with types `r`, `e`, `s` and `%`. For example:
+The `~` option trims insignificant trailing zeros across all format types. This is most commonly used in conjunction with types `r`, `e`, `s`, `K` and `%`. For example:
 
 ```js
 d3.format("s")(1500);  // "1.50000k"
@@ -149,6 +149,7 @@ The available *type* values are:
 * `g` - either decimal or exponent notation, rounded to significant digits.
 * `r` - decimal notation, rounded to significant digits.
 * `s` - decimal notation with an [SI prefix](#locale_formatPrefix), rounded to significant digits.
+* `K` - decimal notation with an [currency prefix](#locale_formatCurrencyPrefix), rounded to significant digits.
 * `%` - multiply by 100, and then decimal notation with a percent sign.
 * `p` - multiply by 100, round to significant digits, and then decimal notation with a percent sign.
 * `b` - binary notation, rounded to integer.
@@ -167,7 +168,7 @@ d3.format(".1")(42);  // "4e+1"
 d3.format(".1")(4.2); // "4"
 ```
 
-<a name="locale_formatPrefix" href="#locale_formatPrefix">#</a> <i>locale</i>.<b>formatPrefix</b>(<i>specifier</i>, <i>value</i>) [<>](https://github.com/d3/d3-format/blob/master/src/locale.js#L127 "Source")
+<a name="locale_formatPrefix" href="#locale_formatPrefix">#</a> <i>locale</i>.<b>formatPrefix</b>(<i>specifier</i>, <i>value</i>) [<>](https://github.com/d3/d3-format/blob/master/src/locale.js#L152 "Source")
 
 Equivalent to [*locale*.format](#locale_format), except the returned function will convert values to the units of the appropriate [SI prefix](https://en.wikipedia.org/wiki/Metric_prefix#List_of_SI_prefixes) for the specified numeric reference *value* before formatting in fixed point notation. The following prefixes are supported:
 
@@ -198,6 +199,16 @@ f(0.0042); // "4,200µ"
 ```
 
 This method is useful when formatting multiple numbers in the same units for easy comparison. See [precisionPrefix](#precisionPrefix) for help picking an appropriate precision, and [bl.ocks.org/9764126](http://bl.ocks.org/mbostock/9764126) for an example.
+
+<a name="locale_formatCurrencyPrefix" href="#locale_formatCurrencyPrefix">#</a> <i>locale</i>.<b>formatCurrencyPrefix</b>(<i>specifier</i>, <i>value</i>) [<>](https://github.com/d3/d3-format/blob/master/src/locale.js#L153 "Source")
+
+Equivalent to [*locale*.locale_formatPrefix](#locale_formatPrefix), except it uses common currency abbreviations:
+
+* `​` (none) - 10⁰
+* `K` - thousands, 10³
+* `M` - millions, 10⁶
+* `B` - billions, 10⁹
+* `T` - trillions, 10¹²
 
 <a name="formatSpecifier" href="#formatSpecifier">#</a> d3.<b>formatSpecifier</b>(<i>specifier</i>) [<>](https://github.com/d3/d3-format/blob/master/src/formatSpecifier.js "Source")
 
@@ -290,6 +301,10 @@ f(1.2e6); // "1.2M"
 f(1.3e6); // "1.3M"
 ```
 
+<a name="currencyPrecisionPrefix" href="#currencyPrecisionPrefix">#</a> d3.<b>currencyPrecisionPrefix</b>(<i>step</i>, <i>value</i>) [<>](https://github.com/d3/d3-format/blob/master/src/currencyPrecisionPrefix.js "Source")
+
+Returns a suggested decimal precision for use with [*locale*.formatCurrencyPrefix](#locale_formatCurrencyPrefix) given the specified numeric *step* and reference *value*. This is the equivalent of [*locale*.precisionPrefix](#locale_precisionPrefix) using common currency abbreviations instead of SI prefixes.
+
 <a name="precisionRound" href="#precisionRound">#</a> d3.<b>precisionRound</b>(<i>step</i>, <i>max</i>) [<>](https://github.com/d3/d3-format/blob/master/src/precisionRound.js "Source")
 
 Returns a suggested decimal precision for format types that round to significant digits given the specified numeric *step* and *max* values. The *step* represents the minimum absolute difference between values that will be formatted, and the *max* represents the largest absolute value that will be formatted. (This assumes that the values to be formatted are also multiples of *step*.) For example, given the numbers 0.99, 1.0, and 1.01, the *step* should be 0.01, the *max* should be 1.01, and the suggested precision is 3:
@@ -331,6 +346,7 @@ Returns a *locale* object for the specified *definition* with [*locale*.format](
 * `thousands` - the group separator (e.g., `","`).
 * `grouping` - the array of group sizes (e.g., `[3]`), cycled as needed.
 * `currency` - the currency prefix and suffix (e.g., `["$", ""]`).
+* `currencyAbbreviations` - the list of abbreviated suffixes for currency values; an array of elements for each: units, thousands, millions, billions and trillions; defaults to `["", "K", "M", "B", "T"]`. The number of elements can vary.
 * `numerals` - optional; an array of ten strings to replace the numerals 0-9.
 * `percent` - optional; the percent sign (defaults to `"%"`).
 * `minus` - optional; the minus sign (defaults to hyphen-minus, `"-"`).
