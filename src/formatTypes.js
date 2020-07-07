@@ -1,8 +1,10 @@
+import formatBinaryPrefixAuto from "./formatBinaryPrefixAuto.js";
 import formatPrefixAuto, { createFormatCurrencyPrefixAutoForLocale } from "./formatPrefixAuto.js";
 import formatRounded from "./formatRounded.js";
 
 export default {
   "%": function(x, p) { return (x * 100).toFixed(p); },
+  "B": formatBinaryPrefixAuto,
   "b": function(x) { return Math.round(x).toString(2); },
   "c": function(x) { return x + ""; },
   "d": function(x) { return Math.round(x).toString(10); },

@@ -5,11 +5,13 @@ import formatSpecifier from "./formatSpecifier.js";
 import formatTrim from "./formatTrim.js";
 import formatTypes from "./formatTypes.js";
 import {prefixExponent} from "./formatPrefixAuto.js";
+import {binaryPrefixExponent} from "./formatBinaryPrefixAuto.js";
 import identity from "./identity.js";
 
 var map = Array.prototype.map,
     SIprefixes = ["y","z","a","f","p","n","µ","m","","k","M","G","T","P","E","Z","Y"],
-    defaultCurrencyAbbreviations = ["", "K", "M", "B", "T"];
+    defaultCurrencyAbbreviations = ["", "K", "M", "B", "T"],
+    binaryPrefixes = ["", "Ki","Mi","Gi","Ti","Pi","Ei","Zi","Yi"];
 
 export default function(locale) {
   var group = locale.grouping === undefined || locale.thousands === undefined ? identity : formatGroup(map.call(locale.grouping, Number), locale.thousands + ""),
@@ -54,7 +56,7 @@ export default function(locale) {
     // Is this an integer type?
     // Can this type generate exponential notation?
     var formatType = formatTypes[type],
-        maybeSuffix = /[defgKprs%]/.test(type);
+        maybeSuffix = /[BdefgKprs%]/.test(type);
 
     if (type === 'K')
       formatType = formatType(currencyAbbreviations);
@@ -65,7 +67,7 @@ export default function(locale) {
     // For fixed precision, it must be in [0, 20].
     // For financial type, default precision is 3 significant digits instead of 6.
     precision = precision === undefined ? (type === "K" ? 3 : 6)
-        : /[gKprs]/.test(type) ? Math.max(1, Math.min(21, precision))
+        : /[BgKprs]/.test(type) ? Math.max(1, Math.min(21, precision))
         : Math.max(0, Math.min(20, precision));
 
     function format(value) {
@@ -93,13 +95,12 @@ export default function(locale) {
 
         // Compute the prefix and suffix.
         valuePrefix = (valueNegative ? (sign === "(" ? sign : minus) : sign === "-" || sign === "(" ? "" : sign) + valuePrefix;
-
-        if (type === "s")
-          valueSuffix = SIprefixes[8 + prefixExponent / 3] + valueSuffix
-        else if (type === "K")
-          valueSuffix = currencyAbbreviations[prefixExponent / 3] + valueSuffix
-
-        valueSuffix = valueSuffix + (valueNegative && sign === "(" ? ")" : "");
+        switch (type) {
+          case "s": valueSuffix = SIprefixes[8 + prefixExponent / 3] + valueSuffix; break;
+          case "K": valueSuffix = currencyAbbreviations[prefixExponent / 3] + valueSuffix; break;
+          case "B": valueSuffix = binaryPrefixes[binaryPrefixExponent / 10] + valueSuffix; break;
+        }
+        valueSuffix += valueNegative && sign === "(" ? ")" : "";
 
         // Break the formatted value into the integer “value” part that can be
         // grouped, and fractional or exponential “suffix” part that is not.
