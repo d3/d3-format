@@ -77,7 +77,8 @@ tape("format(\",d\") can group thousands", function(test) {
   test.equal(f(-42), "-42");
   test.equal(f(-4200000), "-4,200,000");
   test.equal(f(-42000000), "-42,000,000");
-  test.equal(f(1e21), "1e+21");
+  test.equal(f(1e21), "1,000,000,000,000,000,000,000");
+  test.equal(f(1.3e27), "1,300,000,000,000,000,000,000,000,000");
   test.end();
 });
 
@@ -93,10 +94,10 @@ tape("format(\"0,d\") can group thousands and zero fill", function(test) {
   test.equal(format.format("013,d")(0), "0,000,000,000");
   test.equal(format.format("021,d")(0), "0,000,000,000,000,000");
   test.equal(format.format("013,d")(-42000000), "-0,042,000,000");
-  test.equal(format.format("012,d")(1e21), "0,000,001e+21");
-  test.equal(format.format("013,d")(1e21), "0,000,001e+21");
-  test.equal(format.format("014,d")(1e21), "00,000,001e+21");
-  test.equal(format.format("015,d")(1e21), "000,000,001e+21");
+  test.equal(format.format("012,d")(1e21), "1,000,000,000,000,000,000,000");
+  test.equal(format.format("013,d")(1e21), "1,000,000,000,000,000,000,000");
+  test.equal(format.format("014,d")(1e21), "1,000,000,000,000,000,000,000");
+  test.equal(format.format("015,d")(1e21), "1,000,000,000,000,000,000,000");
   test.end();
 });
 
@@ -156,7 +157,7 @@ tape("format(\">d\") align right", function(test) {
   test.equal(format.format(">13,d")(0), "            0");
   test.equal(format.format(">21,d")(0), "                    0");
   test.equal(format.format(">21,d")(1000), "                1,000");
-  test.equal(format.format(">21,d")(1e21), "                1e+21");
+  test.equal(format.format(">21,d")(1e21), "1,000,000,000,000,000,000,000");
   test.end();
 });
 
@@ -170,7 +171,7 @@ tape("format(\"^d\") align center", function(test) {
   test.equal(format.format("^13,d")(0), "      0      ");
   test.equal(format.format("^21,d")(0), "          0          ");
   test.equal(format.format("^21,d")(1000), "        1,000        ");
-  test.equal(format.format("^21,d")(1e21), "        1e+21        ");
+  test.equal(format.format("^21,d")(1e21), "1,000,000,000,000,000,000,000");
   test.end();
 });
 
@@ -183,7 +184,7 @@ tape("format(\"=+,d\") pad after sign", function(test) {
   test.equal(format.format("=+8,d")(0), "+      0");
   test.equal(format.format("=+13,d")(0), "+           0");
   test.equal(format.format("=+21,d")(0), "+                   0");
-  test.equal(format.format("=+21,d")(1e21), "+               1e+21");
+  test.equal(format.format("=+21,d")(1e21), "+1,000,000,000,000,000,000,000");
   test.end();
 });
 
@@ -196,7 +197,7 @@ tape("format(\"=+$,d\") pad after sign with currency", function(test) {
   test.equal(format.format("=+$8,d")(0), "+$     0");
   test.equal(format.format("=+$13,d")(0), "+$          0");
   test.equal(format.format("=+$21,d")(0), "+$                  0");
-  test.equal(format.format("=+$21,d")(1e21), "+$              1e+21");
+  test.equal(format.format("=+$21,d")(1e21), "+$1,000,000,000,000,000,000,000");
   test.end();
 });
 
@@ -209,7 +210,7 @@ tape("format(\" ,d\") a space can denote positive numbers", function(test) {
   test.equal(format.format(" 8,d")(0), "       0");
   test.equal(format.format(" 13,d")(0), "            0");
   test.equal(format.format(" 21,d")(0), "                    0");
-  test.equal(format.format(" 21,d")(1e21), "                1e+21");
+  test.equal(format.format(" 21,d")(1e21), " 1,000,000,000,000,000,000,000");
   test.end();
 });
 
