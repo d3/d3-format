@@ -1,3 +1,1 @@
-export default function(x) {
-  return x;
-}
+export default x => () => x;
