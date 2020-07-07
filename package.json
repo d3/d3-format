@@ -37,7 +37,6 @@
     "./src/defaultLocale.js"
   ],
   "devDependencies": {
-    "d3-queue": "3",
     "eslint": "6",
     "rollup": "1",
     "rollup-plugin-terser": "5",
