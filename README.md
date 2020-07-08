@@ -149,7 +149,7 @@ The available *type* values are:
 * `g` - either decimal or exponent notation, rounded to significant digits.
 * `r` - decimal notation, rounded to significant digits.
 * `s` - decimal notation with an [SI prefix](#locale_formatPrefix), rounded to significant digits.
-* `K` - decimal notation with an [currency prefix](#locale_formatCurrencyPrefix), rounded to significant digits.
+* `K` - decimal notation with a [currency prefix](#locale_formatCurrencyPrefix), rounded to significant digits.
 * `%` - multiply by 100, and then decimal notation with a percent sign.
 * `p` - multiply by 100, round to significant digits, and then decimal notation with a percent sign.
 * `b` - binary notation, rounded to integer.
