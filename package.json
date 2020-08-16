@@ -18,6 +18,7 @@
   "unpkg": "dist/d3-format.min.js",
   "jsdelivr": "dist/d3-format.min.js",
   "module": "src/index.js",
+  "types": "src/types.d.ts",
   "repository": {
     "type": "git",
     "url": "https://github.com/d3/d3-format.git"
