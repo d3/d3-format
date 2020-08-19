@@ -6,8 +6,9 @@ export default {
   "b": function(x) { return Math.round(x).toString(2); },
   "c": function(x) { return x + ""; },
   "d": function(x) {
-    if ((x = Math.round(x).toString(10))[x.length - 4] !== "e") return x;
-    return +(x.slice(0, x.length - 2) + "20").toString(10) + "0".repeat(+x.slice(x.length - 2) - 20);
+    x = Math.round(x).toString(10);
+    if (x[x.length - 4] !== "e") return x;
+    return +(x.slice(0, -2) + "20").toString(10) + "0".repeat(+x.slice(-2) - 20);
   },
   "e": function(x, p) { return x.toExponential(p); },
   "f": function(x, p) { return x.toFixed(p); },
