@@ -333,7 +333,7 @@ Returns a *locale* object for the specified *definition* with [*locale*.format](
 * `currency` - the currency prefix and suffix (e.g., `["$", ""]`).
 * `numerals` - optional; an array of ten strings to replace the numerals 0-9.
 * `percent` - optional; the percent sign (defaults to `"%"`).
-* `minus` - optional; the minus sign (defaults to hyphen-minus, `"-"`).
+* `minus` - optional; the minus sign (defaults to `"−"`).
 * `nan` - optional; the not-a-number value (defaults `"NaN"`).
 
 Note that the *thousands* property is a misnomer, as the grouping definition allows groups other than thousands.

@@ -45,16 +45,16 @@ tape("formatLocale(…) can format numbers using the Indian numbering system.", 
   test.equal(format(10000000.4543), "1,00,00,000.4543");
   test.equal(format(1000.321), "1,000.321");
   test.equal(format(10.5), "10.5");
-  test.equal(format(-10), "-10");
-  test.equal(format(-100), "-100");
-  test.equal(format(-1000), "-1,000");
-  test.equal(format(-10000), "-10,000");
-  test.equal(format(-100000), "-1,00,000");
-  test.equal(format(-1000000), "-10,00,000");
-  test.equal(format(-10000000), "-1,00,00,000");
-  test.equal(format(-10000000.4543), "-1,00,00,000.4543");
-  test.equal(format(-1000.321), "-1,000.321");
-  test.equal(format(-10.5), "-10.5");
+  test.equal(format(-10), "−10");
+  test.equal(format(-100), "−100");
+  test.equal(format(-1000), "−1,000");
+  test.equal(format(-10000), "−10,000");
+  test.equal(format(-100000), "−1,00,000");
+  test.equal(format(-1000000), "−10,00,000");
+  test.equal(format(-10000000), "−1,00,00,000");
+  test.equal(format(-10000000.4543), "−1,00,00,000.4543");
+  test.equal(format(-1000.321), "−1,000.321");
+  test.equal(format(-10.5), "−10.5");
   test.end();
 });
 
@@ -74,7 +74,7 @@ tape("formatLocale({minus: minus}) observes the specified minus sign", function(
   test.equal(d3.formatLocale({decimal: ".", minus: "-"}).format("06.2f")(-2), "-02.00");
   test.equal(d3.formatLocale({decimal: ".", minus: "−"}).format("06.2f")(-2), "−02.00");
   test.equal(d3.formatLocale({decimal: ".", minus: "➖"}).format("06.2f")(-2), "➖02.00");
-  test.equal(d3.formatLocale({decimal: "."}).format("06.2f")(-2), "-02.00");
+  test.equal(d3.formatLocale({decimal: "."}).format("06.2f")(-2), "−02.00");
   test.end();
 });
 

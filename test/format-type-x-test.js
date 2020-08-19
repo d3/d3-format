@@ -28,9 +28,9 @@ tape("format(\"#,x\") does not group the prefix", function(test) {
 
 tape("format(\"+#x\") puts the sign before the prefix", function(test) {
   test.equal(format.format("+#x")(0xdeadbeef),  "+0xdeadbeef");
-  test.equal(format.format("+#x")(-0xdeadbeef), "-0xdeadbeef");
+  test.equal(format.format("+#x")(-0xdeadbeef), "−0xdeadbeef");
   test.equal(format.format(" #x")(0xdeadbeef),  " 0xdeadbeef");
-  test.equal(format.format(" #x")(-0xdeadbeef), "-0xdeadbeef");
+  test.equal(format.format(" #x")(-0xdeadbeef), "−0xdeadbeef");
   test.end();
 });
 
@@ -41,7 +41,7 @@ tape("format(\"$,x\") formats hexadecimal currency", function(test) {
 
 tape("format(\"[.precision]x\") always has precision zero", function(test) {
   test.equal(format.format(".2x")(0xdeadbeef), "deadbeef");
-  test.equal(format.format(".2x")(-4.2), "-4");
+  test.equal(format.format(".2x")(-4.2), "−4");
   test.end();
 });
 
@@ -57,7 +57,7 @@ tape("format(\"x\") can format negative zero as zero", function(test) {
 });
 
 tape("format(\"x\") does not consider -0xeee to be positive", function(test) {
-  test.equal(format.format("x")(-0xeee), "-eee");
+  test.equal(format.format("x")(-0xeee), "−eee");
   test.end();
 });
 
@@ -78,7 +78,7 @@ tape("format(\"X\") can format negative zero as zero", function(test) {
 });
 
 tape("format(\"X\") does not consider -0xeee to be positive", function(test) {
-  test.equal(format.format("X")(-0xeee), "-EEE");
+  test.equal(format.format("X")(-0xeee), "−EEE");
   test.end();
 });
 

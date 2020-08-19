@@ -52,16 +52,16 @@ tape("format(\"s\") formats numbers smaller than 1e-24 with yocto", function(tes
   test.equal(f(1.29e-23), "12.900000y");
   test.equal(f(1.29e-22), "129.00000y");
   test.equal(f(1.29e-21), "1.2900000z");
-  test.equal(f(-1.29e-30), "-0.0000013y"); // Note: rounded!
-  test.equal(f(-1.29e-29), "-0.0000129y");
-  test.equal(f(-1.29e-28), "-0.0001290y");
-  test.equal(f(-1.29e-27), "-0.0012900y");
-  test.equal(f(-1.29e-26), "-0.0129000y");
-  test.equal(f(-1.29e-25), "-0.1290000y");
-  test.equal(f(-1.29e-24), "-1.2900000y");
-  test.equal(f(-1.29e-23), "-12.900000y");
-  test.equal(f(-1.29e-22), "-129.00000y");
-  test.equal(f(-1.29e-21), "-1.2900000z");
+  test.equal(f(-1.29e-30), "−0.0000013y"); // Note: rounded!
+  test.equal(f(-1.29e-29), "−0.0000129y");
+  test.equal(f(-1.29e-28), "−0.0001290y");
+  test.equal(f(-1.29e-27), "−0.0012900y");
+  test.equal(f(-1.29e-26), "−0.0129000y");
+  test.equal(f(-1.29e-25), "−0.1290000y");
+  test.equal(f(-1.29e-24), "−1.2900000y");
+  test.equal(f(-1.29e-23), "−12.900000y");
+  test.equal(f(-1.29e-22), "−129.00000y");
+  test.equal(f(-1.29e-21), "−1.2900000z");
   test.end();
 });
 
@@ -77,16 +77,16 @@ tape("format(\"s\") formats numbers larger than 1e24 with yotta", function(test)
   test.equal(f(1.23e+28), "12300.000Y");
   test.equal(f(1.23e+29), "123000.00Y");
   test.equal(f(1.23e+30), "1230000.0Y");
-  test.equal(f(-1.23e+21), "-1.2300000Z");
-  test.equal(f(-1.23e+22), "-12.300000Z");
-  test.equal(f(-1.23e+23), "-123.00000Z");
-  test.equal(f(-1.23e+24), "-1.2300000Y");
-  test.equal(f(-1.23e+25), "-12.300000Y");
-  test.equal(f(-1.23e+26), "-123.00000Y");
-  test.equal(f(-1.23e+27), "-1230.0000Y");
-  test.equal(f(-1.23e+28), "-12300.000Y");
-  test.equal(f(-1.23e+29), "-123000.00Y");
-  test.equal(f(-1.23e+30), "-1230000.0Y");
+  test.equal(f(-1.23e+21), "−1.2300000Z");
+  test.equal(f(-1.23e+22), "−12.300000Z");
+  test.equal(f(-1.23e+23), "−123.00000Z");
+  test.equal(f(-1.23e+24), "−1.2300000Y");
+  test.equal(f(-1.23e+25), "−12.300000Y");
+  test.equal(f(-1.23e+26), "−123.00000Y");
+  test.equal(f(-1.23e+27), "−1230.0000Y");
+  test.equal(f(-1.23e+28), "−12300.000Y");
+  test.equal(f(-1.23e+29), "−123000.00Y");
+  test.equal(f(-1.23e+30), "−1230000.0Y");
   test.end();
 });
 
@@ -94,7 +94,7 @@ tape("format(\"$s\") outputs SI-prefix notation with a currency symbol", functio
   var f1 = format.format("$.2s");
   test.equal(f1(0), "$0.0");
   test.equal(f1(2.5e5), "$250k");
-  test.equal(f1(-2.5e8), "-$250M");
+  test.equal(f1(-2.5e8), "−$250M");
   test.equal(f1(2.5e11), "$250G");
   var f2 = format.format("$.3s");
   test.equal(f2(0), "$0.00");

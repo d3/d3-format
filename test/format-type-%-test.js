@@ -7,9 +7,9 @@ tape("format(\"%\") can output a whole percentage", function(test) {
   test.equal(f(.042), "4%");
   test.equal(f(.42), "42%");
   test.equal(f(4.2), "420%");
-  test.equal(f(-.042), "-4%");
-  test.equal(f(-.42), "-42%");
-  test.equal(f(-4.2), "-420%");
+  test.equal(f(-.042), "−4%");
+  test.equal(f(-.42), "−42%");
+  test.equal(f(-4.2), "−420%");
   test.end();
 });
 
@@ -30,6 +30,6 @@ tape("format(\"%\") fill respects suffix", function(test) {
 tape("format(\"^%\") align center puts suffix adjacent to number", function(test) {
   test.equal(format.format("^21.0%")(.42),    "         42%         ");
   test.equal(format.format("^21,.0%")(422),   "       42,200%       ");
-  test.equal(format.format("^21,.0%")(-422),  "      -42,200%       ");
+  test.equal(format.format("^21,.0%")(-422),  "      −42,200%       ");
   test.end();
 });

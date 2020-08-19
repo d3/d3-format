@@ -7,10 +7,10 @@ tape("format(\"d\") can zero fill", function(test) {
   test.equal(f(42), "00000042");
   test.equal(f(42000000), "42000000");
   test.equal(f(420000000), "420000000");
-  test.equal(f(-4), "-0000004");
-  test.equal(f(-42), "-0000042");
-  test.equal(f(-4200000), "-4200000");
-  test.equal(f(-42000000), "-42000000");
+  test.equal(f(-4), "−0000004");
+  test.equal(f(-42), "−0000042");
+  test.equal(f(-4200000), "−4200000");
+  test.equal(f(-42000000), "−42000000");
   test.end();
 });
 
@@ -20,10 +20,10 @@ tape("format(\"d\") can space fill", function(test) {
   test.equal(f(42), "      42");
   test.equal(f(42000000), "42000000");
   test.equal(f(420000000), "420000000");
-  test.equal(f(-4), "      -4");
-  test.equal(f(-42), "     -42");
-  test.equal(f(-4200000), "-4200000");
-  test.equal(f(-42000000), "-42000000");
+  test.equal(f(-4), "      −4");
+  test.equal(f(-42), "     −42");
+  test.equal(f(-4200000), "−4200000");
+  test.equal(f(-42000000), "−42000000");
   test.end();
 });
 
@@ -33,10 +33,10 @@ tape("format(\"d\") can underscore fill", function(test) {
   test.equal(f(42), "______42");
   test.equal(f(42000000), "42000000");
   test.equal(f(420000000), "420000000");
-  test.equal(f(-4), "______-4");
-  test.equal(f(-42), "_____-42");
-  test.equal(f(-4200000), "-4200000");
-  test.equal(f(-42000000), "-42000000");
+  test.equal(f(-4), "______−4");
+  test.equal(f(-42), "_____−42");
+  test.equal(f(-4200000), "−4200000");
+  test.equal(f(-42000000), "−42000000");
   test.end();
 });
 
@@ -46,10 +46,10 @@ tape("format(\"d\") can zero fill with sign and group", function(test) {
   test.equal(f(42), "+0,000,042");
   test.equal(f(42000000), "+42,000,000");
   test.equal(f(420000000), "+420,000,000");
-  test.equal(f(-4), "-0,000,004");
-  test.equal(f(-42), "-0,000,042");
-  test.equal(f(-4200000), "-4,200,000");
-  test.equal(f(-42000000), "-42,000,000");
+  test.equal(f(-4), "−0,000,004");
+  test.equal(f(-42), "−0,000,042");
+  test.equal(f(-4200000), "−4,200,000");
+  test.equal(f(-42000000), "−42,000,000");
   test.end();
 });
 
@@ -57,7 +57,7 @@ tape("format(\"d\") always uses zero precision", function(test) {
   var f = format.format(".2d");
   test.equal(f(0), "0");
   test.equal(f(42), "42");
-  test.equal(f(-4.2), "-4");
+  test.equal(f(-4.2), "−4");
   test.end();
 });
 
@@ -73,10 +73,10 @@ tape("format(\",d\") can group thousands", function(test) {
   test.equal(f(42), "42");
   test.equal(f(42000000), "42,000,000");
   test.equal(f(420000000), "420,000,000");
-  test.equal(f(-4), "-4");
-  test.equal(f(-42), "-42");
-  test.equal(f(-4200000), "-4,200,000");
-  test.equal(f(-42000000), "-42,000,000");
+  test.equal(f(-4), "−4");
+  test.equal(f(-42), "−42");
+  test.equal(f(-4200000), "−4,200,000");
+  test.equal(f(-42000000), "−42,000,000");
   test.equal(f(1e21), "1,000,000,000,000,000,000,000");
   test.equal(f(1.3e27), "1,300,000,000,000,000,000,000,000,000");
   test.equal(f(1.3e107), "130,000,000,000,000,000,000,000,000,000,000,000,000,000,000,000,000,000,000,000,000,000,000,000,000,000,000,000,000,000,000,000,000,000,000,000");
@@ -94,7 +94,7 @@ tape("format(\"0,d\") can group thousands and zero fill", function(test) {
   test.equal(format.format("08,d")(0), "0,000,000");
   test.equal(format.format("013,d")(0), "0,000,000,000");
   test.equal(format.format("021,d")(0), "0,000,000,000,000,000");
-  test.equal(format.format("013,d")(-42000000), "-0,042,000,000");
+  test.equal(format.format("013,d")(-42000000), "−0,042,000,000");
   test.equal(format.format("012,d")(1e21), "1,000,000,000,000,000,000,000");
   test.equal(format.format("013,d")(1e21), "1,000,000,000,000,000,000,000");
   test.equal(format.format("014,d")(1e21), "1,000,000,000,000,000,000,000");
@@ -203,7 +203,7 @@ tape("format(\"=+$,d\") pad after sign with currency", function(test) {
 });
 
 tape("format(\" ,d\") a space can denote positive numbers", function(test) {
-  test.equal(format.format(" 1,d")(-1), "-1");
+  test.equal(format.format(" 1,d")(-1), "−1");
   test.equal(format.format(" 1,d")(0), " 0");
   test.equal(format.format(" 2,d")(0), " 0");
   test.equal(format.format(" 3,d")(0), "  0");
@@ -216,7 +216,7 @@ tape("format(\" ,d\") a space can denote positive numbers", function(test) {
 });
 
 tape("format(\"-,d\") explicitly only use a sign for negative numbers", function(test) {
-  test.equal(format.format("-1,d")(-1), "-1");
+  test.equal(format.format("-1,d")(-1), "−1");
   test.equal(format.format("-1,d")(0), "0");
   test.equal(format.format("-2,d")(0), " 0");
   test.equal(format.format("-3,d")(0), "  0");

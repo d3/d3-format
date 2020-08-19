@@ -17,8 +17,8 @@ tape("format(\"+$,f\") can output a currency with comma-grouping and sign", func
   var f = format.format("+$,.2f");
   test.equal(f(0), "+$0.00");
   test.equal(f(0.429), "+$0.43");
-  test.equal(f(-0.429), "-$0.43");
-  test.equal(f(-1), "-$1.00");
+  test.equal(f(-0.429), "−$0.43");
+  test.equal(f(-1), "−$1.00");
   test.equal(f(1e4), "+$10,000.00");
   test.end();
 });
@@ -47,15 +47,15 @@ tape("format(\"f\") can format negative zero as zero", function(test) {
 });
 
 tape("format(\"+f\") signs negative zero correctly", function(test) {
-  test.equal(format.format("+f")(-0), "-0.000000");
+  test.equal(format.format("+f")(-0), "−0.000000");
   test.equal(format.format("+f")(+0), "+0.000000");
-  test.equal(format.format("+f")(-1e-12), "-0.000000");
+  test.equal(format.format("+f")(-1e-12), "−0.000000");
   test.equal(format.format("+f")(+1e-12), "+0.000000");
   test.end();
 });
 
 tape("format(\"f\") can format negative infinity", function(test) {
-  test.equal(format.format("f")(-Infinity), "-Infinity");
+  test.equal(format.format("f")(-Infinity), "−Infinity");
   test.end();
 });
 

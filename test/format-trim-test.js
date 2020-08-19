@@ -25,8 +25,8 @@ tape("format(\"~e\") trims insignificant zeros", function(test) {
   test.equal(f(42), "4.2e+1");
   test.equal(f(42000000), "4.2e+7");
   test.equal(f(0.042), "4.2e-2");
-  test.equal(f(-4), "-4e+0");
-  test.equal(f(-42), "-4.2e+1");
+  test.equal(f(-4), "−4e+0");
+  test.equal(f(-42), "−4.2e+1");
   test.equal(f(42000000000), "4.2e+10");
   test.equal(f(0.00000000042), "4.2e-10");
   test.end();
@@ -37,15 +37,15 @@ tape("format(\".4~e\") trims insignificant zeros", function(test) {
   test.equal(f(0.00000000012345), "1.2345e-10");
   test.equal(f(0.00000000012340), "1.234e-10");
   test.equal(f(0.00000000012300), "1.23e-10");
-  test.equal(f(-0.00000000012345), "-1.2345e-10");
-  test.equal(f(-0.00000000012340), "-1.234e-10");
-  test.equal(f(-0.00000000012300), "-1.23e-10");
+  test.equal(f(-0.00000000012345), "−1.2345e-10");
+  test.equal(f(-0.00000000012340), "−1.234e-10");
+  test.equal(f(-0.00000000012300), "−1.23e-10");
   test.equal(f(12345000000), "1.2345e+10");
   test.equal(f(12340000000), "1.234e+10");
   test.equal(f(12300000000), "1.23e+10");
-  test.equal(f(-12345000000), "-1.2345e+10");
-  test.equal(f(-12340000000), "-1.234e+10");
-  test.equal(f(-12300000000), "-1.23e+10");
+  test.equal(f(-12345000000), "−1.2345e+10");
+  test.equal(f(-12340000000), "−1.234e+10");
+  test.equal(f(-12300000000), "−1.23e+10");
   test.end();
 });
 

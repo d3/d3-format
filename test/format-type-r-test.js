@@ -4,9 +4,9 @@ var tape = require("tape"),
 tape("format(\"r\") can round to significant digits", function(test) {
   test.equal(format.format(".2r")(0), "0.0");
   test.equal(format.format(".1r")(0.049), "0.05");
-  test.equal(format.format(".1r")(-0.049), "-0.05");
+  test.equal(format.format(".1r")(-0.049), "−0.05");
   test.equal(format.format(".1r")(0.49), "0.5");
-  test.equal(format.format(".1r")(-0.49), "-0.5");
+  test.equal(format.format(".1r")(-0.49), "−0.5");
   test.equal(format.format(".2r")(0.449), "0.45");
   test.equal(format.format(".3r")(0.4449), "0.445");
   test.equal(format.format(".3r")(1.00), "1.00");

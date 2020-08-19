@@ -20,7 +20,7 @@ tape("formatPrefix(\"s\", value)(number) uses yotta for very small reference val
 
 tape("formatPrefix(\"$,s\", value)(number) formats with the specified SI prefix", function(test) {
   var f = format.formatPrefix(" $12,.1s", 1e6);
-  test.equal(f(-42e6),  "      -$42.0M");
+  test.equal(f(-42e6),  "      −$42.0M");
   test.equal(f(+4.2e6), "        $4.2M");
   test.end();
 });

@@ -3,7 +3,7 @@ var tape = require("tape"),
 
 tape("formatLocale(…) can format numbers using ar-001 locale.", function(test) {
   var locale = d3.formatLocale(require("../locale/ar-001"));
-  test.equal(locale.format("$,.2f")(-1234.56), "-١٬٢٣٤٫٥٦");
+  test.equal(locale.format("$,.2f")(-1234.56), "−١٬٢٣٤٫٥٦");
   test.end();
 });
 

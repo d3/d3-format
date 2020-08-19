@@ -41,9 +41,9 @@ tape("format(\"$\") can output a currency", function(test) {
   test.equal(f(.042), "$0.042");
   test.equal(f(.42), "$0.42");
   test.equal(f(4.2), "$4.2");
-  test.equal(f(-.042), "-$0.042");
-  test.equal(f(-.42), "-$0.42");
-  test.equal(f(-4.2), "-$4.2");
+  test.equal(f(-.042), "−$0.042");
+  test.equal(f(-.42), "−$0.42");
+  test.equal(f(-4.2), "−$4.2");
   test.end();
 });
 
@@ -65,6 +65,6 @@ tape("format(\"\") can format negative zero as zero", function(test) {
 });
 
 tape("format(\"\") can format negative infinity", function(test) {
-  test.equal(format.format("")(-Infinity), "-Infinity");
+  test.equal(format.format("")(-Infinity), "−Infinity");
   test.end();
 });

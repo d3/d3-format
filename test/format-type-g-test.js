@@ -22,9 +22,9 @@ tape("format(\",g\") can group thousands with general notation", function(test) 
   test.equal(f(42), "42.0000000000");
   test.equal(f(42000000), "42,000,000.0000");
   test.equal(f(420000000), "420,000,000.000");
-  test.equal(f(-4), "-4.00000000000");
-  test.equal(f(-42), "-42.0000000000");
-  test.equal(f(-4200000), "-4,200,000.00000");
-  test.equal(f(-42000000), "-42,000,000.0000");
+  test.equal(f(-4), "−4.00000000000");
+  test.equal(f(-42), "−42.0000000000");
+  test.equal(f(-4200000), "−4,200,000.00000");
+  test.equal(f(-42000000), "−42,000,000.0000");
   test.end();
 });
