@@ -1,7 +1,7 @@
-import formatDecimal from "./formatDecimal.js";
+import {formatDecimalParts} from "./formatDecimal.js";
 
 export default function(x, p) {
-  var d = formatDecimal(x, p);
+  var d = formatDecimalParts(x, p);
   if (!d) return x + "";
   var coefficient = d[0],
       exponent = d[1];
