@@ -1,7 +1,14 @@
+var bigint = typeof BigInt === "function";
+
+export default function(x) {
+  x = Math.round(x);
+  return Math.abs(x) >= 1e21 && bigint ? BigInt(x).toString() : x.toString(10);
+}
+
 // Computes the decimal coefficient and exponent of the specified number x with
 // significant digits p, where x is positive and p is in [1, 21] or undefined.
-// For example, formatDecimal(1.23) returns ["123", 0].
-export default function(x, p) {
+// For example, formatDecimalParts(1.23) returns ["123", 0].
+export function formatDecimalParts(x, p) {
   if ((i = (x = p ? x.toExponential(p - 1) : x.toExponential()).indexOf("e")) < 0) return null; // NaN, ±Infinity
   var i, coefficient = x.slice(0, i);
 

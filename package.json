@@ -38,9 +38,9 @@
   ],
   "devDependencies": {
     "d3-queue": "3",
-    "eslint": "6",
-    "rollup": "1",
-    "rollup-plugin-terser": "5",
-    "tape": "4"
+    "eslint": "7",
+    "rollup": "2",
+    "rollup-plugin-terser": "7",
+    "tape": "5"
   }
 }
