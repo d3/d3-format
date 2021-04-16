@@ -1,93 +1,84 @@
-var tape = require("tape"),
-    format = require("../");
+import assert from "assert";
+import {format, formatSpecifier, FormatSpecifier} from "../src/index.js";
 
-tape("formatSpecifier(specifier) throws an error for invalid formats", function(test) {
-  test.throws(function() { format.formatSpecifier("foo"); }, /invalid format: foo/);
-  test.throws(function() { format.formatSpecifier(".-2s"); }, /invalid format: \.-2s/);
-  test.throws(function() { format.formatSpecifier(".f"); }, /invalid format: \.f/);
-  test.end();
+it("formatSpecifier(specifier) throws an error for invalid formats", () => {
+  assert.throws(() => { formatSpecifier("foo"); }, /invalid format: foo/);
+  assert.throws(() => { formatSpecifier(".-2s"); }, /invalid format: \.-2s/);
+  assert.throws(() => { formatSpecifier(".f"); }, /invalid format: \.f/);
 });
 
-tape("formatSpecifier(specifier) returns an instanceof formatSpecifier", function(test) {
-  var s = format.formatSpecifier("");
-  test.equal(s instanceof format.formatSpecifier, true);
-  test.end();
+it("formatSpecifier(specifier) returns an instanceof formatSpecifier", () => {
+  const s = formatSpecifier("");
+  assert.strictEqual(s instanceof formatSpecifier, true);
 });
 
-tape("formatSpecifier(\"\") has the expected defaults", function(test) {
-  var s = format.formatSpecifier("");
-  test.equal(s.fill, " ");
-  test.equal(s.align, ">");
-  test.equal(s.sign, "-");
-  test.equal(s.symbol, "");
-  test.equal(s.zero, false);
-  test.equal(s.width, undefined);
-  test.equal(s.comma, false);
-  test.equal(s.precision, undefined);
-  test.equal(s.trim, false);
-  test.equal(s.type, "");
-  test.end();
+it("formatSpecifier(\"\") has the expected defaults", () => {
+  const s = formatSpecifier("");
+  assert.strictEqual(s.fill, " ");
+  assert.strictEqual(s.align, ">");
+  assert.strictEqual(s.sign, "-");
+  assert.strictEqual(s.symbol, "");
+  assert.strictEqual(s.zero, false);
+  assert.strictEqual(s.width, undefined);
+  assert.strictEqual(s.comma, false);
+  assert.strictEqual(s.precision, undefined);
+  assert.strictEqual(s.trim, false);
+  assert.strictEqual(s.type, "");
 });
 
-tape("formatSpecifier(specifier) preserves unknown types", function(test) {
-  var s = format.formatSpecifier("q");
-  test.equal(s.trim, false);
-  test.equal(s.type, "q");
-  test.end();
+it("formatSpecifier(specifier) preserves unknown types", () => {
+  const s = formatSpecifier("q");
+  assert.strictEqual(s.trim, false);
+  assert.strictEqual(s.type, "q");
 });
 
-tape("formatSpecifier(specifier) preserves shorthand", function(test) {
-  var s = format.formatSpecifier("");
-  test.equal(s.trim, false);
-  test.equal(s.type, "");
-  test.end();
+it("formatSpecifier(specifier) preserves shorthand", () => {
+  const s = formatSpecifier("");
+  assert.strictEqual(s.trim, false);
+  assert.strictEqual(s.type, "");
 });
 
-tape("formatSpecifier(specifier).toString() reflects current field values", function(test) {
-  var s = format.formatSpecifier("");
-  test.equal((s.fill = "_", s) + "", "_>-");
-  test.equal((s.align = "^", s) + "", "_^-");
-  test.equal((s.sign = "+", s) + "", "_^+");
-  test.equal((s.symbol = "$", s) + "", "_^+$");
-  test.equal((s.zero = true, s) + "", "_^+$0");
-  test.equal((s.width = 12, s) + "", "_^+$012");
-  test.equal((s.comma = true, s) + "", "_^+$012,");
-  test.equal((s.precision = 2, s) + "", "_^+$012,.2");
-  test.equal((s.type = "f", s) + "", "_^+$012,.2f");
-  test.equal((s.trim = true, s) + "", "_^+$012,.2~f");
-  test.equal(format.format(s)(42), "+$0,000,000,042");
-  test.end();
+it("formatSpecifier(specifier).toString() reflects current field values", () => {
+  const s = formatSpecifier("");
+  assert.strictEqual((s.fill = "_", s) + "", "_>-");
+  assert.strictEqual((s.align = "^", s) + "", "_^-");
+  assert.strictEqual((s.sign = "+", s) + "", "_^+");
+  assert.strictEqual((s.symbol = "$", s) + "", "_^+$");
+  assert.strictEqual((s.zero = true, s) + "", "_^+$0");
+  assert.strictEqual((s.width = 12, s) + "", "_^+$012");
+  assert.strictEqual((s.comma = true, s) + "", "_^+$012,");
+  assert.strictEqual((s.precision = 2, s) + "", "_^+$012,.2");
+  assert.strictEqual((s.type = "f", s) + "", "_^+$012,.2f");
+  assert.strictEqual((s.trim = true, s) + "", "_^+$012,.2~f");
+  assert.strictEqual(format(s)(42), "+$0,000,000,042");
 });
 
-tape("formatSpecifier(specifier).toString() clamps precision to zero", function(test) {
-  var s = format.formatSpecifier("");
-  test.equal((s.precision = -1, s) + "", " >-.0");
-  test.end();
+it("formatSpecifier(specifier).toString() clamps precision to zero", () => {
+  const s = formatSpecifier("");
+  assert.strictEqual((s.precision = -1, s) + "", " >-.0");
 });
 
-tape("formatSpecifier(specifier).toString() clamps width to one", function(test) {
-  var s = format.formatSpecifier("");
-  test.equal((s.width = -1, s) + "", " >-1");
-  test.end();
+it("formatSpecifier(specifier).toString() clamps width to one", () => {
+  const s = formatSpecifier("");
+  assert.strictEqual((s.width = -1, s) + "", " >-1");
 });
 
-tape("new FormatSpecifier({}) has the expected defaults", function(test) {
-  var s = new format.FormatSpecifier({});
-  test.strictEqual(s.fill, " ");
-  test.strictEqual(s.align, ">");
-  test.strictEqual(s.sign, "-");
-  test.strictEqual(s.symbol, "");
-  test.strictEqual(s.zero, false);
-  test.strictEqual(s.width, undefined);
-  test.strictEqual(s.comma, false);
-  test.strictEqual(s.precision, undefined);
-  test.strictEqual(s.trim, false);
-  test.strictEqual(s.type, "");
-  test.end();
+it("new FormatSpecifier({}) has the expected defaults", () => {
+  const s = new FormatSpecifier({});
+  assert.strictEqual(s.fill, " ");
+  assert.strictEqual(s.align, ">");
+  assert.strictEqual(s.sign, "-");
+  assert.strictEqual(s.symbol, "");
+  assert.strictEqual(s.zero, false);
+  assert.strictEqual(s.width, undefined);
+  assert.strictEqual(s.comma, false);
+  assert.strictEqual(s.precision, undefined);
+  assert.strictEqual(s.trim, false);
+  assert.strictEqual(s.type, "");
 });
 
-tape("new FormatSpecifier({…}) coerces all inputs to the expected types", function(test) {
-  var s = new format.FormatSpecifier({
+it("new FormatSpecifier({…}) coerces all inputs to the expected types", () => {
+  const s = new FormatSpecifier({
     fill: 1,
     align: 2,
     sign: 3,
@@ -99,15 +90,14 @@ tape("new FormatSpecifier({…}) coerces all inputs to the expected types", func
     trim: 9,
     type: 10
   });
-  test.strictEqual(s.fill, "1");
-  test.strictEqual(s.align, "2");
-  test.strictEqual(s.sign, "3");
-  test.strictEqual(s.symbol, "4");
-  test.strictEqual(s.zero, true);
-  test.strictEqual(s.width, 6);
-  test.strictEqual(s.comma, true);
-  test.strictEqual(s.precision, 8);
-  test.strictEqual(s.trim, true);
-  test.strictEqual(s.type, "10");
-  test.end();
+  assert.strictEqual(s.fill, "1");
+  assert.strictEqual(s.align, "2");
+  assert.strictEqual(s.sign, "3");
+  assert.strictEqual(s.symbol, "4");
+  assert.strictEqual(s.zero, true);
+  assert.strictEqual(s.width, 6);
+  assert.strictEqual(s.comma, true);
+  assert.strictEqual(s.precision, 8);
+  assert.strictEqual(s.trim, true);
+  assert.strictEqual(s.type, "10");
 });

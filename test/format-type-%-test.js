@@ -1,35 +1,31 @@
-var tape = require("tape"),
-    format = require("../");
+import assert from "assert";
+import {format} from "../src/index.js";
 
-tape("format(\"%\") can output a whole percentage", function(test) {
-  var f = format.format(".0%");
-  test.equal(f(0), "0%");
-  test.equal(f(.042), "4%");
-  test.equal(f(.42), "42%");
-  test.equal(f(4.2), "420%");
-  test.equal(f(-.042), "−4%");
-  test.equal(f(-.42), "−42%");
-  test.equal(f(-4.2), "−420%");
-  test.end();
+it("format(\"%\") can output a whole percentage", () => {
+  const f = format(".0%");
+  assert.strictEqual(f(0), "0%");
+  assert.strictEqual(f(0.042), "4%");
+  assert.strictEqual(f(0.42), "42%");
+  assert.strictEqual(f(4.2), "420%");
+  assert.strictEqual(f(-.042), "−4%");
+  assert.strictEqual(f(-.42), "−42%");
+  assert.strictEqual(f(-4.2), "−420%");
 });
 
-tape("format(\".%\") can output a percentage with precision", function(test) {
-  var f1 = format.format(".1%");
-  test.equal(f1(.234), "23.4%");
-  var f2 = format.format(".2%");
-  test.equal(f2(.234), "23.40%");
-  test.end();
+it("format(\".%\") can output a percentage with precision", () => {
+  const f1 = format(".1%");
+  assert.strictEqual(f1(0.234), "23.4%");
+  const f2 = format(".2%");
+  assert.strictEqual(f2(0.234), "23.40%");
 });
 
-tape("format(\"%\") fill respects suffix", function(test) {
-  test.equal(format.format("020.0%")(42), "0000000000000004200%");
-  test.equal(format.format("20.0%")(42), "               4200%");
-  test.end();
+it("format(\"%\") fill respects suffix", () => {
+  assert.strictEqual(format("020.0%")(42), "0000000000000004200%");
+  assert.strictEqual(format("20.0%")(42), "               4200%");
 });
 
-tape("format(\"^%\") align center puts suffix adjacent to number", function(test) {
-  test.equal(format.format("^21.0%")(.42),    "         42%         ");
-  test.equal(format.format("^21,.0%")(422),   "       42,200%       ");
-  test.equal(format.format("^21,.0%")(-422),  "      −42,200%       ");
-  test.end();
+it("format(\"^%\") align center puts suffix adjacent to number", () => {
+  assert.strictEqual(format("^21.0%")(0.42),    "         42%         ");
+  assert.strictEqual(format("^21,.0%")(422),   "       42,200%       ");
+  assert.strictEqual(format("^21,.0%")(-422),  "      −42,200%       ");
 });
