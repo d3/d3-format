@@ -67,7 +67,7 @@ See [*locale*.format](#locale_format) for a detailed specification, and try runn
 
 ## Installing
 
-If you use npm, `npm install d3-format`. You can also download the [latest release on GitHub](https://github.com/d3/d3-format/releases/latest). For vanilla HTML in modern browsers, import d3-format from Skypack:
+If you use npm, `npm install d3-format`. You can also download the [latest release on GitHub](https://github.com/d3/d3-format/releases/latest). In modern browsers, you can import d3-format from Skypack:
 
 ```html
 <script type="module">
@@ -93,11 +93,10 @@ var f = d3.format(".2s");
 Locale files are published to npm and can be loaded using [d3.json](https://github.com/d3/d3-fetch/blob/master/README.md#json). For example, to set Russian as the default locale:
 
 ```js
-d3.json("https://cdn.jsdelivr.net/npm/d3-format@2/locale/ru-RU.json").then(locale => {
-  d3.formatDefaultLocale(locale);
-  const f = d3.format("$,");
-  console.log(f(1234.56)); // 1 234,56 руб.
-});
+const locale = await d3.json("https://cdn.jsdelivr.net/npm/d3-format@3/locale/ru-RU.json");
+d3.formatDefaultLocale(locale);
+const f = d3.format("$,");
+console.log(f(1234.56)); // 1 234,56 руб.
 ```
 
 [Try d3-format in your browser.](https://observablehq.com/@d3/d3-format)
