@@ -19,6 +19,10 @@
   "module": "src/index.js",
   "unpkg": "dist/d3-format.min.js",
   "jsdelivr": "dist/d3-format.min.js",
+  "exports": {
+    "umd": "./dist/d3-format.min.js",
+    "default": "./src/index.js"
+  },
   "repository": {
     "type": "git",
     "url": "https://github.com/d3/d3-format.git"
