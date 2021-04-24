@@ -9,7 +9,7 @@
     "localization"
   ],
   "homepage": "https://d3js.org/d3-format/",
-  "license": "BSD-3-Clause",
+  "license": "ISC",
   "author": {
     "name": "Mike Bostock",
     "url": "http://bost.ocks.org/mike"
