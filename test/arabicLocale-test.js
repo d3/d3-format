@@ -1,164 +1,115 @@
-var tape = require("tape"),
-    d3 = require("../");
+import assert from "assert";
+import {readFileSync} from "fs";
+import {formatLocale} from "../src/index.js";
 
-tape("formatLocale(…) can format numbers using ar-001 locale.", function(test) {
-  var locale = d3.formatLocale(require("../locale/ar-001"));
-  test.equal(locale.format("$,.2f")(-1234.56), "−١٬٢٣٤٫٥٦");
-  test.end();
+function locale(locale) {
+  return formatLocale(JSON.parse(readFileSync(`./locale/${locale}.json`, "utf8")));
+}
+
+it("formatLocale() can format numbers using ar-001 locale", () => {
+  assert.strictEqual(locale("ar-001").format("$,.2f")(-1234.56), "−١٬٢٣٤٫٥٦");
 });
 
-tape("formatLocale(…) can format numbers using ar-AE locale.", function(test) {
-  var locale = d3.formatLocale(require("../locale/ar-AE"));
-  test.equal(locale.format("$,.2f")(1234.56), "١٬٢٣٤٫٥٦ د.إ.");
-  test.end();
+it("formatLocale() can format numbers using ar-AE locale", () => {
+  assert.strictEqual(locale("ar-AE").format("$,.2f")(1234.56), "١٬٢٣٤٫٥٦ د.إ.");
 });
 
-tape("formatLocale(…) can format numbers using ar-BH locale.", function(test) {
-  var locale = d3.formatLocale(require("../locale/ar-BH"));
-  test.equal(locale.format("$,.2f")(1234.56), "١٬٢٣٤٫٥٦ د.ب.");
-  test.end();
+it("formatLocale() can format numbers using ar-BH locale", () => {
+  assert.strictEqual(locale("ar-BH").format("$,.2f")(1234.56), "١٬٢٣٤٫٥٦ د.ب.");
 });
 
-tape("formatLocale(…) can format numbers using ar-DJ locale.", function(test) {
-  var locale = d3.formatLocale(require("../locale/ar-DJ"));
-  test.equal(locale.format("$,.2f")(1234.56), "\u200fFdj ١٬٢٣٤٫٥٦");
-  test.end();
+it("formatLocale() can format numbers using ar-DJ locale", () => {
+  assert.strictEqual(locale("ar-DJ").format("$,.2f")(1234.56), "\u200fFdj ١٬٢٣٤٫٥٦");
 });
 
-tape("formatLocale(…) can format numbers using ar-DZ locale.", function(test) {
-  var locale = d3.formatLocale(require("../locale/ar-DZ"));
-  test.equal(locale.format("$,.2f")(1234.56), "د.ج. 1.234,56");
-  test.end();
+it("formatLocale() can format numbers using ar-DZ locale", () => {
+  assert.strictEqual(locale("ar-DZ").format("$,.2f")(1234.56), "د.ج. 1.234,56");
 });
 
-tape("formatLocale(…) can format numbers using ar-EG locale.", function(test) {
-  var locale = d3.formatLocale(require("../locale/ar-EG"));
-  test.equal(locale.format("$,.2f")(1234.56), "١٬٢٣٤٫٥٦ ج.م.");
-  test.end();
+it("formatLocale() can format numbers using ar-EG locale", () => {
+  assert.strictEqual(locale("ar-EG").format("$,.2f")(1234.56), "١٬٢٣٤٫٥٦ ج.م.");
 });
 
-tape("formatLocale(…) can format numbers using ar-EH locale.", function(test) {
-  var locale = d3.formatLocale(require("../locale/ar-EH"));
-  test.equal(locale.format("$,.2f")(1234.56), "د.م. 1,234.56");
-  test.end();
+it("formatLocale() can format numbers using ar-EH locale", () => {
+  assert.strictEqual(locale("ar-EH").format("$,.2f")(1234.56), "د.م. 1,234.56");
 });
 
-tape("formatLocale(…) can format numbers using ar-ER locale.", function(test) {
-  var locale = d3.formatLocale(require("../locale/ar-ER"));
-  test.equal(locale.format("$,.2f")(1234.56), "Nfk ١٬٢٣٤٫٥٦");
-  test.end();
+it("formatLocale() can format numbers using ar-ER locale", () => {
+  assert.strictEqual(locale("ar-ER").format("$,.2f")(1234.56), "Nfk ١٬٢٣٤٫٥٦");
 });
 
-tape("formatLocale(…) can format numbers using ar-IL locale.", function(test) {
-  var locale = d3.formatLocale(require("../locale/ar-IL"));
-  test.equal(locale.format("$,.2f")(1234.56), "₪ ١٬٢٣٤٫٥٦");
-  test.end();
+it("formatLocale() can format numbers using ar-IL locale", () => {
+  assert.strictEqual(locale("ar-IL").format("$,.2f")(1234.56), "₪ ١٬٢٣٤٫٥٦");
 });
 
-tape("formatLocale(…) can format numbers using ar-IQ locale.", function(test) {
-  var locale = d3.formatLocale(require("../locale/ar-IQ"));
-  test.equal(locale.format("$,.2f")(1234.56), "١٬٢٣٤٫٥٦ د.ع.");
-  test.end();
+it("formatLocale() can format numbers using ar-IQ locale", () => {
+  assert.strictEqual(locale("ar-IQ").format("$,.2f")(1234.56), "١٬٢٣٤٫٥٦ د.ع.");
 });
 
-tape("formatLocale(…) can format numbers using ar-JO locale.", function(test) {
-  var locale = d3.formatLocale(require("../locale/ar-JO"));
-  test.equal(locale.format("$,.2f")(1234.56), "١٬٢٣٤٫٥٦ د.أ.");
-  test.end();
+it("formatLocale() can format numbers using ar-JO locale", () => {
+  assert.strictEqual(locale("ar-JO").format("$,.2f")(1234.56), "١٬٢٣٤٫٥٦ د.أ.");
 });
 
-tape("formatLocale(…) can format numbers using ar-KM locale.", function(test) {
-  var locale = d3.formatLocale(require("../locale/ar-KM"));
-  test.equal(locale.format("$,.2f")(1234.56), "١٬٢٣٤٫٥٦ ف.ج.ق.");
-  test.end();
+it("formatLocale() can format numbers using ar-KM locale", () => {
+  assert.strictEqual(locale("ar-KM").format("$,.2f")(1234.56), "١٬٢٣٤٫٥٦ ف.ج.ق.");
 });
 
-tape("formatLocale(…) can format numbers using ar-KW locale.", function(test) {
-  var locale = d3.formatLocale(require("../locale/ar-KW"));
-  test.equal(locale.format("$,.2f")(1234.56), "١٬٢٣٤٫٥٦ د.ك.");
-  test.end();
+it("formatLocale() can format numbers using ar-KW locale", () => {
+  assert.strictEqual(locale("ar-KW").format("$,.2f")(1234.56), "١٬٢٣٤٫٥٦ د.ك.");
 });
 
-tape("formatLocale(…) can format numbers using ar-LB locale.", function(test) {
-  var locale = d3.formatLocale(require("../locale/ar-LB"));
-  test.equal(locale.format("$,.2f")(1234.56), "١٬٢٣٤٫٥٦ ل.ل.");
-  test.end();
+it("formatLocale() can format numbers using ar-LB locale", () => {
+  assert.strictEqual(locale("ar-LB").format("$,.2f")(1234.56), "١٬٢٣٤٫٥٦ ل.ل.");
 });
 
-tape("formatLocale(…) can format numbers using ar-MA locale.", function(test) {
-  var locale = d3.formatLocale(require("../locale/ar-MA"));
-  test.equal(locale.format("$,.2f")(1234.56), "د.م. 1.234,56");
-  test.end();
+it("formatLocale() can format numbers using ar-MA locale", () => {
+  assert.strictEqual(locale("ar-MA").format("$,.2f")(1234.56), "د.م. 1.234,56");
 });
 
-tape("formatLocale(…) can format numbers using ar-MR locale.", function(test) {
-  var locale = d3.formatLocale(require("../locale/ar-MR"));
-  test.equal(locale.format("$,.2f")(1234.56), "١٬٢٣٤٫٥٦ أ.م.");
-  test.end();
+it("formatLocale() can format numbers using ar-MR locale", () => {
+  assert.strictEqual(locale("ar-MR").format("$,.2f")(1234.56), "١٬٢٣٤٫٥٦ أ.م.");
 });
 
-tape("formatLocale(…) can format numbers using ar-OM locale.", function(test) {
-  var locale = d3.formatLocale(require("../locale/ar-OM"));
-  test.equal(locale.format("$,.2f")(1234.56), "١٬٢٣٤٫٥٦ ر.ع.");
-  test.end();
+it("formatLocale() can format numbers using ar-OM locale", () => {
+  assert.strictEqual(locale("ar-OM").format("$,.2f")(1234.56), "١٬٢٣٤٫٥٦ ر.ع.");
 });
 
-tape("formatLocale(…) can format numbers using ar-PS locale.", function(test) {
-  var locale = d3.formatLocale(require("../locale/ar-PS"));
-  test.equal(locale.format("$,.2f")(1234.56), "₪ ١٬٢٣٤٫٥٦");
-  test.end();
+it("formatLocale() can format numbers using ar-PS locale", () => {
+  assert.strictEqual(locale("ar-PS").format("$,.2f")(1234.56), "₪ ١٬٢٣٤٫٥٦");
 });
 
-tape("formatLocale(…) can format numbers using ar-QA locale.", function(test) {
-  var locale = d3.formatLocale(require("../locale/ar-QA"));
-  test.equal(locale.format("$,.2f")(1234.56), "١٬٢٣٤٫٥٦ ر.ق.");
-  test.end();
+it("formatLocale() can format numbers using ar-QA locale", () => {
+  assert.strictEqual(locale("ar-QA").format("$,.2f")(1234.56), "١٬٢٣٤٫٥٦ ر.ق.");
 });
 
-tape("formatLocale(…) can format numbers using ar-SA locale.", function(test) {
-  var locale = d3.formatLocale(require("../locale/ar-SA"));
-  test.equal(locale.format("$,.2f")(1234.56), "١٬٢٣٤٫٥٦ ر.س.");
-  test.end();
+it("formatLocale() can format numbers using ar-SA locale", () => {
+  assert.strictEqual(locale("ar-SA").format("$,.2f")(1234.56), "١٬٢٣٤٫٥٦ ر.س.");
 });
 
-tape("formatLocale(…) can format numbers using ar-SD locale.", function(test) {
-  var locale = d3.formatLocale(require("../locale/ar-SD"));
-  test.equal(locale.format("$,.2f")(1234.56), "١٬٢٣٤٫٥٦ ج.س.");
-  test.end();
+it("formatLocale() can format numbers using ar-SD locale", () => {
+  assert.strictEqual(locale("ar-SD").format("$,.2f")(1234.56), "١٬٢٣٤٫٥٦ ج.س.");
 });
 
-tape("formatLocale(…) can format numbers using ar-SO locale.", function(test) {
-  var locale = d3.formatLocale(require("../locale/ar-SO"));
-  test.equal(locale.format("$,.2f")(1234.56), "‏S ١٬٢٣٤٫٥٦");
-  test.end();
+it("formatLocale() can format numbers using ar-SO locale", () => {
+  assert.strictEqual(locale("ar-SO").format("$,.2f")(1234.56), "‏S ١٬٢٣٤٫٥٦");
 });
 
-tape("formatLocale(…) can format numbers using ar-SS locale.", function(test) {
-  var locale = d3.formatLocale(require("../locale/ar-SS"));
-  test.equal(locale.format("$,.2f")(1234.56), "£ ١٬٢٣٤٫٥٦");
-  test.end();
+it("formatLocale() can format numbers using ar-SS locale", () => {
+  assert.strictEqual(locale("ar-SS").format("$,.2f")(1234.56), "£ ١٬٢٣٤٫٥٦");
 });
 
-tape("formatLocale(…) can format numbers using ar-SY locale.", function(test) {
-  var locale = d3.formatLocale(require("../locale/ar-SY"));
-  test.equal(locale.format("$,.2f")(1234.56), "١٬٢٣٤٫٥٦ ل.س.");
-  test.end();
+it("formatLocale() can format numbers using ar-SY locale", () => {
+  assert.strictEqual(locale("ar-SY").format("$,.2f")(1234.56), "١٬٢٣٤٫٥٦ ل.س.");
 });
 
-tape("formatLocale(…) can format numbers using ar-TD locale.", function(test) {
-  var locale = d3.formatLocale(require("../locale/ar-TD"));
-  test.equal(locale.format("$,.2f")(1234.56), "\u200fFCFA ١٬٢٣٤٫٥٦");
-  test.end();
+it("formatLocale() can format numbers using ar-TD locale", () => {
+  assert.strictEqual(locale("ar-TD").format("$,.2f")(1234.56), "\u200fFCFA ١٬٢٣٤٫٥٦");
 });
 
-tape("formatLocale(…) can format numbers using ar-TN locale.", function(test) {
-  var locale = d3.formatLocale(require("../locale/ar-TN"));
-  test.equal(locale.format("$,.2f")(1234.56), "د.ت. 1.234,56");
-  test.end();
+it("formatLocale() can format numbers using ar-TN locale", () => {
+  assert.strictEqual(locale("ar-TN").format("$,.2f")(1234.56), "د.ت. 1.234,56");
 });
 
-tape("formatLocale(…) can format numbers using ar-YE locale.", function(test) {
-  var locale = d3.formatLocale(require("../locale/ar-YE"));
-  test.equal(locale.format("$,.2f")(1234.56), "١٬٢٣٤٫٥٦ ر.ى.");
-  test.end();
+it("formatLocale() can format numbers using ar-YE locale", () => {
+  assert.strictEqual(locale("ar-YE").format("$,.2f")(1234.56), "١٬٢٣٤٫٥٦ ر.ى.");
 });

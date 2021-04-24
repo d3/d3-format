@@ -1,43 +1,36 @@
-var tape = require("tape"),
-    format = require("../");
+import assert from "assert";
+import {format} from "../src/index.js";
 
-tape("format(specifier)(number) returns a string", function(test) {
-  test.equal(typeof format.format("d")(0), "string");
-  test.end();
+it("format(specifier)(number) returns a string", () => {
+  assert.strictEqual(typeof format("d")(0), "string");
 });
 
-tape("format(specifier).toString() returns the normalized specifier", function(test) {
-  test.equal(format.format("d") + "", " >-d");
-  test.end();
+it("format(specifier).toString() returns the normalized specifier", () => {
+  assert.strictEqual(format("d") + "", " >-d");
 });
 
-tape("format(specifier) throws an error for invalid formats", function(test) {
-  test.throws(function() { format.format("foo"); }, /invalid format: foo/);
-  test.throws(function() { format.format(".-2s"); }, /invalid format: \.-2s/);
-  test.throws(function() { format.format(".f"); }, /invalid format: \.f/);
-  test.end();
+it("format(specifier) throws an error for invalid formats", () => {
+  assert.throws(() => { format("foo"); }, /invalid format: foo/);
+  assert.throws(() => { format(".-2s"); }, /invalid format: \.-2s/);
+  assert.throws(() => { format(".f"); }, /invalid format: \.f/);
 });
 
-tape("format(\",.\") unreasonable precision values are clamped to reasonable values", function(test) {
-  test.equal(format.format(".30f")(0), "0.00000000000000000000");
-  test.equal(format.format(".0g")(1), "1");
-  test.end();
+it("format(\",.\") unreasonable precision values are clamped to reasonable values", () => {
+  assert.strictEqual(format(".30f")(0), "0.00000000000000000000");
+  assert.strictEqual(format(".0g")(1), "1");
 });
 
-tape("format(\"s\") handles very small and very large values", function(test) {
-  test.equal(format.format("s")(Number.MIN_VALUE), "0.000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000005y");
-  test.equal(format.format("s")(Number.MAX_VALUE), "179769000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000Y");
-  test.end();
+it("format(\"s\") handles very small and very large values", () => {
+  assert.strictEqual(format("s")(Number.MIN_VALUE), "0.000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000005y");
+  assert.strictEqual(format("s")(Number.MAX_VALUE), "179769000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000Y");
 });
 
-tape("format(\"n\") is equivalent to format(\",g\")", function(test) {
-  test.equal(format.format("n")(123456.78), "123,457");
-  test.equal(format.format(",g")(123456.78), "123,457");
-  test.end();
+it("format(\"n\") is equivalent to format(\",g\")", () => {
+  assert.strictEqual(format("n")(123456.78), "123,457");
+  assert.strictEqual(format(",g")(123456.78), "123,457");
 });
 
-tape("format(\"012\") is equivalent to format(\"0=12\")", function(test) {
-  test.equal(format.format("012")(123.456), "00000123.456");
-  test.equal(format.format("0=12")(123.456), "00000123.456");
-  test.end();
+it("format(\"012\") is equivalent to format(\"0=12\")", () => {
+  assert.strictEqual(format("012")(123.456), "00000123.456");
+  assert.strictEqual(format("0=12")(123.456), "00000123.456");
 });

@@ -1,50 +1,47 @@
-var tape = require("tape"),
-    d3 = require("../");
+import assert from "assert";
+import {format, formatPrefix, formatDefaultLocale} from "../src/index.js";
 
-var enUs = {
-  "decimal": ".",
-  "thousands": ",",
-  "grouping": [3],
-  "currency": ["$", ""]
+const enUs = {
+  decimal: ".",
+  thousands: ",",
+  grouping: [3],
+  currency: ["$", ""]
 };
 
-var frFr = {
-  "decimal": ",",
-  "thousands": ".",
-  "grouping": [3],
-  "currency": ["", "\u00a0€"],
-  "percent": "\u202f%"
+const frFr = {
+  decimal: ",",
+  thousands: ".",
+  grouping: [3],
+  currency: ["", "\u00a0€"],
+  percent: "\u202f%"
 };
 
-tape("d3.formatDefaultLocale(definition) returns the new default locale", function(test) {
-  var locale = d3.formatDefaultLocale(frFr);
+it("formatDefaultLocale(definition) returns the new default locale", () => {
+  const locale = formatDefaultLocale(frFr);
   try {
-    test.equal(locale.format("$,.2f")(12345678.90), "12.345.678,90 €");
-    test.equal(locale.format(",.0%")(12345678.90), "1.234.567.890\u202f%");
-    test.end();
+    assert.strictEqual(locale.format("$,.2f")(12345678.90), "12.345.678,90 €");
+    assert.strictEqual(locale.format(",.0%")(12345678.90), "1.234.567.890\u202f%");
   } finally {
-    d3.formatDefaultLocale(enUs);
+    formatDefaultLocale(enUs);
   }
 });
 
-tape("d3.formatDefaultLocale(definition) affects d3.format", function(test) {
-  var locale = d3.formatDefaultLocale(frFr);
+it("formatDefaultLocale(definition) affects format", () => {
+  const locale = formatDefaultLocale(frFr);
   try {
-    test.equal(d3.format, locale.format);
-    test.equal(d3.format("$,.2f")(12345678.90), "12.345.678,90 €");
-    test.end();
+    assert.strictEqual(format, locale.format);
+    assert.strictEqual(format("$,.2f")(12345678.90), "12.345.678,90 €");
   } finally {
-    d3.formatDefaultLocale(enUs);
+    formatDefaultLocale(enUs);
   }
 });
 
-tape("d3.formatDefaultLocale(definition) affects d3.formatPrefix", function(test) {
-  var locale = d3.formatDefaultLocale(frFr);
+it("formatDefaultLocale(definition) affects formatPrefix", () => {
+  const locale = formatDefaultLocale(frFr);
   try {
-    test.equal(d3.formatPrefix, locale.formatPrefix);
-    test.equal(d3.formatPrefix(",.2", 1e3)(12345678.90), "12.345,68k");
-    test.end();
+    assert.strictEqual(formatPrefix, locale.formatPrefix);
+    assert.strictEqual(formatPrefix(",.2", 1e3)(12345678.90), "12.345,68k");
   } finally {
-    d3.formatDefaultLocale(enUs);
+    formatDefaultLocale(enUs);
   }
 });

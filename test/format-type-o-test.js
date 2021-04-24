@@ -1,12 +1,10 @@
-var tape = require("tape"),
-    format = require("../");
+import assert from "assert";
+import {format} from "../src/index.js";
 
-tape("format(\"o\") octal", function(test) {
-  test.equal(format.format("o")(10), "12");
-  test.end();
+it("format(\"o\") octal", () => {
+  assert.strictEqual(format("o")(10), "12");
 });
 
-tape("format(\"#o\") octal with prefix", function(test) {
-  test.equal(format.format("#o")(10), "0o12");
-  test.end();
+it("format(\"#o\") octal with prefix", () => {
+  assert.strictEqual(format("#o")(10), "0o12");
 });

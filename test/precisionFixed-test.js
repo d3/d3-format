@@ -1,12 +1,11 @@
-var tape = require("tape"),
-    format = require("../");
+import assert from "assert";
+import {precisionFixed} from "../src/index.js";
 
-tape("precisionFixed(number) returns the expected value", function(test) {
-  test.equal(format.precisionFixed(8.9), 0);
-  test.equal(format.precisionFixed(1.1), 0);
-  test.equal(format.precisionFixed(0.89), 1);
-  test.equal(format.precisionFixed(0.11), 1);
-  test.equal(format.precisionFixed(0.089), 2);
-  test.equal(format.precisionFixed(0.011), 2);
-  test.end();
+it("precisionFixed(number) returns the expected value", () => {
+  assert.strictEqual(precisionFixed(8.9), 0);
+  assert.strictEqual(precisionFixed(1.1), 0);
+  assert.strictEqual(precisionFixed(0.89), 1);
+  assert.strictEqual(precisionFixed(0.11), 1);
+  assert.strictEqual(precisionFixed(0.089), 2);
+  assert.strictEqual(precisionFixed(0.011), 2);
 });
