@@ -85,7 +85,7 @@ For legacy environments, you can load d3-format’s UMD bundle from an npm-based
 <script src="https://cdn.jsdelivr.net/npm/d3-format@3"></script>
 <script>
 
-var format = d3.format(".2s");
+var f = d3.format(".2s");
 
 </script>
 ```
