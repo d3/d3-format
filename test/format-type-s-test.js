@@ -28,7 +28,7 @@ it("format(\"[.precision]s\") outputs SI-prefix notation with precision signific
   assert.strictEqual(f1(1000), "1.00k");
   assert.strictEqual(f1(1500.5), "1.50k");
   assert.strictEqual(f1(145500000), "146M");
-  assert.strictEqual(f1(145999999.999999347), "146M");
+  assert.strictEqual(f1(145999999.99999347), "146M");
   assert.strictEqual(f1(1e26), "100Y");
   assert.strictEqual(f1(.000001), "1.00µ");
   assert.strictEqual(f1(.009995), "10.0m");
@@ -102,7 +102,7 @@ it("format(\"$s\") outputs SI-prefix notation with a currency symbol", () => {
   assert.strictEqual(f2(1000), "$1.00k");
   assert.strictEqual(f2(1500.5), "$1.50k");
   assert.strictEqual(f2(145500000), "$146M");
-  assert.strictEqual(f2(145999999.999999347), "$146M");
+  assert.strictEqual(f2(145999999.9999347), "$146M");
   assert.strictEqual(f2(1e26), "$100Y");
   assert.strictEqual(f2(.000001), "$1.00µ");
   assert.strictEqual(f2(.009995), "$10.0m");
