@@ -29,8 +29,11 @@
   "jsdelivr": "dist/d3-format.min.js",
   "unpkg": "dist/d3-format.min.js",
   "exports": {
-    "umd": "./dist/d3-format.min.js",
-    "default": "./src/index.js"
+    ".": {
+      "umd": "./dist/d3-format.min.js",
+      "default": "./src/index.js"
+    },
+    "./locale/*": "./locale/*.json"
   },
   "sideEffects": [
     "./src/defaultLocale.js"
