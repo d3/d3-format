@@ -20,7 +20,7 @@ export default function(locale) {
       minus = locale.minus === undefined ? "−" : locale.minus + "",
       nan = locale.nan === undefined ? "NaN" : locale.nan + "";
 
-  function newFormat(specifier) {
+  function newFormat(specifier, fixedUnitParam="") {
     specifier = formatSpecifier(specifier);
 
     var fill = specifier.fill,
@@ -32,7 +32,8 @@ export default function(locale) {
         comma = specifier.comma,
         precision = specifier.precision,
         trim = specifier.trim,
-        type = specifier.type;
+        type = specifier.type,
+        fixedUnit = fixedUnitParam;
 
     // The "n" type is an alias for ",g".
     if (type === "n") comma = true, type = "g";
@@ -87,7 +88,8 @@ export default function(locale) {
 
         // Compute the prefix and suffix.
         valuePrefix = (valueNegative ? (sign === "(" ? sign : minus) : sign === "-" || sign === "(" ? "" : sign) + valuePrefix;
-        valueSuffix = (type === "s" ? prefixes[8 + prefixExponent / 3] : "") + valueSuffix + (valueNegative && sign === "(" ? ")" : "");
+        var units = fixedUnit === "" ? (type === "s" ? prefixes[8 + prefixExponent / 3] : "") : fixedUnit;
+        valueSuffix = units + valueSuffix + (valueNegative && sign === "(" ? ")" : "");
 
         // Break the formatted value into the integer “value” part that can be
         // grouped, and fractional or exponential “suffix” part that is not.
@@ -132,12 +134,12 @@ export default function(locale) {
   }
 
   function formatPrefix(specifier, value) {
-    var f = newFormat((specifier = formatSpecifier(specifier), specifier.type = "f", specifier)),
-        e = Math.max(-8, Math.min(8, Math.floor(exponent(value) / 3))) * 3,
+    var e = Math.max(-8, Math.min(8, Math.floor(exponent(value) / 3))) * 3,
         k = Math.pow(10, -e),
-        prefix = prefixes[8 + e / 3];
+        prefix = prefixes[8 + e / 3],
+        f = newFormat((specifier = formatSpecifier(specifier), specifier.type = "f", specifier), prefix);
     return function(value) {
-      return f(k * value) + prefix;
+      return f(k * value);
     };
   }
 
