@@ -8,7 +8,7 @@ import {prefixExponent} from "./formatPrefixAuto.js";
 import identity from "./identity.js";
 
 var map = Array.prototype.map,
-    prefixes = ["y","z","a","f","p","n","µ","m","","k","M","G","T","P","E","Z","Y"];
+    prefixes = ["y","z","a","f","p","n","\xb5","m","","k","M","G","T","P","E","Z","Y"];
 
 export default function(locale) {
   var group = locale.grouping === undefined || locale.thousands === undefined ? identity : formatGroup(map.call(locale.grouping, Number), locale.thousands + ""),
@@ -17,7 +17,7 @@ export default function(locale) {
       decimal = locale.decimal === undefined ? "." : locale.decimal + "",
       numerals = locale.numerals === undefined ? identity : formatNumerals(map.call(locale.numerals, String)),
       percent = locale.percent === undefined ? "%" : locale.percent + "",
-      minus = locale.minus === undefined ? "−" : locale.minus + "",
+      minus = locale.minus === undefined ? "\u2212" : locale.minus + "",
       nan = locale.nan === undefined ? "NaN" : locale.nan + "";
 
   function newFormat(specifier) {
