@@ -67,19 +67,19 @@ See [*locale*.format](#locale_format) for a detailed specification, and try runn
 
 ## Installing
 
-If you use npm, `npm install d3-format`. You can also download the [latest release on GitHub](https://github.com/d3/d3-format/releases/latest). In modern browsers, you can import d3-format from Skypack:
+If you use npm, `npm install d3-format`. You can also download the [latest release on GitHub](https://github.com/d3/d3-format/releases/latest). In modern browsers, you can import d3-format from jsDelivr as an ES module:
 
 ```html
 <script type="module">
 
-import {format} from "https://cdn.skypack.dev/d3-format@3";
+import {format} from "https://cdn.jsdelivr.net/npm/d3-format@3/+esm";
 
 const f = format(".2s");
 
 </script>
 ```
 
-For legacy environments, you can load d3-format’s UMD bundle from an npm-based CDN such as jsDelivr; a `d3` global is exported:
+For legacy environments, you can load d3-format’s UMD bundle; a `d3` global is exported:
 
 ```html
 <script src="https://cdn.jsdelivr.net/npm/d3-format@3"></script>
@@ -90,7 +90,7 @@ var f = d3.format(".2s");
 </script>
 ```
 
-Locale files are published to npm and can be loaded using [d3.json](https://github.com/d3/d3-fetch/blob/master/README.md#json). For example, to set Russian as the default locale:
+Locale files are published to npm and can be loaded using [d3.json](https://d3js.org/d3-fetch#json). For example, to set Russian as the default locale:
 
 ```js
 const locale = await d3.json("https://cdn.jsdelivr.net/npm/d3-format@3/locale/ru-RU.json");
