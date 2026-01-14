@@ -40,3 +40,16 @@ test("precisionPrefix(step, value) returns the expected precision when value is 
   assert.strictEqual(precisionPrefix(1e24, 1e27), 0); // 1000Y
   assert.strictEqual(precisionPrefix(1e23, 1e27), 1); // 1000.0Y
 });
+
+test("precisionPrefix(0, value) returns NaN", () => {
+  assert.isNaN(precisionPrefix(0, 1));
+});
+
+test("precisionPrefix(NaN, value) returns NaN", () => {
+  assert.isNaN(precisionPrefix(NaN, 1));
+});
+
+test("precisionPrefix(Infinity, value) returns NaN", () => {
+  assert.isNaN(precisionPrefix(Infinity, 1));
+  assert.isNaN(precisionPrefix(-Infinity, 1));
+});
