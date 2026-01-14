@@ -1,5 +1,5 @@
 import {assert, test} from "vitest";
-import {formatPrefix} from "../src/index.js";
+import {format, formatPrefix} from "../src/index.js";
 
 test("formatPrefix(\",.0s\", value)(number) formats with the SI prefix appropriate to the specified value", () => {
   assert.strictEqual(formatPrefix(",.0s", 1e-6)(.00042), "420µ");
