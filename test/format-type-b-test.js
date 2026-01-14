@@ -1,10 +1,10 @@
-import assert from "assert";
+import {assert, test} from "vitest";
 import {format} from "../src/index.js";
 
-it("format(\"b\") binary", () => {
+test("format(\"b\") binary", () => {
   assert.strictEqual(format("b")(10), "1010");
 });
 
-it("format(\"#b\") binary with prefix", () => {
+test("format(\"#b\") binary with prefix", () => {
   assert.strictEqual(format("#b")(10), "0b1010");
 });
