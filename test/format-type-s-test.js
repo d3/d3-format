@@ -17,6 +17,13 @@ test("format(\"s\") outputs SI-prefix notation with default precision 6", () => 
   assert.strictEqual(f(.000001), "1.00000µ");
 });
 
+test("format(\"s\") does not get confused by NaN, Infinity, etc.", () => {
+  const f = format("s");
+  assert.strictEqual(f(999500), "999.500k");
+  assert.strictEqual(f(Infinity), "Infinity");
+  assert.strictEqual(f(NaN), "NaN");
+});
+
 test("format(\"[.precision]s\") outputs SI-prefix notation with precision significant digits", () => {
   const f1 = format(".3s");
   assert.strictEqual(f1(0), "0.00");

@@ -2,7 +2,6 @@ import {assert, test} from "vitest";
 import {format} from "../src/index.js";
 
 test("format(\"r\") can round to significant digits", () => {
-  assert.strictEqual(format(".2r")(0), "0.0");
   assert.strictEqual(format(".1r")(0.049), "0.05");
   assert.strictEqual(format(".1r")(-0.049), "−0.05");
   assert.strictEqual(format(".1r")(0.49), "0.5");
@@ -30,6 +29,12 @@ test("format(\"r\") can round to significant digits", () => {
   assert.strictEqual(format(".4r")(.00000000129), "0.000000001290");
   assert.strictEqual(format(".10r")(.9999999999), "0.9999999999");
   assert.strictEqual(format(".15r")(.999999999999999), "0.999999999999999");
+});
+
+test("format(\"r\") can round zero", () => {
+  assert.strictEqual(format(".2r")(0), "0");
+  assert.strictEqual(format(".1r")(0), "0");
+  assert.strictEqual(format("r")(0), "0");
 });
 
 test("format(\"r\") can round very small numbers", () => {

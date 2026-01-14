@@ -9,3 +9,16 @@ test("precisionFixed(number) returns the expected value", () => {
   assert.strictEqual(precisionFixed(0.089), 2);
   assert.strictEqual(precisionFixed(0.011), 2);
 });
+
+test("precisionFixed(0) returns NaN", () => {
+  assert.isNaN(precisionFixed(0));
+});
+
+test("precisionFixed(NaN) returns NaN", () => {
+  assert.isNaN(precisionFixed(NaN));
+});
+
+test("precisionFixed(Infinity) returns NaN", () => {
+  assert.isNaN(precisionFixed(Infinity));
+  assert.isNaN(precisionFixed(-Infinity));
+});

@@ -4,7 +4,7 @@ export var prefixExponent;
 
 export default function(x, p) {
   var d = formatDecimalParts(x, p);
-  if (!d) return x + "";
+  if (!d) return prefixExponent = undefined, x.toPrecision(p);
   var coefficient = d[0],
       exponent = d[1],
       i = exponent - (prefixExponent = Math.max(-8, Math.min(8, Math.floor(exponent / 3))) * 3) + 1,
