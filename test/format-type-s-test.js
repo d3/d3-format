@@ -1,7 +1,7 @@
-import assert from "assert";
+import {assert, test} from "vitest";
 import {format} from "../src/index.js";
 
-it("format(\"s\") outputs SI-prefix notation with default precision 6", () => {
+test("format(\"s\") outputs SI-prefix notation with default precision 6", () => {
   const f = format("s");
   assert.strictEqual(f(0), "0.00000");
   assert.strictEqual(f(1), "1.00000");
@@ -17,7 +17,7 @@ it("format(\"s\") outputs SI-prefix notation with default precision 6", () => {
   assert.strictEqual(f(.000001), "1.00000µ");
 });
 
-it("format(\"[.precision]s\") outputs SI-prefix notation with precision significant digits", () => {
+test("format(\"[.precision]s\") outputs SI-prefix notation with precision significant digits", () => {
   const f1 = format(".3s");
   assert.strictEqual(f1(0), "0.00");
   assert.strictEqual(f1(1), "1.00");
@@ -38,7 +38,7 @@ it("format(\"[.precision]s\") outputs SI-prefix notation with precision signific
   assert.strictEqual(f2(.009995), "9.995m");
 });
 
-it("format(\"s\") formats numbers smaller than 1e-24 with yocto", () => {
+test("format(\"s\") formats numbers smaller than 1e-24 with yocto", () => {
   const f = format(".8s");
   assert.strictEqual(f(1.29e-30), "0.0000013y"); // Note: rounded!
   assert.strictEqual(f(1.29e-29), "0.0000129y");
@@ -62,7 +62,7 @@ it("format(\"s\") formats numbers smaller than 1e-24 with yocto", () => {
   assert.strictEqual(f(-1.29e-21), "−1.2900000z");
 });
 
-it("format(\"s\") formats numbers larger than 1e24 with yotta", () => {
+test("format(\"s\") formats numbers larger than 1e24 with yotta", () => {
   const f = format(".8s");
   assert.strictEqual(f(1.23e+21), "1.2300000Z");
   assert.strictEqual(f(1.23e+22), "12.300000Z");
@@ -86,7 +86,7 @@ it("format(\"s\") formats numbers larger than 1e24 with yotta", () => {
   assert.strictEqual(f(-1.23e+30), "−1230000.0Y");
 });
 
-it("format(\"$s\") outputs SI-prefix notation with a currency symbol", () => {
+test("format(\"$s\") outputs SI-prefix notation with a currency symbol", () => {
   const f1 = format("$.2s");
   assert.strictEqual(f1(0), "$0.0");
   assert.strictEqual(f1(2.5e5), "$250k");
@@ -112,7 +112,7 @@ it("format(\"$s\") outputs SI-prefix notation with a currency symbol", () => {
   assert.strictEqual(f3(.009995), "$9.995m");
 });
 
-it("format(\"s\") SI-prefix notation precision is consistent for small and large numbers", () => {
+test("format(\"s\") SI-prefix notation precision is consistent for small and large numbers", () => {
   const f1 = format(".0s");
   assert.strictEqual(f1(1e-5), "10µ");
   assert.strictEqual(f1(1e-4), "100µ");
@@ -139,13 +139,13 @@ it("format(\"s\") SI-prefix notation precision is consistent for small and large
   assert.strictEqual(f2(1e+5), "100.0k");
 });
 
-it("format(\"0[width],s\") will group thousands due to zero fill", () => {
+test("format(\"0[width],s\") will group thousands due to zero fill", () => {
   const f = format("020,s");
   assert.strictEqual(f(42),    "000,000,000,042.0000");
   assert.strictEqual(f(42e12), "00,000,000,042.0000T");
 });
 
-it("format(\",s\") will group thousands for very large numbers", () => {
+test("format(\",s\") will group thousands for very large numbers", () => {
   const f = format(",s");
   assert.strictEqual(f(42e30), "42,000,000Y");
 });

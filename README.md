@@ -7,6 +7,6 @@ This module formats numbers for human consumption, with a consistent output allo
 ## Resources
 
 - [Documentation](https://d3js.org/d3-format)
-- [Examples](https://observablehq.com/collection/@d3/d3-format)
+- [Examples](https://observablehq.com/@d3/d3-format)
 - [Releases](https://github.com/d3/d3-format/releases)
 - [Getting help](https://d3js.org/community)

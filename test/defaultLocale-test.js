@@ -1,4 +1,4 @@
-import assert from "assert";
+import {assert, test} from "vitest";
 import {format, formatPrefix, formatDefaultLocale} from "../src/index.js";
 
 const enUs = {
@@ -16,7 +16,7 @@ const frFr = {
   percent: "\u202f%"
 };
 
-it("formatDefaultLocale(definition) returns the new default locale", () => {
+test("formatDefaultLocale(definition) returns the new default locale", () => {
   const locale = formatDefaultLocale(frFr);
   try {
     assert.strictEqual(locale.format("$,.2f")(12345678.90), "12.345.678,90 €");
@@ -26,7 +26,7 @@ it("formatDefaultLocale(definition) returns the new default locale", () => {
   }
 });
 
-it("formatDefaultLocale(definition) affects format", () => {
+test("formatDefaultLocale(definition) affects format", () => {
   const locale = formatDefaultLocale(frFr);
   try {
     assert.strictEqual(format, locale.format);
@@ -36,7 +36,7 @@ it("formatDefaultLocale(definition) affects format", () => {
   }
 });
 
-it("formatDefaultLocale(definition) affects formatPrefix", () => {
+test("formatDefaultLocale(definition) affects formatPrefix", () => {
   const locale = formatDefaultLocale(frFr);
   try {
     assert.strictEqual(formatPrefix, locale.formatPrefix);

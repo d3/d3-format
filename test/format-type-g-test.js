@@ -1,7 +1,7 @@
-import assert from "assert";
+import {assert, test} from "vitest";
 import {format} from "../src/index.js";
 
-it("format(\"g\") can output general notation", () => {
+test("format(\"g\") can output general notation", () => {
   assert.strictEqual(format(".1g")(0.049), "0.05");
   assert.strictEqual(format(".1g")(0.49), "0.5");
   assert.strictEqual(format(".2g")(0.449), "0.45");
@@ -15,7 +15,7 @@ it("format(\"g\") can output general notation", () => {
   assert.strictEqual(format(".2g")(0.002), "0.0020");
 });
 
-it("format(\",g\") can group thousands with general notation", () => {
+test("format(\",g\") can group thousands with general notation", () => {
   const f = format(",.12g");
   assert.strictEqual(f(0), "0.00000000000");
   assert.strictEqual(f(42), "42.0000000000");
