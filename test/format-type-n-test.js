@@ -1,7 +1,7 @@
-import assert from "assert";
+import {assert, test} from "vitest";
 import {format} from "../src/index.js";
 
-it("format(\"n\") is an alias for \",g\"", () => {
+test("format(\"n\") is an alias for \",g\"", () => {
   const f = format(".12n");
   assert.strictEqual(f(0), "0.00000000000");
   assert.strictEqual(f(42), "42.0000000000");
@@ -16,7 +16,7 @@ it("format(\"n\") is an alias for \",g\"", () => {
   assert.strictEqual(f(1e21), "1.00000000000e+21");
 });
 
-it("format(\"n\") uses zero padding", () => {
+test("format(\"n\") uses zero padding", () => {
   assert.strictEqual(format("01.0n")(0), "0");
   assert.strictEqual(format("02.0n")(0), "00");
   assert.strictEqual(format("03.0n")(0), "000");

@@ -1,7 +1,7 @@
-import assert from "assert";
+import {assert, test} from "vitest";
 import {format} from "../src/index.js";
 
-it("format(\"~r\") trims insignificant zeros", () => {
+test("format(\"~r\") trims insignificant zeros", () => {
   const f = format("~r");
   assert.strictEqual(f(1), "1");
   assert.strictEqual(f(0.1), "0.1");
@@ -18,7 +18,7 @@ it("format(\"~r\") trims insignificant zeros", () => {
   assert.strictEqual(f(0.11111119), "0.111111");
 });
 
-it("format(\"~e\") trims insignificant zeros", () => {
+test("format(\"~e\") trims insignificant zeros", () => {
   const f = format("~e");
   assert.strictEqual(f(0), "0e+0");
   assert.strictEqual(f(42), "4.2e+1");
@@ -30,7 +30,7 @@ it("format(\"~e\") trims insignificant zeros", () => {
   assert.strictEqual(f(0.00000000042), "4.2e-10");
 });
 
-it("format(\".4~e\") trims insignificant zeros", () => {
+test("format(\".4~e\") trims insignificant zeros", () => {
   const f = format(".4~e");
   assert.strictEqual(f(0.00000000012345), "1.2345e-10");
   assert.strictEqual(f(0.00000000012340), "1.234e-10");
@@ -46,7 +46,7 @@ it("format(\".4~e\") trims insignificant zeros", () => {
   assert.strictEqual(f(-12300000000), "−1.23e+10");
 });
 
-it("format(\"~s\") trims insignificant zeros", () => {
+test("format(\"~s\") trims insignificant zeros", () => {
   const f = format("~s");
   assert.strictEqual(f(0), "0");
   assert.strictEqual(f(1), "1");
@@ -71,7 +71,7 @@ it("format(\"~s\") trims insignificant zeros", () => {
   assert.strictEqual(f(1e15), "1P");
 });
 
-it("format(\"~%\") trims insignificant zeros", () => {
+test("format(\"~%\") trims insignificant zeros", () => {
   const f = format("~%");
   assert.strictEqual(f(0), "0%");
   assert.strictEqual(f(0.1), "10%");
@@ -80,7 +80,7 @@ it("format(\"~%\") trims insignificant zeros", () => {
   assert.strictEqual(f(0.0001), "0.01%");
 });
 
-it("trimming respects commas", () => {
+test("trimming respects commas", () => {
   const f = format(",~g");
   assert.strictEqual(f(10000.0), "10,000");
   assert.strictEqual(f(10000.1), "10,000.1");

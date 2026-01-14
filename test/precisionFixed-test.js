@@ -1,7 +1,7 @@
-import assert from "assert";
+import {assert, test} from "vitest";
 import {precisionFixed} from "../src/index.js";
 
-it("precisionFixed(number) returns the expected value", () => {
+test("precisionFixed(number) returns the expected value", () => {
   assert.strictEqual(precisionFixed(8.9), 0);
   assert.strictEqual(precisionFixed(1.1), 0);
   assert.strictEqual(precisionFixed(0.89), 1);

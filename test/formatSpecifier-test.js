@@ -1,18 +1,18 @@
-import assert from "assert";
+import {assert, test} from "vitest";
 import {format, formatSpecifier, FormatSpecifier} from "../src/index.js";
 
-it("formatSpecifier(specifier) throws an error for invalid formats", () => {
+test("formatSpecifier(specifier) throws an error for invalid formats", () => {
   assert.throws(() => { formatSpecifier("foo"); }, /invalid format: foo/);
   assert.throws(() => { formatSpecifier(".-2s"); }, /invalid format: \.-2s/);
   assert.throws(() => { formatSpecifier(".f"); }, /invalid format: \.f/);
 });
 
-it("formatSpecifier(specifier) returns an instanceof formatSpecifier", () => {
+test("formatSpecifier(specifier) returns an instanceof formatSpecifier", () => {
   const s = formatSpecifier("");
   assert.strictEqual(s instanceof formatSpecifier, true);
 });
 
-it("formatSpecifier(\"\") has the expected defaults", () => {
+test("formatSpecifier(\"\") has the expected defaults", () => {
   const s = formatSpecifier("");
   assert.strictEqual(s.fill, " ");
   assert.strictEqual(s.align, ">");
@@ -26,19 +26,19 @@ it("formatSpecifier(\"\") has the expected defaults", () => {
   assert.strictEqual(s.type, "");
 });
 
-it("formatSpecifier(specifier) preserves unknown types", () => {
+test("formatSpecifier(specifier) preserves unknown types", () => {
   const s = formatSpecifier("q");
   assert.strictEqual(s.trim, false);
   assert.strictEqual(s.type, "q");
 });
 
-it("formatSpecifier(specifier) preserves shorthand", () => {
+test("formatSpecifier(specifier) preserves shorthand", () => {
   const s = formatSpecifier("");
   assert.strictEqual(s.trim, false);
   assert.strictEqual(s.type, "");
 });
 
-it("formatSpecifier(specifier).toString() reflects current field values", () => {
+test("formatSpecifier(specifier).toString() reflects current field values", () => {
   const s = formatSpecifier("");
   assert.strictEqual((s.fill = "_", s) + "", "_>-");
   assert.strictEqual((s.align = "^", s) + "", "_^-");
@@ -53,17 +53,17 @@ it("formatSpecifier(specifier).toString() reflects current field values", () => 
   assert.strictEqual(format(s)(42), "+$0,000,000,042");
 });
 
-it("formatSpecifier(specifier).toString() clamps precision to zero", () => {
+test("formatSpecifier(specifier).toString() clamps precision to zero", () => {
   const s = formatSpecifier("");
   assert.strictEqual((s.precision = -1, s) + "", " >-.0");
 });
 
-it("formatSpecifier(specifier).toString() clamps width to one", () => {
+test("formatSpecifier(specifier).toString() clamps width to one", () => {
   const s = formatSpecifier("");
   assert.strictEqual((s.width = -1, s) + "", " >-1");
 });
 
-it("new FormatSpecifier({}) has the expected defaults", () => {
+test("new FormatSpecifier({}) has the expected defaults", () => {
   const s = new FormatSpecifier({});
   assert.strictEqual(s.fill, " ");
   assert.strictEqual(s.align, ">");
@@ -77,7 +77,7 @@ it("new FormatSpecifier({}) has the expected defaults", () => {
   assert.strictEqual(s.type, "");
 });
 
-it("new FormatSpecifier({…}) coerces all inputs to the expected types", () => {
+test("new FormatSpecifier({…}) coerces all inputs to the expected types", () => {
   const s = new FormatSpecifier({
     fill: 1,
     align: 2,
