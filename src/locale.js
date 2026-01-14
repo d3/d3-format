@@ -20,7 +20,7 @@ export default function(locale) {
       minus = locale.minus === undefined ? "−" : locale.minus + "",
       nan = locale.nan === undefined ? "NaN" : locale.nan + "";
 
-  function newFormat(specifier) {
+  function newFormat(specifier, options) {
     specifier = formatSpecifier(specifier);
 
     var fill = specifier.fill,
@@ -45,8 +45,8 @@ export default function(locale) {
 
     // Compute the prefix and suffix.
     // For SI-prefix, the suffix is lazily computed.
-    var prefix = symbol === "$" ? currencyPrefix : symbol === "#" && /[boxX]/.test(type) ? "0" + type.toLowerCase() : "",
-        suffix = symbol === "$" ? currencySuffix : /[%p]/.test(type) ? percent : "";
+    var prefix = (options?.prefix !== undefined ? options.prefix : "") + (symbol === "$" ? currencyPrefix : symbol === "#" && /[boxX]/.test(type) ? "0" + type.toLowerCase() : ""),
+        suffix = (symbol === "$" ? currencySuffix : /[%p]/.test(type) ? percent : "") + (options?.suffix !== undefined ? options.suffix : "");
 
     // What format function should we use?
     // Is this an integer type?
@@ -132,12 +132,11 @@ export default function(locale) {
   }
 
   function formatPrefix(specifier, value) {
-    var f = newFormat((specifier = formatSpecifier(specifier), specifier.type = "f", specifier)),
-        e = Math.max(-8, Math.min(8, Math.floor(exponent(value) / 3))) * 3,
+    var e = Math.max(-8, Math.min(8, Math.floor(exponent(value) / 3))) * 3,
         k = Math.pow(10, -e),
-        prefix = prefixes[8 + e / 3];
+        f = newFormat((specifier = formatSpecifier(specifier), specifier.type = "f", specifier), {suffix: prefixes[8 + e / 3]});
     return function(value) {
-      return f(k * value) + prefix;
+      return f(k * value);
     };
   }
 
