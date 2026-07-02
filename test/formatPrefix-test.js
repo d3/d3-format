@@ -37,3 +37,12 @@ test("formatPrefix(\"($~s\", value)(number) formats with the SI prefix inside pa
   assert.strictEqual(formatPrefix("($~s", 1e3)(1e3), "$1k");
   assert.strictEqual(formatPrefix("($~s", 1e3)(-1e3), "($1k)");
 });
+
+test("formatPrefix(specifier, value)(number) scales without introducing a rounding error", () => {
+  // Dividing by the reference power must match formatting the scaled value directly,
+  // rather than multiplying by its inexact reciprocal.
+  assert.strictEqual(formatPrefix(",.2", 1e3)(1255), format(",.2f")(1.255) + "k");
+  assert.strictEqual(formatPrefix(",.2", 1e3)(1255), "1.25k");
+  assert.strictEqual(formatPrefix(",.2", 1e6)(1195e3), "1.20M");
+  assert.strictEqual(formatPrefix(",.2", 1e9)(1065e6), "1.06G");
+});

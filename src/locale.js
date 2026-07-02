@@ -133,10 +133,10 @@ export default function(locale) {
 
   function formatPrefix(specifier, value) {
     var e = Math.max(-8, Math.min(8, Math.floor(exponent(value) / 3))) * 3,
-        k = Math.pow(10, -e),
+        k = Math.pow(10, Math.abs(e)),
         f = newFormat((specifier = formatSpecifier(specifier), specifier.type = "f", specifier), {suffix: prefixes[8 + e / 3]});
     return function(value) {
-      return f(k * value);
+      return f(e < 0 ? value * k : value / k);
     };
   }
 
