@@ -1,0 +1,12 @@
+# Cargo discovers configuration by walking up from the working directory, not from
+# --manifest-path. This copy covers the crate directory if it is ever built in
+# isolation; the repository-root .cargo/config.toml covers cargo commands run from
+# the repository root, which is how the plan's gate commands are written. The
+# duplication is deliberate, and the key is static, so the two copies cannot drift
+# in practice.
+#
+# Without the fallback, default resolution selects clap 4.6.6 / clap_lex 1.1.0,
+# which require Rust 1.85 and edition2024 and cannot be parsed by cargo 1.80 at
+# all, silently breaking the declared MSRV gate on the next `cargo update`.
+[resolver]
+incompatible-rust-versions = "fallback"

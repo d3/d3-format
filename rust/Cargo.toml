@@ -1,0 +1,25 @@
+[package]
+name = "d3-format"
+version = "0.1.0"
+edition = "2021"
+rust-version = "1.80"
+license = "ISC"
+repository = "https://github.com/alexkhil/d3-format-rust"
+description = "A Rust implementation of d3-format 3.1.2"
+# rust-toolchain.toml is excluded because rustup resolves it by walking up from
+# the build directory: shipping it would pin an unpacked-crate consumer to 1.98.1.
+exclude = ["fixtures/", "tools/", "rust-toolchain.toml"]
+
+[lib]
+name = "d3_format"
+
+[features]
+default = []
+locales = []
+serde = ["dep:serde"]
+
+[dependencies]
+serde = { version = "1", optional = true, features = ["derive"] }
+
+[dev-dependencies]
+criterion = { version = "=0.7.0", default-features = false, features = ["cargo_bench_support"] }

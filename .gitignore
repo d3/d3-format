@@ -5,4 +5,5 @@ node_modules
 npm-debug.log
 .arena/
 .codegraph/
-tools/
+/tools/
+/rust/target/

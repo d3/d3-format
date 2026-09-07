@@ -1,0 +1,4 @@
+# The Rust port is authored and generated with LF endings, and its fixtures and
+# generated sources are byte-compared against a fresh regeneration. Without this
+# rule core.autocrlf rewrites them to CRLF on checkout and the drift checks fail.
+rust/** text eol=lf

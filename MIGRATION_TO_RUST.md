@@ -57,12 +57,14 @@ Current status:
 |---|---|---|
 | JavaScript inventory and edge probes | Evidence — verified | `node tools/harvest/harvest.mjs` and `.arena` probes |
 | Runtime capture prototype | Deliverable — present | `tools/harvest/` records calls in memory and prints counts |
-| Rust toolchain on this machine | Gate — pending | `cargo` is not currently resolvable; no Rust install is assumed |
-| Rust crate and gate tests | Gate — pending | `rust/` does not yet exist |
+| JavaScript baseline gates | Gate — passed | `packageManager` pinned; `yarn --frozen-lockfile`, `yarn vitest run` (24 files, 168 tests), and `yarn lint` pass |
+| Rust toolchain on this machine | Gate — passed | GNU host; 1.80.0, 1.98.1, and stable installed; requires MinGW binutils per §2.2 |
+| Rust crate and gate tests | Gate — passed | `rust/` skeleton present; `tests/gate.rs` passes on all three toolchains |
+| Phase 0 exit gate (§2.4) | Gate — passed | all four commands pass in this checkout; `yarn.lock` and `rust/Cargo.lock` unchanged |
 | Deterministic fixture/test generation | Gate — pending | the prototype does not emit fixtures or Rust source |
 | Locale generator and drift check | Gate — pending | not implemented |
 | Differential runner | Gate — pending | not implemented |
-| CI and Cargo publication | Gate — pending | existing workflows are JavaScript-only |
+| CI and Cargo publication | Gate — pending | existing workflows are JavaScript-only; `rust/ci/check.ps1` and the Rust jobs are not yet written |
 
 ### 0.3 Verified exploratory evidence
 
@@ -84,6 +86,12 @@ The following was re-run against this checkout:
   24.18.0. Multiplication and division were observably different in 4 of 11 sampled pairs.
 - Criterion 0.8.2 has a mandatory `alloca` dependency which uses `cc`; Criterion 0.7.0 avoids that
   build dependency.
+
+Every one of these counts was re-measured during Phase 0 against commit `c6a8b27` and reproduced
+exactly, with no drift: 729 executable static assertion sites, 1,078 dynamic executions, 793
+boundary calls with the per-operation split intact, 194 specifiers, 49 locale definitions, and 59
+locale files of which 23 carry numerals. The assertion counts were confirmed by two independent
+methods that agreed. The live `process.versions` values also matched the §3.1 sample exactly.
 
 These measurements are recorded in generated provenance during Phase 1. If a clean rerun differs,
 the gate fails and the plan is updated; counts are not silently changed.
@@ -117,6 +125,7 @@ d3-format-rust/
 │   ├── publish.yml                             # existing npm publication; unchanged
 │   └── publish-rust.yml                        # gated Cargo publication
 └── rust/
+    ├── .cargo/config.toml
     ├── Cargo.toml
     ├── Cargo.lock
     ├── rust-toolchain.toml
@@ -172,9 +181,60 @@ No `build.rs` may read `../locale`: a published crate must build from its packag
 Add `/rust/target/` to `.gitignore`. Commit `rust/Cargo.lock`, fixtures, generated tests, generated
 locales, and the provenance manifest.
 
+The pre-existing `.gitignore` entry for the prototype tool directory was the unanchored pattern
+`tools/`, which also matches `rust/tools/` and would have silently untracked every production tool
+in §3. It is anchored to `/tools/` so it still ignores the repository-root prototype only. Ignore
+patterns that name a directory must be root-anchored whenever `rust/` has a directory of the same
+name.
+
+Two `.cargo/config.toml` files, one at the repository root and one in `rust/`, pin MSRV-aware
+dependency resolution:
+
+```toml
+[resolver]
+incompatible-rust-versions = "fallback"
+```
+
+Default resolution selects `clap` releases that require Rust 1.85 and edition 2024. Cargo 1.80
+cannot parse those manifests at all, so the MSRV job fails before compiling anything. The committed
+lockfile encodes the correct selection, but without this key any `cargo update` silently reintroduces
+the failure. The key is stable as of Cargo 1.84 and is therefore honored by the pinned 1.98.1
+toolchain.
+
+The duplication is deliberate. Cargo discovers configuration by walking up from its **working
+directory**, not from `--manifest-path`. A single copy in `rust/` would be bypassed by the
+root-relative commands this document itself teaches in §2.4 and §3.7: run from the repository root,
+`cargo generate-lockfile --manifest-path rust/Cargo.toml` resolves 43 packages and selects the
+unparseable `clap`. The root copy covers those invocations; the `rust/` copy keeps the crate
+directory correct if it is ever built in isolation. The key is static, so the copies cannot drift.
+
+Pinning Criterion does not substitute for this. `=0.7.0` is justified in §0.3 and §7 solely as an
+`alloca`/`cc` guard, and Criterion 0.7.0 under default resolution still pulls the MSRV-breaking
+`clap`. Removing the resolver configuration on the theory that the version pin covers it
+reintroduces the failure.
+
+**The lockfile is regenerated only under the pinned toolchain.** Cargo 1.80 predates the key and
+ignores it, printing `warning: unused config key resolver.incompatible-rust-versions` and exiting
+zero. Running `cargo update` or `cargo generate-lockfile` on the MSRV toolchain therefore reselects
+the unparseable `clap` and produces a lockfile that same toolchain cannot build. The MSRV job
+consumes the committed lock; it never writes one.
+
+This repository sets `core.autocrlf=true` and has no historical `.gitattributes`, so a Windows
+checkout rewrites committed LF content to CRLF in the working tree. Every byte-comparison gate in
+§3 would then fail against a fresh regeneration. A root `.gitattributes` pins the port's working-tree
+form:
+
+```gitattributes
+rust/** text eol=lf
+```
+
+The rule is scoped to `rust/`. The JavaScript oracle keeps its existing checkout behavior, because
+renormalizing it is an unrelated change to the reference implementation.
+
 ## 2. Phase 0: machine, toolchains, baseline, and gates
 
-**Status: pending.**
+**Status: §2.4 passed. The §7 CI-skeleton half of the exit condition is outstanding, because
+`rust/ci/check.ps1` and the Rust CI jobs are not yet written.**
 
 ### 2.1 Repository-local JavaScript tool
 
@@ -232,13 +292,26 @@ toolchain names to remove ambiguity. The crate's MSRV is independently declared 
 Linking gate:
 
 ```powershell
-cargo new --lib "$env:TEMP\d3-format-linkcheck"
-cargo test --manifest-path "$env:TEMP\d3-format-linkcheck\Cargo.toml"
+cargo test --manifest-path rust/Cargo.toml --all-features
 ```
 
-If GNU linking fails, capture the complete linker command and error. First repair/reinstall the
-`rust-mingw` component. MSYS2 MinGW is the second option. MSVC Build Tools is the final fallback,
-not an automatic response to a Rust source error.
+An empty `cargo new --lib` crate is **not** an adequate linking gate. It has no dependency that uses
+`raw-dylib`, so it links successfully on a machine that cannot build this crate. The gate must build
+the real dev-dependency graph, which reaches `windows-sys` through Criterion.
+
+On a GNU host that graph fails with `error calling dlltool 'dlltool.exe': program not found` until
+MinGW binutils are available. Reinstalling `rust-mingw` does not fix this. The component is not
+broken: it ships `dlltool.exe` under
+`lib/rustlib/x86_64-pc-windows-gnu/bin/self-contained/`, but rustc's raw-dylib support resolves
+`dlltool` from `PATH` only. Putting that directory on `PATH` then fails a second time, because
+`dlltool` shells out to the GNU assembler and `rust-mingw` ships no `as.exe`.
+
+The working remedy on this machine was the plan's second option: install MSYS2 with
+`mingw-w64-x86_64-binutils` and append `C:\msys64\mingw64\bin` to the user `PATH`. Append rather
+than prepend, so it shadows nothing. MSVC Build Tools remain the final fallback and were not needed.
+This is host configuration, not a repository artifact; GitHub's `windows-latest` images already ship
+MinGW binutils. If GNU linking fails for some other reason, capture the complete linker command and
+error before changing toolchains.
 
 ### 2.3 Commit-ready Rust semantics gate
 
@@ -337,7 +410,8 @@ ordinal. `assert.throws` retains the ID while executing its callback.
 
 The harvester writes to a temporary directory first. `--check` regenerates and byte-compares all
 outputs without touching tracked files. `--write` atomically replaces outputs and is allowed only
-for intentional source/oracle changes.
+for intentional source/oracle changes. Tools always write LF; the `.gitattributes` rule in §1 is
+what keeps the checked-out bytes equal to the generated bytes on Windows.
 
 ### 3.3 Coverage mapping
 
@@ -560,6 +634,10 @@ rust-version = "1.80"
 license = "ISC"
 repository = "https://github.com/alexkhil/d3-format-rust"
 description = "A Rust implementation of d3-format 3.1.2"
+exclude = ["fixtures/", "tools/", "rust-toolchain.toml"]
+
+[lib]
+name = "d3_format"
 
 [features]
 default = []
@@ -576,6 +654,17 @@ criterion = { version = "=0.7.0", default-features = false, features = ["cargo_b
 The proposed package name was unoccupied when this plan was reviewed, but availability must be
 checked again before publication. The Rust API begins at `0.1.0`; it does not claim semver `3.1.2`.
 `COMPATIBILITY.md` records that outputs target d3-format 3.1.2 at commit `ebdc2d5`.
+
+`exclude` keeps the published artifact independent of the verification corpus. Without it the
+`.crate` carries `fixtures/`, which Phase 1 grows with `calls.jsonl`, `decimal.jsonl`, the tie and
+carry corpora, and the assertion map, and Phase 5 sizes in millions of cases. The package would then
+cross the crates.io 10 MiB limit and fail §6's packaging gate for a distribution reason unrelated to
+correctness. `rust-toolchain.toml` is excluded for a separate reason: rustup resolves it by walking
+up from the build directory, so shipping it would force channel 1.98.1 on anyone building the
+unpacked crate, defeating §9's canary that the package builds under a consumer's own toolchain.
+`tests/` stays packaged because `gate.rs` has no fixture dependency and §9 requires the packaged
+crate to build and test independently; whether generated tests remain packaged is decided in Phase 1
+against their measured size.
 
 Feature policy:
 
@@ -834,6 +923,10 @@ if ($forbidden.Count -ne 0) {
 The Windows entry tests the same GNU host selected for local development. An additional MSVC job may
 be added as compatibility coverage, but it does not replace the GNU job.
 
+Until Phase 5 adds `benches/format.rs`, `cargo bench --no-run` compiles Criterion and the implicit
+library bench target only. It is a real dependency-graph and linking check from Phase 0 onward, but
+it is not benchmark coverage and must not be reported as such.
+
 ### 6.2 MSRV, stable, features, and WASM compile
 
 Separate Ubuntu jobs install:
@@ -846,6 +939,11 @@ Separate Ubuntu jobs install:
 
 The stable job is intentionally moving compatibility coverage; it does not define fixture
 semantics. Pinned 1.98.1 defines the reproducible implementation baseline.
+
+As of Phase 0, 1.98.1 is itself current stable, so the stable job builds the same compiler as the
+pinned job and adds no independent coverage yet. That is expected and self-correcting once stable
+advances; the job is not evidence of forward compatibility until then. Only the MSRV job currently
+exercises a genuinely different compiler.
 
 ### 6.3 Oracle and parity job
 

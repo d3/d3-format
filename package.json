@@ -50,6 +50,7 @@
     "lint": "eslint src test",
     "prepublishOnly": "rm -rf dist && rollup -c"
   },
+  "packageManager": "yarn@1.22.22",
   "engines": {
     "node": ">=12"
   }
