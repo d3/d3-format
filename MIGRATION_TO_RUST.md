@@ -489,6 +489,15 @@ The two mechanisms still catch different mistakes. Un-ignoring a test before its
 caught by the test run, which panics on the placeholder seam. A *deleted* generated test leaves
 everything passing and is caught only by the inventory assertion.
 
+Counting the inventory needs care, because each target also holds scaffolding tests that are not
+conformance blocks. The guard applies two independent discriminators — declaration inside a
+generated or hand-ported submodule, and the `tNNN_` name the generator controls — and fails if they
+disagree, since they drift in opposite directions: a helper added inside a submodule inflates the
+first, a change to the naming scheme deflates the second. It also requires every test name
+`assertion-map.json` routes to still be defined, which catches a rename that no count can see. A
+convention change is then a diagnosable failure that names the offending tests, rather than a
+silently wrong count.
+
 The recorded count for the generated target is `manifest.json`'s test-block count, not the number of
 tests named in `assertion-map.json`. Those differ: the map names 155 generated tests against 168
 blocks, because a block whose assertions are all ported or all divergent still emits a block test
