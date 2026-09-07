@@ -63,7 +63,8 @@ Current status:
 | Phase 0 exit gate (§2.4) | Gate — passed | all four commands pass in this checkout; `yarn.lock` and `rust/Cargo.lock` unchanged |
 | Deterministic fixture/test generation | Gate — passed | §3.7 passes; two clean runs produced byte-identical artifacts; coverage is 729/729 static sites, 1,078 executions, 793 calls |
 | Locale generator and drift check | Gate — passed | 59 locales emitted with per-source hashes; `--check` verifies byte identity |
-| Differential runner | Deliverable — present | `gen-corpus.mjs`, `dump_cases.rs`, `differential.mjs`, and `oracle-diff.mjs` exist; the numeric seam is unimplemented until Phase 2 |
+| Differential runner | Deliverable — present | numeric primitives wired; formatter operations decline until Phase 4 rather than claiming agreement |
+| Exact number conversion | Gate — passed | 2,344,808 differential cases agree with Node v24.18.0 under MSRV, pinned, and stable, with zero mismatches |
 | Rust CI jobs | Deliverable — present | `rust/ci/check.ps1` plus pinned, MSRV, stable, and WASM jobs; every step reproduced locally, never yet run on GitHub |
 | Parity CI job | Gate — pending | §6.3 references `rust/tools/`, so it follows Phase 1 |
 | Cargo publication | Gate — pending | `publish-rust.yml` is not written |
@@ -580,7 +581,27 @@ Base-10 `Number::toString`:
 - emit the shortest round-tripping decimal;
 - use fixed notation for finite non-zero magnitudes in `[1e-6, 1e21)`;
 - use exponential notation outside that interval, with explicit exponent sign;
-- preserve the ECMAScript spellings of zero and non-finite values.
+- preserve the ECMAScript spellings of zero and non-finite values;
+- **break an exact tie toward the even digit**, which is the opposite of the rule above.
+
+That last bullet is a correctness trap, not a detail. `toFixed`, `toExponential`, and `toPrecision`
+round half away from zero; shortest conversion rounds half to even. The two must not be unified
+behind one rounding helper. At `2^50 + ¼` shortest conversion yields `1125899906842624.2` while
+`toFixed(1)` yields `1125899906842624.3`. This was found by a differential mismatch rather than by
+reading the specification, so a port that reasons only from §4.1's `toFixed` wording will get it
+wrong and the existing suite will not notice.
+
+Integer radix conversion has a related asymmetry. V8's `Number.prototype.toString(radix)` is an
+approximation outside the power-of-two radices: it stops emitting once the remainder falls below
+half an ulp and pads the rest with zeros, which the specification permits because it requires only
+"a generalization of" `Number::toString` for a radix other than ten. `(1e21).toString(36)` is
+`5v1j4f4ds7c000` in Node against an exact `5v1j4f4ds79m9s`. Across 20,000 large integers, radices 2,
+8, and 16 matched the exact expansion every time while radix 36 drifted in 9,389 of them, because a
+binary64 integer's low digits genuinely are zero in a power-of-two radix. **d3 reaches only radices
+2, 8, and 16, through types `b`, `o`, `x`, and `X`, so no d3-compatible output is affected.** The
+port emits the exact expansion at every radix and the differential declines the radices d3 cannot
+reach, rather than asserting an agreement it has not demonstrated. The choice is recorded in
+`DIVERGENCES.md` because the conversion is reachable beyond those three radices.
 
 Type `d` is a separate rule. After non-negative `Math.round`, d3 uses
 `toLocaleString("en").replace(/,/g, "")` for magnitudes at least `1e21`. For finite values this is
@@ -602,6 +623,18 @@ fixtures; Rust must not cast a NaN exponent to an integer or index the prefix ta
 The default runtime dependency graph remains empty. `bignat.rs` implements only the operations
 required for exact `m * 2^k` conversion and decimal digit generation. No third-party formatting
 crate is used.
+
+These signatures name `FormatLimits` and `FormatError`, which §7 lists as Phase 3 deliverables. That
+ordering is inconsistent, and Phase 2 resolves it by shipping the minimum each type needs now:
+`FormatLimits` in its final shape, so no Phase 3 change reshapes a signature, and only the
+`FormatError` variants a numeric conversion can actually produce. `FormatError` is `#[non_exhaustive]`
+so Phase 3 adds the specifier, width, and input-kind variants without a breaking change.
+
+The engine lives in a module that is deliberately **not** part of the §5 public API. It is reachable
+because §3.6's differential harness is a separate binary target and cannot see crate-private items,
+so it is `#[doc(hidden)]` and documented as unstable. Phase 6 may promote or seal it; until then it
+carries no compatibility or semver guarantee, which is what keeps these ECMAScript primitives from
+silently becoming published surface the plan never specified.
 
 The shared engine provides:
 
@@ -665,6 +698,12 @@ Primitive acceptance is zero mismatches for:
 
 The manifest, not this prose, records actual corpus sizes. A generator producing zero cases for an
 expected bucket is a gate failure, not a pass.
+
+These corpora are the only thing standing between the port and the most likely error. §0.3 records
+that a half-even simulation passes all 1,078 committed assertions; the generated ties, by contrast,
+contain 2,144 fixed and 4,319 significant cases where half-even and ECMAScript produce literally
+different strings. That set of 6,463 discriminating cases, not the ported suite, is what establishes
+the rounding rule.
 
 ### 4.4 Numeric risks that remain explicit
 
@@ -1265,11 +1304,18 @@ deliberately adopts another benchmark harness. `cargo tree` guards the actual gr
 - rejection of non-BMP/newline fill characters;
 - validated locale grouping and numeral shape.
 
-A required entry may legitimately have no oracle assertion behind it. `validated-locale-shape` is
-the current example: the locale-schema assertions in `test/locale-test.js` are hand-ported rather
-than divergent, because Rust reaches the same conclusion at construction time. Coverage therefore
-permits a §8-required entry with zero mapped assertions, while still rejecting an entry that is
-merely unused.
+This list is a minimum, not a closed set. Coverage enforces two independent rules: every ID above
+must exist, and every entry in `DIVERGENCES.md` must either be claimed by an assertion site or
+declare `Oracle assertions: none`. Membership of the required list is deliberately not what licenses
+an unclaimed entry — tying the two together makes the permitted divergences accidentally closed, so
+a genuine new divergence cannot be documented without being mislabelled as required.
+
+An entry with no oracle assertion behind it is legitimate in both directions. `validated-locale-shape`
+is required yet unclaimed, because the locale-schema assertions in `test/locale-test.js` are
+hand-ported rather than divergent: Rust reaches the same conclusion at construction time.
+`exact-radix-expansion` is unclaimed because the divergence is unreachable from d3's own surface.
+Neither can hide a real assertion, because every one of the 729 static sites must map somewhere
+regardless, and a declared count that disagrees with the mapping fails separately.
 
 Everything not listed as a deviation is subject to the byte-for-byte differential contract,
 including type `d` infinity, negative zero, unknown types, exponent spelling, Unicode minus and

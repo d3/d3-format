@@ -182,3 +182,38 @@ Oracle assertions: none. The schema-shaped assertions in `test/locale-test.js` a
 `ported`, not divergent: Rust reaches the same conclusion, just at construction time and by a
 different route, so a named Rust test can honestly stand in for them.
 Covered by: `rust/tests/ported/locales.rs::every_generated_locale_declares_the_required_keys`
+
+---
+
+## Exact radix expansion where V8 approximates
+
+ID: `exact-radix-expansion`
+
+**No d3-compatible output is affected.** d3 reaches `Number.prototype.toString(radix)` only through
+`Math.round(x).toString(radix)` in types `b`, `o`, `x` and `X`, so its reachable radices are 2, 8
+and 16. For those, the exact expansion and V8's are the same string, because a binary64 integer's
+digits below its own precision genuinely are zero in a power-of-two radix. Every recorded d3 call,
+every generated test, and the whole differential corpus fall inside that set.
+
+Outside it the two disagree. `Number::toString` — base ten — is fully specified, but for any other
+radix the specification only says the result "should be a generalization of" it, and V8's
+generalization is an approximation: it stops emitting digits once the remaining value falls below
+half an ulp of the input and pads the rest with zeros. So Node prints `(1e21).toString(36)` as
+`5v1j4f4ds7c000`, where the exact expansion of the integer those bits denote is `5v1j4f4ds79m9s`.
+Measured over 20,000 pseudorandom large finite integers, radices 2, 8 and 16 matched the exact
+`BigInt` expansion in every case, while radix 36 drifted in 9,389 of them.
+
+`decimal::round_to_string_radix` produces the exact expansion at every radix from 2 to 36. Keeping
+it exact costs nothing where d3 is concerned and is the better answer where d3 is silent;
+reproducing V8's zero-padding would mean porting an engine-specific approximation that no
+specification requires and no d3 output observes.
+
+Because the port has not demonstrated agreement outside 2, 8 and 16, it does not claim any:
+`rust/src/bin/dump_cases.rs` answers those three radices and *rejects* every other one, so a
+differential run reports a declined case rather than a passing one. That is the placeholder
+discipline of §7 applied to a domain the oracle and the port genuinely differ over.
+
+Oracle assertions: none. No oracle assertion reaches a radix outside 2, 8 and 16 — the divergence
+is unreachable from d3's own surface, which is why it is recorded here rather than treated as a
+compatibility break.
+Covered by: `rust/tests/decimal.rs::radix_output_reaches_the_full_1024_bit_expansion`

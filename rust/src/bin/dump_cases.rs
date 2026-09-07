@@ -5,12 +5,12 @@
 //! case, in input order. `rust/tools/differential.mjs` computes the same records
 //! from the JavaScript oracle and compares them exactly.
 //!
-//! The transport is complete. The one thing that is not implemented is the actual
-//! formatting, because the formatting API arrives in Phase 2 through Phase 4 of the
-//! migration: [`evaluate`] is the single seam where it will be plugged in, and until
-//! then every case reports `"unimplemented"` and the process exits with
-//! [`EXIT_UNIMPLEMENTED`]. There is deliberately no code path in which this binary
-//! succeeds while the port does not exist.
+//! The transport is complete. [`evaluate`] is the single seam through which the
+//! port answers, and it answers only what the port has actually implemented. As of
+//! Phase 2 that is section 4.1's ECMAScript numeric conversions; the formatters,
+//! the specifier parser and the precision helpers arrive in Phases 3 and 4 and
+//! still report `"unimplemented"`. Any run containing an unimplemented case exits
+//! with [`EXIT_UNIMPLEMENTED`], so no caller can read a partial port as agreement.
 //!
 //! Everything here is dependency-free on purpose: `rust/Cargo.lock` is a reviewed,
 //! hash-pinned artifact, and a differential harness is not a good reason to add a
@@ -21,6 +21,9 @@
 use std::fmt::Write as _;
 use std::io::{self, Read, Write};
 use std::process::ExitCode;
+
+use d3_format::decimal;
+use d3_format::FormatLimits;
 
 /// Returned when the corpus was read and answered, but no case could be computed.
 const EXIT_UNIMPLEMENTED: u8 = 3;
@@ -334,7 +337,6 @@ fn write_json_string(out: &mut String, value: &str) {
 /// What the port produced for one case.
 enum Outcome {
     /// A value the differential can compare: text, or an f64 by its bit pattern.
-    #[allow(dead_code)]
     Text(String),
     #[allow(dead_code)]
     F64(f64),
@@ -345,21 +347,122 @@ enum Outcome {
     /// The port rejected the input. A typed error is a legitimate answer for the
     /// deviations in `DIVERGENCES.md`; `differential.mjs` checks it against the
     /// case's skip reason rather than treating it as agreement.
-    #[allow(dead_code)]
     Rejected(String),
     /// No implementation exists yet.
     Unimplemented(&'static str),
 }
 
+/// Phase 3 and Phase 4 territory. Spelled once so that every operation the port
+/// cannot yet answer says the same thing, and so that adding an operation to the
+/// port is a matter of removing it from this list.
+const NOT_YET: &str =
+    "the Rust formatting API is incomplete: the specifier parser, Locale/Formatter and the \
+precision helpers arrive in Phases 3 and 4 of MIGRATION_TO_RUST.md";
+
 /// The single seam between the differential transport and the port.
 ///
-/// Phase 2 through Phase 4 replace the body with real calls into the library; the
-/// signature, the corpus schema and the output schema do not change. Until then
-/// every case reports the same thing, and it is not a value.
-fn evaluate(_case: &Json) -> Outcome {
-    Outcome::Unimplemented(
-        "the Rust formatting API does not exist yet (MIGRATION_TO_RUST.md, Phase 2 through Phase 4)",
-    )
+/// Phase 2 answers section 4.1's ECMAScript numeric conversions and nothing else.
+/// Every other operation still reports `Unimplemented`, which `differential.mjs`
+/// refuses to count as agreement.
+fn evaluate(case: &Json) -> Outcome {
+    let op = match case.get("op").and_then(Json::as_str) {
+        Some(op) => op,
+        None => return Outcome::Unimplemented(NOT_YET),
+    };
+
+    // Section 4.1's conversions are the only ones Phase 2 implements, and all of
+    // them need a numeric input. A null value is a JavaScript coercion case, which
+    // DIVERGENCES.md excuses and the port must decline rather than answer.
+    let value = match case.get("value").and_then(Json::as_str).map(parse_bits) {
+        Some(Some(value)) => value,
+        _ => {
+            return match op {
+                "numberToString" | "toFixed" | "toExponential" | "toPrecision"
+                | "toLocaleStringEn" | "toStringRadix" => {
+                    Outcome::Rejected("no-input-coercion: the input is not a number".to_string())
+                }
+                _ => Outcome::Unimplemented(NOT_YET),
+            }
+        }
+    };
+    let precision = case.get("precision").and_then(Json::as_i64);
+    let radix = case.get("radix").and_then(Json::as_i64);
+    let limits = FormatLimits::DEFAULT;
+
+    let result = match op {
+        "numberToString" => decimal::number_to_string(value, &limits),
+        "toFixed" => match u32_precision(precision) {
+            Some(precision) => decimal::to_fixed(value, precision, &limits),
+            None => return Outcome::Rejected("toFixed needs a precision in 0..=100".to_string()),
+        },
+        "toExponential" => match precision {
+            None => decimal::to_exponential(value, None, &limits),
+            Some(_) => match u32_precision(precision) {
+                Some(precision) => decimal::to_exponential(value, Some(precision), &limits),
+                None => {
+                    return Outcome::Rejected(
+                        "toExponential needs a precision in 0..=100".to_string(),
+                    )
+                }
+            },
+        },
+        "toPrecision" => match precision {
+            // `toPrecision()` with no argument is `Number::toString`, per the spec.
+            None => decimal::number_to_string(value, &limits),
+            Some(_) => match u32_precision(precision) {
+                Some(precision) => decimal::to_precision(value, precision, &limits),
+                None => {
+                    return Outcome::Rejected(
+                        "toPrecision needs a precision in 1..=100".to_string(),
+                    )
+                }
+            },
+        },
+        "toLocaleStringEn" => decimal::to_locale_string_en(value, &limits),
+        "toStringRadix" => match radix {
+            // Types `b`, `o`, `x` and `X` are the only callers, so 2, 8 and 16 are
+            // the whole reachable domain, and there the exact expansion is what V8
+            // prints. Outside it V8 runs its own approximation -- it stops at half
+            // an ulp and pads with zeros, and `Number.prototype.toString` is only
+            // specified to be "a generalization of" `Number::toString` for a radix
+            // other than ten. The port is exact, so it declines to claim agreement
+            // where it has not demonstrated any.
+            Some(radix @ (2 | 8 | 16)) => {
+                // d3 always arrives through `Math.round(x).toString(radix)`, so the
+                // fractional expansion -- also V8's own approximation -- is out of
+                // scope as well.
+                if value.is_finite() && value.fract() != 0.0 {
+                    return Outcome::Rejected(
+                        "toString(radix) on a non-integer is outside the ported domain".to_string(),
+                    );
+                }
+                decimal::round_to_string_radix(value, radix as u32, &limits)
+            }
+            _ => {
+                return Outcome::Rejected(
+                    "toString(radix) is ported for the radices d3 reaches: 2, 8 and 16".to_string(),
+                )
+            }
+        },
+        _ => return Outcome::Unimplemented(NOT_YET),
+    };
+
+    match result {
+        Ok(text) => Outcome::Text(text),
+        Err(error) => Outcome::Rejected(error.to_string()),
+    }
+}
+
+/// Reads a 16-digit big-endian bit pattern back into the `f64` it denotes.
+fn parse_bits(text: &str) -> Option<f64> {
+    u64::from_str_radix(text, 16).ok().map(f64::from_bits)
+}
+
+fn u32_precision(precision: Option<i64>) -> Option<u32> {
+    match precision {
+        Some(precision) if (0..=100).contains(&precision) => Some(precision as u32),
+        _ => None,
+    }
 }
 
 /// Renders one output record. Key order is fixed and matches `differential.mjs`.
@@ -622,13 +725,40 @@ mod tests {
     }
 
     #[test]
-    fn every_case_is_unimplemented_in_phase_1() {
-        let record = parse_json(r#"{"id":"c","op":"format"}"#).unwrap();
-        let rendered = render_outcome("c", "format", &evaluate(&record));
+    fn the_formatters_are_still_unimplemented() {
+        for op in [
+            "format",
+            "formatPrefix",
+            "formatSpecifier",
+            "precisionFixed",
+        ] {
+            let line = format!(r#"{{"id":"c","op":"{op}","value":"3FF0000000000000"}}"#);
+            let record = parse_json(&line).unwrap();
+            let rendered = render_outcome("c", op, &evaluate(&record));
+            assert!(
+                rendered.contains(r#""status":"unimplemented""#),
+                "{op}: {rendered}"
+            );
+        }
+    }
+
+    #[test]
+    fn the_numeric_conversions_answer() {
+        let line = r#"{"id":"c","op":"toFixed","value":"3FC0000000000000","precision":2}"#;
+        let record = parse_json(line).unwrap();
         assert!(
-            rendered.contains(r#""status":"unimplemented""#),
-            "{rendered}"
+            render_outcome("c", "toFixed", &evaluate(&record))
+                .contains(r#""status":"ok","output":{"kind":"text","bits":null,"text":"0.13"}"#),
+            "0.125 rounds half away from zero"
         );
-        assert!(!rendered.contains(r#""status":"ok""#), "{rendered}");
+    }
+
+    #[test]
+    fn a_non_numeric_input_is_declined_rather_than_answered() {
+        let line = r#"{"id":"c","op":"toFixed","value":null,"precision":2}"#;
+        let record = parse_json(line).unwrap();
+        assert!(
+            render_outcome("c", "toFixed", &evaluate(&record)).contains(r#""status":"rejected""#)
+        );
     }
 }

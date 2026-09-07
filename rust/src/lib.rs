@@ -3,9 +3,30 @@
 //! This crate is being ported incrementally; see `MIGRATION_TO_RUST.md` in the
 //! repository root for the implementation plan and the compatibility contract.
 //! Phase 0 establishes the toolchain, the crate skeleton, and the standard
-//! library semantics gate in `tests/gate.rs`. No formatting API is exposed yet.
+//! library semantics gate in `tests/gate.rs`. Phase 2 adds the exact number
+//! conversion engine of section 4.2. The specifier parser, `Locale` and
+//! `Formatter` arrive in Phases 3 and 4, so there is still no d3-shaped
+//! formatting API.
 
 #![forbid(unsafe_code)]
+
+mod bignat;
+
+// Section 5 declares the crate's public surface, and a `decimal` module is not in
+// it: these are ECMAScript conversion primitives, not d3's interface. It is `pub`
+// only because section 3.6's differential harness -- `src/bin/dump_cases.rs` -- is a
+// separate binary target, and a binary target links the library as an external
+// crate, so it can no more reach a private item than any other dependent can. The
+// same is true of `tests/decimal.rs`. `#[doc(hidden)]` is the mechanism because it
+// keeps the module out of the documentation and out of the compatibility contract
+// while leaving Phase 6 free to promote it; the module's own header states the
+// terms. See the note on `decimal` in the module documentation.
+#[doc(hidden)]
+pub mod decimal;
+
+mod limits;
+
+pub use crate::limits::{FormatError, FormatLimits};
 
 // The generated locale table is data only: it has no dependency on the formatting
 // API that arrives in Phase 3. It is compiled unconditionally so that the Phase 1

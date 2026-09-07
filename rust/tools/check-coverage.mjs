@@ -394,8 +394,20 @@ function checkDivergenceDocument(problems, map, divergences, rustTests) {
     }
   }
 
+  // An entry goes stale when it claims oracle assertions the mapping no longer
+  // attributes to it. An entry that claims none is not stale: it documents a
+  // structural deviation d3's own tests never observe, which is what DIVERGENCES.md
+  // says at the top -- "every ID here is either claimed by an assertion or
+  // explicitly marked `Oracle assertions: none`".
+  //
+  // The escape hatch used to be section 8's required list rather than that count,
+  // which made the rule accidentally closed: `no-global-si-prefix-leak` passed
+  // because it is required, not because it declares no assertions, and any
+  // *additional* structural divergence was rejected as orphaned however carefully
+  // it was written. Section 8 names the entries that must exist; it does not name
+  // the only entries allowed to.
   for (const [id, entry] of divergences.entries) {
-    if (used.has(id) || REQUIRED.includes(id)) continue;
+    if (used.has(id) || entry.assertions === 0) continue;
     problems.add(5, `${DIVERGENCES_PATH}: entry "${entry.heading}" (${id}) is claimed by no site (orphaned)`);
   }
 

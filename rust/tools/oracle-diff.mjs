@@ -132,7 +132,7 @@ export function runSingleCase(record) {
 // ---------------------------------------------------------------------------
 
 export function parseArguments(argv) {
-  const options = {caseId: null, corpus: null, seed: DEFAULT_SEED, random: 0, sections: null, rust: false};
+  const options = {caseId: null, corpus: null, seed: DEFAULT_SEED, random: 0, sweep: 0, sections: null, rust: false};
   const flags = argv.slice(2);
   for (let index = 0; index < flags.length; index++) {
     const flag = flags[index];
@@ -154,15 +154,27 @@ export function parseArguments(argv) {
   // A `random-<seed>-<ordinal>` id names its own seed and its own position, so a
   // reproduction command copied from differential.mjs works whether or not the
   // person running it remembers to repeat --seed and --random.
-  const seeded = /^random-(-?\d+)-(\d+)$/.exec(options.caseId);
+  const seeded = /^(random|sweep)-(-?\d+)-(\d+)$/.exec(options.caseId);
   if (seeded) {
-    options.seed = Number(seeded[1]);
-    options.random = Math.max(options.random, Number(seeded[2]) + 1);
-    if (options.sections === null) options.sections = ["random"];
+    options.seed = Number(seeded[2]);
+    const ordinal = Number(seeded[3]) + 1;
+    if (seeded[1] === "random") options.random = Math.max(options.random, ordinal);
+    else options.sweep = Math.max(options.sweep ?? 0, ordinal);
+    if (options.sections === null) options.sections = [seeded[1]];
   } else if (options.sections === null) {
-    if (options.caseId.startsWith("decimal-")) options.sections = ["decimal"];
-    else if (options.caseId.startsWith("call-")) options.sections = ["calls"];
-    else options.sections = [...SECTIONS];
+    // Each generated section uses its own id prefix, so a reproduction command
+    // copied out of a differential report needs no other flags.
+    const prefixes = {
+      "decimal-": "decimal",
+      "call-": "calls",
+      "regression-": "regressions",
+      "boundary-": "boundary",
+      "fixed_ties-": "fixed_ties",
+      "significant_ties-": "significant_ties",
+      "carry-": "carry"
+    };
+    const matched = Object.entries(prefixes).find(([prefix]) => options.caseId.startsWith(prefix));
+    options.sections = matched ? [matched[1]] : [...SECTIONS];
   }
   return options;
 }
