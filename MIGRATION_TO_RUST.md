@@ -65,6 +65,7 @@ Current status:
 | Locale generator and drift check | Gate — passed | 59 locales emitted with per-source hashes; `--check` verifies byte identity |
 | Differential runner | Deliverable — present | numeric primitives wired; formatter operations decline until Phase 4 rather than claiming agreement |
 | Exact number conversion | Gate — passed | 2,344,808 differential cases agree with Node v24.18.0 under MSRV, pinned, and stable, with zero mismatches |
+| Specifier, locale, and public API | Gate — passed | §5 surface implemented; parser checked against an independent matcher over 62,823 inputs; value layout still diverges pending Phase 4 |
 | Rust CI jobs | Deliverable — present | `rust/ci/check.ps1` plus pinned, MSRV, stable, and WASM jobs; every step reproduced locally, never yet run on GitHub |
 | Parity CI job | Gate — pending | §6.3 references `rust/tools/`, so it follows Phase 1 |
 | Cargo publication | Gate — pending | `publish-rust.yml` is not written |
@@ -472,14 +473,21 @@ from `--no-run`, which is the very thing §3.7 gates on. Because a summary-only 
 that the port is unimplemented, asserted against its placeholder seam so the claim fails the moment
 it stops being true.
 
-§6.1's `Pinned` profile additionally asserts the ignored-test inventory of each placeholder target
-against the count recorded in the generated artifacts, so the scoreboard's state survives
-summarization into a pass or a fail. The two mechanisms catch different mistakes: un-ignoring a test
-before its API exists is caught by the test run, which panics on the placeholder seam, while a
-*lost* `#[ignore]` or a deleted generated test leaves everything passing and is caught only by the
-inventory assertion. The check is expected to fail as Phases 2 through 4 implement the port; the
-count of not-yet-passing conformance blocks is the migration's progress metric and must move through
-reviewed regeneration rather than silently.
+§6.1's `Pinned` profile additionally asserts the conformance **inventory** of each placeholder
+target — the number of conformance tests defined, ignored and not — against the count recorded in
+the generated artifacts, so the scoreboard survives summarization into a pass or a fail. It reports
+the ignored count alongside, as the migration's progress metric, but does not gate on it.
+
+It must gate on the inventory rather than on the ignored count, and getting this wrong made two
+parts of this document unsatisfiable at once. §7's Phase 3 exit requires the hand-ported tests to
+pass, while a guard keyed to the ignored count requires them to stay ignored, and no artifact
+Phase 3 is allowed to touch can record the transition. Test existence is a stable property that a
+generator records; how many of those tests currently pass is a moving one that changes with every
+phase.
+
+The two mechanisms still catch different mistakes. Un-ignoring a test before its API exists is
+caught by the test run, which panics on the placeholder seam. A *deleted* generated test leaves
+everything passing and is caught only by the inventory assertion.
 
 The recorded count for the generated target is `manifest.json`'s test-block count, not the number of
 tests named in `assertion-map.json`. Those differ: the map names 155 generated tests against 168
@@ -825,6 +833,13 @@ Differences from JavaScript are intentional:
 round trip is stable. It must not bypass normalization. JavaScript's lossy round trip after mutating
 public fields is documented as unsupported.
 
+JavaScript's round trip is also lossy *without* mutation, which is a stronger statement than the
+paragraph above. `FormatSpecifier.prototype.toString` spells the width as
+`Math.max(1, this.width | 0)`, so a width at or above 2³¹ wraps: Node renders `4294967295f` as
+`" >-1f"` and `.99999999999999999999f` as `" >-.1661992960f"`. The port renders what it parsed. No
+*formatted output* differs, because both clamp into range before use, but the spelling does, so this
+belongs in `DIVERGENCES.md` rather than being treated as a parser bug.
+
 Invalid syntax uses `ParseError` whose `Display` text is exactly `invalid format: {input}` for
 compatibility with the existing throw assertions. Limit, locale-validation, and input-kind errors
 have distinct variants and are not disguised as parse errors.
@@ -988,6 +1003,11 @@ pub fn as_precision(value: f64) -> Option<u32>;
 
 The primary helpers return `f64` because d3 returns NaN for zero and non-finite cases and existing
 tests assert that contract. `as_precision` is an ergonomic conversion, not a semantic replacement.
+
+These helpers must not use `f64::max`. JavaScript's `Math.max` propagates NaN and Rust's `f64::max`
+discards it, so `0.0_f64.max(f64::NAN)` is `0.0`. Substituting it converts every NaN answer the
+contract requires into zero, and does so invisibly: any suite exercising only finite steps still
+passes. The helpers use a NaN-propagating maximum of their own.
 
 ## 6. CI design
 
@@ -1301,7 +1321,7 @@ deliberately adopts another benchmark harness. `cargo tree` guards the actual gr
 - immutable typed `FormatSpecifier`; no field coercion or ToInt32 mutation behavior;
 - parse/construction-time width limits and fallible allocation;
 - numeric/text input mismatch errors instead of JavaScript coercion;
-- rejection of non-BMP/newline fill characters;
+- rejection of control-character fill, and a distinct fill error kind;
 - validated locale grouping and numeral shape.
 
 This list is a minimum, not a closed set. Coverage enforces two independent rules: every ID above
@@ -1316,6 +1336,14 @@ hand-ported rather than divergent: Rust reaches the same conclusion at construct
 `exact-radix-expansion` is unclaimed because the divergence is unreachable from d3's own surface.
 Neither can hide a real assertion, because every one of the 729 static sites must map somewhere
 regardless, and a declared count that disagrees with the mapping fails separately.
+
+That fill entry was originally written as "rejection of non-BMP/newline fill characters" and was
+wrong in both halves. JavaScript's `.` already excludes line terminators, so a newline fill is not
+accepted by d3 either and rejecting it is not a deviation. A supplementary-plane fill cannot reach
+the slot at all, because the alignment character would have to be the low surrogate. The genuine
+deviation is narrower and was found only by testing: `"\t>d"` is a valid d3 specifier that pads with
+tabs, and the port rejects the remaining control characters and reports a distinct fill error kind.
+State a deviation as what a test demonstrates, not as what it was assumed to be.
 
 Everything not listed as a deviation is subject to the byte-for-byte differential contract,
 including type `d` infinity, negative zero, unknown types, exponent spelling, Unicode minus and

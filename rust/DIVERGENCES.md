@@ -11,8 +11,11 @@ ID that exists here, and that every ID here is either claimed by an assertion or
 `Oracle assertions: none`. That check is what keeps this document from drifting away from the
 recording.
 
-Rust test paths in the `Covered by:` lines are `#[ignore]`d placeholders until the phase named in
-their ignore reason lands. They exist now so that no oracle assertion is silently dropped.
+Phase 3 made the specifier, locale, limit and error deviations real; every `Covered by:` line below
+now names a test that runs and passes, except where it says otherwise. The tests under
+`rust/tests/ported/` keep their `#[ignore]` attributes for a scoreboard reason their target root
+explains — `rust/tests/ported/main.rs::the_phase_3_assertions_all_pass` is what executes them — and
+the two lines still marked with a phase are waiting on layout and on the property suite.
 
 ---
 
@@ -35,7 +38,9 @@ initialization order to get wrong; and `Locale::en_us()` is a constant, not a sn
 the process last configured.
 
 Oracle assertions: 2 (`test/defaultLocale-test.js`)
-Covered by: `rust/tests/ported/divergences.rs::default_locale_is_not_a_mutable_process_global`
+Covered by: `rust/tests/ported/divergences.rs::default_locale_is_not_a_mutable_process_global`,
+`rust/tests/public_api.rs::cloning_a_locale_shares_it_rather_than_copying_it`, and the
+`Send + Sync` bound in `rust/tests/public_api.rs`, which is a compile error to break.
 
 ---
 
@@ -58,8 +63,11 @@ d3's own tests never observe the stale value. It is listed because the absence o
 deliberate structural difference a reviewer should be able to find.
 
 Oracle assertions: none
-Covered by: `rust/tests/properties.rs` (Phase 5: concurrent and interleaved formatting agree with
-sequential formatting)
+Covered by: `rust/tests/public_api.rs::a_prefix_formatter_reports_type_f_whatever_the_caller_wrote`,
+which shows the fixed prefix living on the formatter that chose it, and the `Send + Sync` bound in
+the same file. The auto-prefix path is Phase 4, so the stronger statement —
+`rust/tests/properties.rs` (Phase 5: concurrent and interleaved formatting agree with sequential
+formatting) — is still outstanding.
 
 ---
 
@@ -86,10 +94,21 @@ These are the JavaScript coercion assertions §3.3 refuses to call "passed" by a
 API. What the Rust tests do assert is the *defaults* and the *rendering* — the parts of each
 assertion that survive translation — under their own names.
 
+One consequence reaches `Display`, and it is the only place a *parsed* specifier renders
+differently from d3's. `FormatSpecifier.prototype.toString` spells its width as
+`Math.max(1, this.width | 0)` and its precision as `Math.max(0, this.precision | 0)`, so both go
+through ToInt32 on the way out. Above 2³¹ that wraps: Node renders `formatSpecifier("4294967295f")`
+as `" >-1f"` and `formatSpecifier(".99999999999999999999f")` as `" >-.1661992960f"`. The port stores
+the value it parsed and renders that, so the same inputs render as `" >-4294967295f"` and
+`" >-.4294967295f"`. No formatted output differs, because d3 clamps the *number* into `[0, 21]`
+before using it and the port clamps the same way; only the round trip through the spelling does,
+and only for values no d3 caller can render at all.
+
 Oracle assertions: 23 (`test/formatSpecifier-test.js`)
 Covered by:
 `rust/tests/ported/divergences.rs::format_specifier_is_immutable_after_construction`,
-`rust/tests/ported/divergences.rs::specifier_construction_does_not_coerce_arbitrary_javascript_values`
+`rust/tests/ported/divergences.rs::specifier_construction_does_not_coerce_arbitrary_javascript_values`,
+and `rust/tests/public_api.rs::a_huge_width_or_precision_renders_as_itself_rather_than_wrapping`
 
 ---
 
@@ -102,17 +121,25 @@ characters; JavaScript either throws `RangeError` from the engine or exhausts me
 the value and the host. The failure is unpredictable, happens at call time, and can be a hard
 abort.
 
-The Rust port rejects an out-of-range width when the specifier is parsed or built, returning an
-error rather than attempting the allocation. Padding is bounded by a compile-time constant that
-`limits.rs` documents, and the formatting path itself performs no unbounded allocation.
+The Rust port rejects an out-of-range width at two points. A width the *syntax* cannot hold — above
+`u32::MAX` — is a `ParseError` with kind `WidthOverflow`, so it never becomes a `FormatSpecifier`.
+A width the syntax holds but the *limits* refuse — above `FormatLimits::max_width_utf16`, one
+million UTF-16 code units by default — is a `FormatError::WidthLimit` at formatter construction, so
+a formatter that exists cannot later fail to pad. A caller who genuinely wants a wider one raises
+the limit through the `*_with_limits` entry points; formatting stays fallible either way.
 
 This is a pure widening of the error surface: every width d3 can actually render is accepted and
 renders identically. Only inputs whose JavaScript behavior is "throw or die" become a typed,
 recoverable error at an earlier point.
 
 Oracle assertions: none
-Covered by: `rust/tests/ported/specifier.rs::invalid_specifiers_are_rejected_with_the_d3_message`
-(Phase 2) and `rust/tests/properties.rs` (Phase 5: no input produces an unbounded allocation)
+Covered by: `rust/tests/public_api.rs::parsing_rejects_a_width_the_syntax_cannot_hold`,
+`rust/tests/public_api.rs::formatter_construction_rejects_a_width_over_the_limit`,
+`rust/tests/public_api.rs::the_default_taking_entry_points_use_the_default_limits`, and
+`rust/tests/properties.rs::the_parser_accepts_exactly_the_grammar_the_reference_matcher_does`,
+which checks the rejection against an independent implementation of d3's grammar over 62,823
+inputs. The allocation half — `rust/tests/properties.rs` (Phase 5: no input produces an unbounded
+allocation) — waits for the layout path that would do the allocating.
 
 ---
 
@@ -133,7 +160,13 @@ for them.
 non-numeric inputs, not about NaN handling, which is covered by the differential contract.
 
 Oracle assertions: 3
-Covered by: `rust/tests/ported/divergences.rs::numeric_formatters_reject_non_numeric_input`
+Covered by: `rust/tests/public_api.rs::a_numeric_formatter_refuses_text_instead_of_coercing_it` and
+`rust/tests/public_api.rs::a_text_formatter_refuses_numbers_instead_of_coercing_them`, which pin the
+refusal in both directions.
+`rust/tests/ported/divergences.rs::numeric_formatters_reject_non_numeric_input` asserts the same
+refusal against the three locales the oracle uses and then diverges: the other half of its contract
+is that `f64::NAN` renders as each locale's NaN text, which is Phase 4 layout.
+`rust/tests/ported/main.rs::the_phase_4_assertion_still_diverges` is what keeps that honest.
 
 ---
 
@@ -154,9 +187,19 @@ terminator or other control character, when the specifier is parsed or built.
 Every fill character d3-format's own tests and locale data use is inside the accepted set, and all
 of them render identically.
 
+Note how much of this d3 already does, and why the divergence is narrower than it looks. `.` does
+not match a line terminator, so `"\n>d"`, `"\r>d"`, `"\u2028>d"` and `"\u2029>d"` are already
+`invalid format:` errors in JavaScript. A supplementary-plane character never reaches the fill slot
+either: `.` would capture only its high surrogate, and the alignment character would then have to be
+the low surrogate, which is not one of `[<>=^]`. What the port adds is the *remaining* control
+characters — `"\t>d"` is a valid d3 specifier that pads with tabs — and it reports them as a fill
+problem rather than as a generic syntax error, through `ParseErrorKind::Fill`.
+
 Oracle assertions: none
-Covered by: `rust/tests/ported/specifier.rs::invalid_specifiers_are_rejected_with_the_d3_message`
-(Phase 2)
+Covered by: `rust/tests/public_api.rs::a_fill_that_cannot_be_padded_with_is_rejected_at_parse_time`
+and `rust/tests/properties.rs::the_parser_accepts_exactly_the_grammar_the_reference_matcher_does`,
+whose reference matcher runs on UTF-16 code units precisely so that the surrogate case above is
+modelled rather than assumed.
 
 ---
 
@@ -169,10 +212,13 @@ consume no digits and iterate forever; a `grouping` containing `0` does the same
 array of any length other than ten silently produces `undefined` in the output for digits it does
 not cover, and a non-array `numerals` throws deep inside formatting rather than at construction.
 
-`Locale` construction in Rust validates the definition: `grouping` must be non-empty and every
-entry must be a positive count, and `numerals`, when present, must contain exactly ten entries.
-Failures are returned as a typed error naming the offending field, at construction time, before any
-formatting is attempted.
+`Locale` construction in Rust validates the definition: every `grouping` entry must be a positive
+count, and `numerals`, when present, must contain exactly ten entries. Two of the three checks are
+made by the *types* rather than at run time — `numerals` is `[String; 10]`, so a short array cannot
+be written — and the third, a zero group size, is `LocaleError::ZeroGroupingSize` naming the index
+it found. An empty `grouping` list is not an error but a disabled grouping, which is what d3's loop
+does in effect once `grouping[0]` is `undefined`; grouping is likewise disabled unless `thousands`
+is supplied too. Failures are returned at construction time, before any formatting is attempted.
 
 All 59 bundled locale definitions satisfy this schema, as does every inline definition in the
 oracle tests, so no recorded call changes. `rust/tools/gen-locales.mjs` enforces the same schema at
@@ -181,7 +227,13 @@ generation time, which is why a malformed locale cannot reach the generated tabl
 Oracle assertions: none. The schema-shaped assertions in `test/locale-test.js` are classified
 `ported`, not divergent: Rust reaches the same conclusion, just at construction time and by a
 different route, so a named Rust test can honestly stand in for them.
-Covered by: `rust/tests/ported/locales.rs::every_generated_locale_declares_the_required_keys`
+Covered by: `rust/tests/ported/locales.rs::every_generated_locale_declares_the_required_keys`,
+which walks all 59 bundled locales as the oracle walks the 59 JSON files, and the four policy tests
+in `rust/tests/public_api.rs` —
+`policy_grouping_is_disabled_unless_both_keys_are_supplied`,
+`policy_an_empty_grouping_list_disables_grouping`,
+`policy_a_zero_grouping_size_is_rejected` and
+`policy_numerals_are_exactly_ten_strings`.
 
 ---
 

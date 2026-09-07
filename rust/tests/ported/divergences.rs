@@ -5,9 +5,18 @@
 //! `divergence` field of `rust/fixtures/d3-format-3.1.2/assertion-map.json`. None of
 //! them may be declared "passed" by some other Rust call: the point is to assert the
 //! replacement contract, not to pretend the JavaScript behaviour survived.
+//!
+//! Three of the four are complete. The fourth,
+//! [`numeric_formatters_reject_non_numeric_input`], asserts the half of its contract
+//! Phase 3 owns and then diverges, because the other half needs the NaN rendering
+//! Phase 4 brings.
 
-const PHASE_3: &str =
-    "Phase 3 placeholder: the Locale, Formatter and FormatSpecifier APIs do not exist yet";
+use d3_format::{
+    Align, FormatError, FormatSpecifier, FormatType, InputKind, Locale, ParseErrorKind, Sign,
+    Symbol,
+};
+
+const PHASE_4: &str = "Phase 4 placeholder: numeric layout does not exist yet";
 
 /// `format === locale.format` and `formatPrefix === locale.formatPrefix`, from
 /// `test/defaultLocale-test.js`.
@@ -18,13 +27,43 @@ const PHASE_3: &str =
 /// change. The replacement contract is that `Locale::en_us()` is a value, that
 /// building another locale leaves it untouched, and that both are `Send + Sync`.
 #[test]
-#[ignore = "Phase 3 placeholder: Locale does not exist yet"]
-fn default_locale_is_not_a_mutable_process_global() {
-    crate::placeholder(
-        PHASE_3,
-        "Locale::en_us() to be unaffected by building any other locale, \
-         with no process-global to rebind",
-    );
+#[ignore = "runs in the target root; see the module documentation"]
+pub(crate) fn default_locale_is_not_a_mutable_process_global() {
+    // `frFr` from `test/defaultLocale-test.js`, which the oracle installs globally.
+    let french = Locale::builder()
+        .decimal(",")
+        .thousands(".")
+        .grouping([3])
+        .currency("", "\u{a0}\u{20ac}")
+        .percent("\u{202f}%")
+        .build()
+        .expect("valid");
+
+    // Installing it is not a thing that can be done: the only way to use it is to
+    // hold it, and holding it changes nothing else.
+    let before = Locale::en_us();
+    let after = Locale::en_us();
+    assert_eq!(before, after);
+    assert_eq!(after.decimal(), ".");
+    assert_eq!(after.thousands(), ",");
+    assert_eq!(after.currency_prefix(), "$");
+    assert_eq!(after.currency_suffix(), "");
+    assert_ne!(after, french);
+
+    // A formatter is obtained from the locale it belongs to, so two formatters for
+    // the same specifier and different locales are simply different values. In
+    // JavaScript these would be the same `format` binding at different times.
+    let american = before.formatter("$,.2f").expect("valid");
+    let parisian = french.formatter("$,.2f").expect("valid");
+    assert_ne!(american, parisian);
+    assert_eq!(american.specifier(), parisian.specifier());
+
+    // And they are thread-safe values rather than process state. The compile-time
+    // bound lives in `tests/public_api.rs`; this is the observable half.
+    let moved = std::thread::spawn(move || parisian.specifier().to_string())
+        .join()
+        .expect("no panic");
+    assert_eq!(moved, " >-$,.2f");
 }
 
 /// `formatSpecifier(specifier).toString() reflects current field values` and the two
@@ -38,12 +77,82 @@ fn default_locale_is_not_a_mutable_process_global() {
 /// is that the builder reaches each of the same normalized spellings
 /// (`"_>-"` through `"_^+$012,.2~f"`) directly.
 #[test]
-#[ignore = "Phase 3 placeholder: FormatSpecifier and its builder do not exist yet"]
-fn format_specifier_is_immutable_after_construction() {
-    crate::placeholder(
-        PHASE_3,
-        "the builder to render \"_>-\" through \"_^+$012,.2~f\" without \
-         mutating a constructed specifier, and negative width or precision to be unrepresentable",
+#[ignore = "runs in the target root; see the module documentation"]
+pub(crate) fn format_specifier_is_immutable_after_construction() {
+    // The oracle's ten assignments, in order, each one a new value built from the
+    // previous. Every intermediate stays alive and unchanged, which is the whole
+    // difference from the JavaScript sequence.
+    let start: FormatSpecifier = "".parse().expect("valid");
+    let steps: [(FormatSpecifier, &str); 10] = {
+        let fill = start.to_builder().fill('_').build().expect("valid");
+        let align = fill
+            .to_builder()
+            .align(Align::Center)
+            .build()
+            .expect("valid");
+        let sign = align.to_builder().sign(Sign::Plus).build().expect("valid");
+        let symbol = sign
+            .to_builder()
+            .symbol(Symbol::Currency)
+            .build()
+            .expect("valid");
+        let zero = symbol.to_builder().zero(true).build().expect("valid");
+        let width = zero.to_builder().width(12).build().expect("valid");
+        let comma = width.to_builder().comma(true).build().expect("valid");
+        let precision = comma.to_builder().precision(2).build().expect("valid");
+        let typed = precision
+            .to_builder()
+            .format_type(FormatType::Fixed)
+            .build()
+            .expect("valid");
+        let trimmed = typed.to_builder().trim(true).build().expect("valid");
+        [
+            (fill, "_>-"),
+            (align, "_^-"),
+            (sign, "_^+"),
+            (symbol, "_^+$"),
+            (zero, "_^+$0"),
+            (width, "_^+$012"),
+            (comma, "_^+$012,"),
+            (precision, "_^+$012,.2"),
+            (typed, "_^+$012,.2f"),
+            (trimmed, "_^+$012,.2~f"),
+        ]
+    };
+    for (specifier, expected) in &steps {
+        assert_eq!(&specifier.to_string(), expected);
+    }
+
+    // Nothing was mutated: the value each step was built from still renders as it
+    // did. In JavaScript there is only ever one object, so this cannot be asked.
+    assert_eq!(start.to_string(), " >-");
+    for (index, (specifier, expected)) in steps.iter().enumerate() {
+        assert_eq!(
+            &specifier.to_string(),
+            expected,
+            "step {index} changed after later steps were built"
+        );
+    }
+
+    // `toString() clamps precision to zero` and `clamps width to one`. d3 needs the
+    // clamps because `specifier.precision = -1` and `specifier.width = -1` are
+    // writable; here the fields are `Option<u32>`, so a negative one cannot be
+    // written and the clamp target is simply the smallest representable value.
+    assert_eq!(
+        FormatSpecifier::builder()
+            .precision(0)
+            .build()
+            .expect("valid")
+            .to_string(),
+        " >-.0"
+    );
+    assert_eq!(
+        FormatSpecifier::builder()
+            .width(0)
+            .build()
+            .expect("valid")
+            .to_string(),
+        " >-1"
     );
 }
 
@@ -56,13 +165,53 @@ fn format_specifier_is_immutable_after_construction() {
 /// at all. The replacement contract is that construction is typed and that invalid
 /// field values are rejected rather than coerced.
 #[test]
-#[ignore = "Phase 3 placeholder: the FormatSpecifier builder does not exist yet"]
-fn specifier_construction_does_not_coerce_arbitrary_javascript_values() {
-    crate::placeholder(
-        PHASE_3,
-        "the builder to accept only typed field values, with no \
-         String()/ToInt32/truthiness coercion path",
-    );
+#[ignore = "runs in the target root; see the module documentation"]
+pub(crate) fn specifier_construction_does_not_coerce_arbitrary_javascript_values() {
+    // The oracle's object is `{fill: 1, align: 2, sign: 3, symbol: 4, zero: 5,
+    // width: 6, comma: 7, precision: 8, trim: 9, type: 10}`, and d3 turns it into
+    // fill `"1"`, align `"2"`, sign `"3"`, symbol `"4"`, zero `true`, width `6`,
+    // comma `true`, precision `8`, trim `true`, type `"10"`.
+    //
+    // Four of those coerced values name nothing in the grammar. The typed
+    // constructors refuse them, which is what "rejected rather than coerced" means.
+    assert_eq!(Align::from_char('2'), None);
+    assert_eq!(Sign::from_char('3'), None);
+    assert_eq!(Symbol::from_char('4'), None);
+    assert_eq!(FormatType::from_char('1'), None);
+    assert_eq!(FormatType::from_char('0'), None);
+
+    // A type of `"10"` is two characters; `FormatType` holds one, so the coerced
+    // value is not merely rejected, it is unrepresentable. The nearest thing that
+    // can be written is refused by the builder.
+    let error = FormatSpecifier::builder()
+        .format_type(FormatType::Unknown('1'))
+        .build()
+        .unwrap_err();
+    assert_eq!(error.kind(), ParseErrorKind::Syntax);
+
+    // The fields d3 coerces through truthiness take `bool`, and the two it coerces
+    // through ToInt32 take `u32`, so `zero: 5` and `width: -1` have no spelling.
+    // What can be written is the typed equivalent, and it renders as d3's result
+    // for the parts of the object d3 does not mangle.
+    let typed = FormatSpecifier::builder()
+        .fill('1')
+        .zero(true)
+        .width(6)
+        .comma(true)
+        .precision(8)
+        .trim(true)
+        .build()
+        .expect("valid");
+    assert_eq!(typed.fill(), '1');
+    assert!(typed.zero());
+    assert_eq!(typed.width(), Some(6));
+    assert!(typed.comma());
+    assert_eq!(typed.precision(), Some(8));
+    assert!(typed.trim());
+
+    // And the whole coerced specifier is not a specifier: d3 would render
+    // `"1234061,.8~10"`, which is not in the grammar it just came out of.
+    assert!("1234061,.8~10".parse::<FormatSpecifier>().is_err());
 }
 
 /// `formatLocale({nan: nan}) observes the specified not-a-number representation`,
@@ -74,12 +223,58 @@ fn specifier_construction_does_not_coerce_arbitrary_javascript_values() {
 /// `FormatError::InputTypeMismatch`. The replacement contract has two halves: the
 /// NaN outputs `"   N/A"`, `"-     "` and `"   NaN"` must be produced for
 /// `f64::NAN`, and non-numeric input must be rejected rather than coerced.
+///
+/// The rejection half is Phase 3 and is asserted below. The rendering half needs
+/// value layout, so this test still diverges; Phase 4 replaces the last line.
 #[test]
-#[ignore = "Phase 3 placeholder: Formatter and FormatError do not exist yet"]
-fn numeric_formatters_reject_non_numeric_input() {
-    crate::placeholder(
-        PHASE_3,
-        "f64::NAN to render as the locale's nan text and format_text to \
-         fail with FormatError::InputTypeMismatch on a numeric specifier",
+#[ignore = "runs in the target root; see the module documentation"]
+pub(crate) fn numeric_formatters_reject_non_numeric_input() {
+    // The three formatters the oracle builds, each handed something that is not a
+    // number. In JavaScript each call succeeds by coercion; here each is a typed
+    // refusal naming both kinds.
+    let cases = [
+        (Locale::builder().nan("N/A").build().expect("valid"), "6.2f"),
+        (Locale::builder().nan("-").build().expect("valid"), "<6.2g"),
+        (Locale::builder().build().expect("valid"), " 6.2f"),
+    ];
+    for (locale, spec) in &cases {
+        let formatter = locale.formatter(spec).expect("valid");
+        assert_eq!(formatter.input_kind(), InputKind::Number);
+        assert_eq!(
+            formatter.format_text("undefined").unwrap_err(),
+            FormatError::InputTypeMismatch {
+                expected: InputKind::Number,
+                actual: InputKind::Text,
+            },
+            "{spec:?}"
+        );
+    }
+
+    // The converse, which d3 also coerces: a `c` formatter given a number.
+    let character = Locale::en_us().formatter("c").expect("valid");
+    assert_eq!(
+        character.format_number(f64::NAN).unwrap_err(),
+        FormatError::InputTypeMismatch {
+            expected: InputKind::Text,
+            actual: InputKind::Number,
+        }
     );
+
+    // The other half of the contract: `f64::NAN` itself must render as the locale's
+    // NaN text, padded. That is value layout, which Phase 4 owns.
+    crate::placeholder(
+        PHASE_4,
+        "f64::NAN to render as \"   N/A\", \"-     \" and \"   NaN\" \
+         through the three locales above",
+    );
+}
+
+/// Every assertion in this module that Phase 3 completes.
+///
+/// [`numeric_formatters_reject_non_numeric_input`] is deliberately absent: it still
+/// diverges, and `main.rs` asserts that it does.
+pub(crate) fn all() {
+    default_locale_is_not_a_mutable_process_global();
+    format_specifier_is_immutable_after_construction();
+    specifier_construction_does_not_coerce_arbitrary_javascript_values();
 }
