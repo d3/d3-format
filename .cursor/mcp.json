@@ -1,0 +1,14 @@
+{
+  "mcpServers": {
+    "codegraph": {
+      "type": "stdio",
+      "command": "codegraph",
+      "args": [
+        "serve",
+        "--mcp",
+        "--path",
+        "C:\\Users\\okhil\\github\\alexkhil\\d3-format-rust"
+      ]
+    }
+  }
+}
