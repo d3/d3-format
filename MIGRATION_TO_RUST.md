@@ -471,6 +471,21 @@ from `--no-run`, which is the very thing §3.7 gates on. Because a summary-only 
 that the port is unimplemented, asserted against its placeholder seam so the claim fails the moment
 it stops being true.
 
+§6.1's `Pinned` profile additionally asserts the ignored-test inventory of each placeholder target
+against the count recorded in the generated artifacts, so the scoreboard's state survives
+summarization into a pass or a fail. The two mechanisms catch different mistakes: un-ignoring a test
+before its API exists is caught by the test run, which panics on the placeholder seam, while a
+*lost* `#[ignore]` or a deleted generated test leaves everything passing and is caught only by the
+inventory assertion. The check is expected to fail as Phases 2 through 4 implement the port; the
+count of not-yet-passing conformance blocks is the migration's progress metric and must move through
+reviewed regeneration rather than silently.
+
+The recorded count for the generated target is `manifest.json`'s test-block count, not the number of
+tests named in `assertion-map.json`. Those differ: the map names 155 generated tests against 168
+blocks, because a block whose assertions are all ported or all divergent still emits a block test
+while routing no assertion to it. The map is the correct source for the ported target, which exists
+only to receive assertions the map routes to it.
+
 `gen-locales.mjs` reads the 59 root JSON files in sorted order, validates the observed schema,
 requires ten numerals where present, and emits `rust/src/locales/generated.rs`. It writes a
 name-to-definition index and the source SHA-256 for every locale. `--check` verifies byte identity,

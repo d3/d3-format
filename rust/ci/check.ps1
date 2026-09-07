@@ -28,18 +28,20 @@
     Selects the check set.
 
     Pinned  The full set from section 6.1: formatting, lints, the four feature
-            combinations, benchmark compilation, packaging, and the forbidden
-            dependency guard. "Pinned" names the check set, not a toolchain:
-            section 6.2 runs this same set on current stable as moving
-            compatibility coverage.
+            combinations, the conformance scoreboard guard, benchmark
+            compilation, packaging, and the forbidden dependency guard. "Pinned"
+            names the check set, not a toolchain: section 6.2 runs this same set
+            on current stable as moving compatibility coverage.
 
     Msrv    The lighter set from section 6.2: the four feature-combination test
             runs only. MSRV coverage answers "does the declared minimum compiler
             still build this crate and produce the same behavior". Formatting and
-            Clippy conformance, packaging, and dependency-graph policy are
-            properties of the source and the lockfile rather than of the
-            compiler, so pinning them to one toolchain avoids failing the MSRV
-            job for a lint whose wording changed between releases.
+            Clippy conformance, packaging, dependency-graph policy, and the
+            scoreboard guard are properties of the source, the lockfile and the
+            generated fixtures rather than of the compiler, so pinning them to
+            one toolchain avoids failing the MSRV job for a lint whose wording
+            changed between releases and avoids asserting the same
+            toolchain-independent count twice.
 
     Note that `Profile` shadows PowerShell's automatic $PROFILE variable inside
     this script. The name is fixed by section 6.1, which documents the invocation
@@ -171,6 +173,95 @@ function Assert-NoForbiddenDependencies {
     Write-Host "    clean: none of $($ForbiddenPackages -join ', ') are in the graph"
 }
 
+function Assert-ConformanceScoreboardIsStillIgnored {
+    <#
+        Phase 1 generated one conformance test per JavaScript test block, each one
+        #[ignore]d with an unimplemented!() body, plus hand-ported placeholders for
+        the assertions that cannot become generated cases. Plain `cargo test`
+        therefore prints `test result: ok.` and exits 0 while the port does not
+        exist. Every placeholder target carries a non-ignored test whose name says
+        so, which a human reading the output cannot miss, but a dashboard that
+        surfaces only summary lines and the exit code still can.
+
+        This turns that state into a hard pass/fail. The expected counts are read
+        from the generated artifacts rather than written here, so the assertion
+        tracks the data instead of drifting from it.
+    #>
+
+    Write-Host ''
+    Write-Host '==> conformance scoreboard guard (ignored-test inventory)'
+
+    $fixtures = Join-Path 'fixtures' 'd3-format-3.1.2'
+    $manifestPath = Join-Path $fixtures 'manifest.json'
+    $mapPath = Join-Path $fixtures 'assertion-map.json'
+
+    $expected = [ordered] @{}
+
+    # counts.test_blocks is the provenance record of how many JavaScript test blocks
+    # were harvested, and gen-tests.mjs emits exactly one #[ignore]d Rust test per
+    # block. assertion-map.json cannot serve here: it names only the generated tests
+    # that some assertion site routes to, which is fewer than the blocks that exist.
+    $manifest = Get-Content -LiteralPath $manifestPath -Raw | ConvertFrom-Json
+    $expected['generated'] = [int] $manifest.counts.test_blocks
+
+    # The ported target exists only to receive assertions the map routes to it, and
+    # check-coverage.mjs already fails if the map names a test that target does not
+    # define, so the distinct test names under rust/tests/ported/ are the recorded
+    # size of the target. The map's counts.ported and counts.divergence are
+    # assertion-site totals rather than test totals, so they are the wrong fields.
+    $map = Get-Content -LiteralPath $mapPath -Raw | ConvertFrom-Json
+    $expected['ported'] = @($map.sites |
+        ForEach-Object { $_.rust_tests } |
+        Where-Object { $_ -like 'rust/tests/ported/*' } |
+        Sort-Object -Unique).Count
+
+    foreach ($target in @($expected.Keys)) {
+        if ($expected[$target] -le 0) {
+            throw "no expected ignored-test count for the '$target' target could be derived from $manifestPath and $mapPath"
+        }
+    }
+
+    foreach ($target in @($expected.Keys)) {
+        # `--list --ignored` is an inventory query: it enumerates the ignored tests
+        # without running any of them, so the number cannot be perturbed by a test
+        # outcome, and asking per target attributes each count unambiguously.
+        # Parsing the `N ignored` field of a whole-suite run would instead mean
+        # correlating six summary lines with the `Running ...` lines above them, and
+        # would stop reporting a usable number as soon as some test in the target
+        # failed -- which is exactly when the scoreboard needs to be trustworthy.
+        # The counts do not vary with the feature set; --all-features simply matches
+        # the rest of this profile.
+        $arguments = @('test', '--locked', '--all-features', '--test', $target, '--', '--list', '--ignored')
+        $listed = & cargo @arguments
+        if ($LASTEXITCODE -ne 0) {
+            throw "cargo $($arguments -join ' ') failed with exit code $LASTEXITCODE"
+        }
+
+        # libtest lists one `<path>::<name>: test` line per ignored test, and spells
+        # benchmarks `: bench`, which this deliberately does not count.
+        $observed = @($listed | Where-Object { $_ -match ': test$' }).Count
+        Write-Host "    $target : $observed ignored, recorded $($expected[$target])"
+
+        if ($observed -ne $expected[$target]) {
+            throw (@(
+                "the conformance scoreboard moved: the '$target' test target has $observed ignored tests, but the generated artifacts record $($expected[$target]).",
+                '',
+                'This is a checkpoint, not a bug. The number of not-yet-passing conformance',
+                "blocks is the migration's progress metric, so it is meant to change only",
+                'through an explicit, reviewed regeneration rather than drifting silently.',
+                '',
+                'If you are implementing Phases 2 to 4 and have just un-ignored tests, this',
+                'failure is expected. Regenerate the fixtures with the rust/tools generators so',
+                'manifest.json and assertion-map.json record the new state, and review the count',
+                'change in the same commit.',
+                '',
+                'If you did not mean to touch the scoreboard, an #[ignore] attribute or a',
+                'generated test has been lost.'
+            ) -join [Environment]::NewLine)
+        }
+    }
+}
+
 # Section 6.1 sets working-directory: rust, but anchoring to the script's own
 # location makes the script correct from any caller. Cargo also discovers
 # .cargo/config.toml by walking up from the working directory, and section 1
@@ -202,6 +293,10 @@ try {
         Invoke-Step -Command 'cargo' -Arguments @('test', '--locked', '--all-features')
 
         if ($Profile -eq 'Pinned') {
+            # Runs here because the test targets have just been built, so the
+            # inventory queries reuse that build instead of triggering another.
+            Assert-ConformanceScoreboardIsStillIgnored
+
             # Until Phase 5 adds benches/format.rs this compiles Criterion and the
             # implicit library bench target only. It is a dependency-graph and
             # linking check, not benchmark coverage.
