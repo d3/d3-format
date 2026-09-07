@@ -8,7 +8,16 @@ repository = "https://github.com/alexkhil/d3-format-rust"
 description = "A Rust implementation of d3-format 3.1.2"
 # rust-toolchain.toml is excluded because rustup resolves it by walking up from
 # the build directory: shipping it would pin an unpacked-crate consumer to 1.98.1.
-exclude = ["fixtures/", "tools/", "rust-toolchain.toml"]
+#
+# ci/ and src/bin/ are verification tooling, not distribution. Excluding src/bin/
+# drops the differential harness `dump_cases` from the published artifact: cargo
+# warns `ignoring binary "dump_cases" as src/bin/dump_cases.rs is not included in
+# the published package` and omits the target from the normalized manifest
+# altogether, so an unpacked crate is lib-only and `cargo install d3-format` fails
+# with `no packages found with binaries or examples` -- which is correct for a
+# formatting library. The binary stays fully buildable and runnable from this
+# repository, which is the only place the differential protocol runs.
+exclude = ["ci/", "fixtures/", "rust-toolchain.toml", "src/bin/", "tools/"]
 
 [lib]
 name = "d3_format"

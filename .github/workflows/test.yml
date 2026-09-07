@@ -18,3 +18,97 @@ jobs:
       - run: yarn --frozen-lockfile
       - run: yarn test
       - run: yarn lint
+
+  # The Rust gates below implement sections 6.1 and 6.2 of MIGRATION_TO_RUST.md.
+  # The section 6.3 parity job is deliberately absent: it invokes rust/tools/*.mjs,
+  # and section 6 requires every script to be committed before a workflow
+  # references it. Those tools are Phase 1 deliverables.
+  #
+  # Every Rust job sets RUSTUP_TOOLCHAIN. rust/rust-toolchain.toml pins channel
+  # 1.98.1 and rustup honors it for any command run from inside rust/, which is
+  # every step here. The environment variable takes precedence over the toolchain
+  # file, so it is what actually selects the compiler; a job that omitted it would
+  # install one toolchain and then silently build with 1.98.1.
+
+  rust-pinned:
+    strategy:
+      fail-fast: false
+      matrix:
+        include:
+          - os: ubuntu-latest
+            toolchain: 1.98.1-x86_64-unknown-linux-gnu
+          - os: windows-latest
+            toolchain: 1.98.1-x86_64-pc-windows-gnu
+    runs-on: ${{ matrix.os }}
+    env:
+      RUSTUP_TOOLCHAIN: ${{ matrix.toolchain }}
+    defaults:
+      run:
+        shell: pwsh
+        working-directory: rust
+    steps:
+      - uses: actions/checkout@v6
+      - run: rustup toolchain install $env:RUSTUP_TOOLCHAIN --profile minimal --component rustfmt --component clippy
+      - uses: Swatinem/rust-cache@v2
+        with:
+          workspaces: rust
+      - run: ./ci/check.ps1 -Profile Pinned
+
+  rust-msrv:
+    runs-on: ubuntu-latest
+    env:
+      RUSTUP_TOOLCHAIN: 1.80.0-x86_64-unknown-linux-gnu
+    defaults:
+      run:
+        shell: pwsh
+        working-directory: rust
+    steps:
+      - uses: actions/checkout@v6
+      # No rustfmt or clippy: the Msrv profile runs the four feature-combination
+      # test runs only. This job consumes the committed lockfile and never writes
+      # one; cargo 1.80 predates resolver.incompatible-rust-versions and would
+      # reselect a clap release it cannot parse.
+      - run: rustup toolchain install $env:RUSTUP_TOOLCHAIN --profile minimal
+      - uses: Swatinem/rust-cache@v2
+        with:
+          workspaces: rust
+      - run: ./ci/check.ps1 -Profile Msrv
+
+  rust-stable:
+    runs-on: ubuntu-latest
+    env:
+      RUSTUP_TOOLCHAIN: stable-x86_64-unknown-linux-gnu
+    defaults:
+      run:
+        shell: pwsh
+        working-directory: rust
+    steps:
+      - uses: actions/checkout@v6
+      - run: rustup toolchain install $env:RUSTUP_TOOLCHAIN --profile minimal --component rustfmt --component clippy
+      - uses: Swatinem/rust-cache@v2
+        with:
+          workspaces: rust
+      - run: ./ci/check.ps1 -Profile Pinned
+
+  rust-wasm:
+    runs-on: ubuntu-latest
+    env:
+      RUSTUP_TOOLCHAIN: stable-x86_64-unknown-linux-gnu
+    defaults:
+      run:
+        shell: pwsh
+        working-directory: rust
+    steps:
+      - uses: actions/checkout@v6
+      - run: rustup toolchain install $env:RUSTUP_TOOLCHAIN --profile minimal
+      # rustup adds a target to one toolchain, so RUSTUP_TOOLCHAIN must already be
+      # in effect. Without it the target lands in the runner's default toolchain
+      # while the check below runs under the one rust-toolchain.toml selects, and
+      # the build fails with "can't find crate for `std`".
+      - run: rustup target add wasm32-unknown-unknown
+      - uses: Swatinem/rust-cache@v2
+        with:
+          workspaces: rust
+      # Section 0.1 requires the core to keep compiling for wasm32. This is a
+      # compile check only; it is not a claim that a usable JS/WASM API exists.
+      - run: cargo check --target wasm32-unknown-unknown --no-default-features

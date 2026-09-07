@@ -40,6 +40,7 @@
   ],
   "devDependencies": {
     "@rollup/plugin-terser": "^0.4.4",
+    "acorn": "8.15.0",
     "eslint": "^9.39.2",
     "globals": "^17.0.0",
     "rollup": "^4.55.1",

@@ -1,0 +1,292 @@
+#!/usr/bin/env node
+// Generates rust/src/locales/generated.rs from the 59 committed locale/*.json files
+// (MIGRATION_TO_RUST.md section 3.4).
+//
+//   node rust/tools/gen-locales.mjs           # same as --check
+//   node rust/tools/gen-locales.mjs --check   # verify count, names, hashes and bytes
+//   node rust/tools/gen-locales.mjs --write   # atomically replace the generated module
+//
+// The locale JSON stays the editable source; the Rust module is generated and
+// committed, because a published crate must build from its packaged contents and
+// no build.rs may read ../locale (section 1).
+import {existsSync} from "node:fs";
+import {
+  FIXTURE_DIR,
+  GENERATOR_VERSION,
+  LOCALE_KEYS,
+  canonicalLocaleDefinition,
+  checkArtifacts,
+  isMain,
+  localeFiles,
+  localeHash,
+  parseMode,
+  readTextLf,
+  renderOptionalArrayField,
+  renderStructField,
+  repoPath,
+  rustStringLiteral,
+  sha256Hex,
+  writeArtifacts
+} from "./harvest.mjs";
+
+export const OUTPUT_PATH = "rust/src/locales/generated.rs";
+
+/** Keys every committed locale file is required to carry; locale-test.js asserts the same four. */
+const REQUIRED_KEYS = ["currency", "decimal", "grouping", "thousands"];
+
+function validateSchema(name, parsed) {
+  const where = `locale/${name}.json`;
+  if (parsed === null || typeof parsed !== "object" || Array.isArray(parsed)) {
+    throw new Error(`${where}: expected a JSON object`);
+  }
+  for (const key of Object.keys(parsed)) {
+    if (!LOCALE_KEYS.includes(key)) throw new Error(`${where}: unexpected key ${JSON.stringify(key)}`);
+  }
+  for (const key of REQUIRED_KEYS) {
+    if (!(key in parsed)) throw new Error(`${where}: missing required key ${JSON.stringify(key)}`);
+  }
+  for (const key of ["decimal", "thousands", "percent", "minus", "nan"]) {
+    if (key in parsed && typeof parsed[key] !== "string") {
+      throw new Error(`${where}: ${key} must be a string`);
+    }
+  }
+  if (!Array.isArray(parsed.currency) || parsed.currency.length !== 2 || parsed.currency.some((s) => typeof s !== "string")) {
+    throw new Error(`${where}: currency must be a two-element array of strings`);
+  }
+  if (!Array.isArray(parsed.grouping) || parsed.grouping.length === 0) {
+    throw new Error(`${where}: grouping must be a non-empty array`);
+  }
+  for (const size of parsed.grouping) {
+    if (!Number.isSafeInteger(size) || size <= 0) throw new Error(`${where}: grouping size ${String(size)} must be a positive integer`);
+  }
+  if ("numerals" in parsed) {
+    if (!Array.isArray(parsed.numerals) || parsed.numerals.length !== 10) {
+      throw new Error(
+        `${where}: numerals must contain exactly ten strings, got ${Array.isArray(parsed.numerals) ? parsed.numerals.length : typeof parsed.numerals}`
+      );
+    }
+    if (parsed.numerals.some((s) => typeof s !== "string")) throw new Error(`${where}: numerals must all be strings`);
+  }
+}
+
+/** Reads and validates every committed locale, in sorted name order. */
+export function readLocales() {
+  const locales = [];
+  for (const path of localeFiles()) {
+    const name = path.slice("locale/".length, -".json".length);
+    const raw = readTextLf(path);
+    let parsed;
+    try {
+      parsed = JSON.parse(raw);
+    } catch (error) {
+      throw new Error(`${path}: invalid JSON (${error.message})`);
+    }
+    validateSchema(name, parsed);
+    const definition = canonicalLocaleDefinition(parsed, path);
+    locales.push({
+      name,
+      path,
+      definition,
+      hash: localeHash(definition),
+      sourceHash: sha256Hex(raw)
+    });
+  }
+  locales.sort((a, b) => (a.name < b.name ? -1 : a.name > b.name ? 1 : 0));
+  for (let i = 1; i < locales.length; i++) {
+    if (locales[i].name === locales[i - 1].name) throw new Error(`duplicate locale name ${locales[i].name}`);
+  }
+  return locales;
+}
+
+function optionStr(value) {
+  return value === null ? "None" : `Some(${rustStringLiteral(value)})`;
+}
+
+function renderLocale(locale) {
+  const d = locale.definition;
+  const field = (name, value) => renderStructField({name, value, indent: 8});
+  return [
+    "    GeneratedLocale {",
+    ...field("name", rustStringLiteral(locale.name)),
+    ...field("source_path", rustStringLiteral(locale.path)),
+    ...field("source_sha256", rustStringLiteral(locale.sourceHash)),
+    ...field("definition_sha256", rustStringLiteral(locale.hash)),
+    ...field("decimal", optionStr(d.decimal)),
+    ...field("thousands", optionStr(d.thousands)),
+    ...renderOptionalArrayField({name: "grouping", value: d.grouping, renderElement: String, slice: true}),
+    ...renderOptionalArrayField({name: "currency", value: d.currency, renderElement: rustStringLiteral}),
+    ...renderOptionalArrayField({name: "numerals", value: d.numerals, renderElement: rustStringLiteral}),
+    ...field("percent", optionStr(d.percent)),
+    ...field("minus", optionStr(d.minus)),
+    ...field("nan", optionStr(d.nan)),
+    "    },"
+  ].join("\n");
+}
+
+function renderRust(locales) {
+  const lines = [];
+  lines.push(`// @generated by rust/tools/gen-locales.mjs v${GENERATOR_VERSION} from locale/*.json.`);
+  lines.push("// Do not edit by hand: run `node rust/tools/gen-locales.mjs --write` instead.");
+  lines.push("");
+  lines.push("//! Built-in locale definitions generated from the d3-format locale JSON.");
+  lines.push("//!");
+  lines.push("//! The JSON under `locale/` stays the editable source of truth. This module is");
+  lines.push("//! generated and committed so that a published crate builds from its own packaged");
+  lines.push("//! contents; no build script may read `../locale`.");
+  lines.push("//!");
+  lines.push("//! Every string is ASCII-escaped, so the generated bytes are stable across");
+  lines.push("//! platforms and transports.");
+  lines.push("");
+  lines.push("// The module is compiled unconditionally so that the Phase 1 drift gate really");
+  lines.push('// builds it, but it is only re-exported publicly under the "locales" feature.');
+  lines.push("#![allow(dead_code)]");
+  lines.push("");
+  lines.push("/// One built-in locale, together with the provenance of the file it came from.");
+  lines.push("///");
+  lines.push("/// The fields mirror d3's locale definition shape. `None` means the source file");
+  lines.push("/// omitted the key, which is not the same as an empty string: d3 falls back to its");
+  lines.push("/// own defaults for absent keys, and disables grouping unless both `grouping` and");
+  lines.push("/// `thousands` are present.");
+  lines.push("#[derive(Debug, Clone, Copy, PartialEq, Eq)]");
+  lines.push("pub struct GeneratedLocale {");
+  lines.push("    /// Locale identifier, e.g. `\"en-US\"`.");
+  lines.push("    pub name: &'static str,");
+  lines.push("    /// Repository-relative path of the source JSON.");
+  lines.push("    pub source_path: &'static str,");
+  lines.push("    /// SHA-256 of the source JSON, over its LF-normalized text.");
+  lines.push("    pub source_sha256: &'static str,");
+  lines.push("    /// SHA-256 of the canonical definition, matching the fixture `locale_hash`.");
+  lines.push("    pub definition_sha256: &'static str,");
+  lines.push("    pub decimal: Option<&'static str>,");
+  lines.push("    pub thousands: Option<&'static str>,");
+  lines.push("    pub grouping: Option<&'static [u32]>,");
+  lines.push("    pub currency: Option<[&'static str; 2]>,");
+  lines.push("    pub numerals: Option<[&'static str; 10]>,");
+  lines.push("    pub percent: Option<&'static str>,");
+  lines.push("    pub minus: Option<&'static str>,");
+  lines.push("    pub nan: Option<&'static str>,");
+  lines.push("}");
+  lines.push("");
+  lines.push("/// Number of built-in locales.");
+  lines.push(`pub const LOCALE_COUNT: usize = ${locales.length};`);
+  lines.push("");
+  lines.push("/// Every built-in locale, sorted by [`GeneratedLocale::name`].");
+  lines.push(`pub static LOCALES: [GeneratedLocale; LOCALE_COUNT] = [`);
+  for (const locale of locales) lines.push(renderLocale(locale));
+  lines.push("];");
+  lines.push("");
+  lines.push("/// Name-to-definition index.");
+  lines.push("///");
+  lines.push("/// [`LOCALES`] is sorted by name, so this is a binary search.");
+  lines.push("pub fn by_name(name: &str) -> Option<&'static GeneratedLocale> {");
+  lines.push("    match LOCALES.binary_search_by(|locale| locale.name.cmp(name)) {");
+  lines.push("        Ok(index) => Some(&LOCALES[index]),");
+  lines.push("        Err(_) => None,");
+  lines.push("    }");
+  lines.push("}");
+  lines.push("");
+  lines.push("/// Every built-in locale name, in sorted order.");
+  lines.push("pub fn names() -> impl Iterator<Item = &'static str> {");
+  lines.push("    LOCALES.iter().map(|locale| locale.name)");
+  lines.push("}");
+  lines.push("");
+  lines.push("#[cfg(test)]");
+  lines.push("mod tests {");
+  lines.push("    use super::*;");
+  lines.push("");
+  lines.push("    #[test]");
+  lines.push("    fn locales_are_sorted_and_indexable() {");
+  lines.push("        assert_eq!(LOCALES.len(), LOCALE_COUNT);");
+  lines.push("        assert!(LOCALES.windows(2).all(|pair| pair[0].name < pair[1].name));");
+  lines.push("        for locale in &LOCALES {");
+  // Pre-wrapped: the argument list exceeds rustfmt's fn_call_width, and section 6.1
+  // runs `cargo fmt --check` over this generated file.
+  lines.push("            assert_eq!(");
+  lines.push("                by_name(locale.name).map(|found| found.name),");
+  lines.push("                Some(locale.name)");
+  lines.push("            );");
+  lines.push("            assert_eq!(locale.source_sha256.len(), 64);");
+  lines.push("            assert_eq!(locale.definition_sha256.len(), 64);");
+  lines.push("            if let Some(numerals) = locale.numerals {");
+  lines.push("                assert_eq!(numerals.len(), 10);");
+  lines.push("            }");
+  lines.push("        }");
+  lines.push("        assert_eq!(by_name(\"nope\"), None);");
+  lines.push("    }");
+  lines.push("}");
+  lines.push("");
+  return lines.join("\n");
+}
+
+/** Builds the generated locale module. */
+export function buildGeneratedLocales() {
+  const locales = readLocales();
+  return {locales, source: renderRust(locales), path: OUTPUT_PATH};
+}
+
+/**
+ * Cross-checks the generated locales against the provenance manifest: file count,
+ * names, source hashes and definition hashes. This is what catches a locale JSON
+ * edit that never made it into the generated module.
+ */
+function checkAgainstManifest(locales) {
+  const manifestPath = `${FIXTURE_DIR}/manifest.json`;
+  if (!existsSync(repoPath(manifestPath))) {
+    throw new Error(`${manifestPath} is missing; run \`node rust/tools/harvest.mjs --write\` first`);
+  }
+  const manifest = JSON.parse(readTextLf(manifestPath));
+  const recorded = manifest.locales ?? [];
+  const problems = [];
+  if (recorded.length !== locales.length) {
+    problems.push(`manifest records ${recorded.length} locale(s), the tree has ${locales.length}`);
+  }
+  const byName = new Map(recorded.map((entry) => [entry.name, entry]));
+  for (const locale of locales) {
+    const entry = byName.get(locale.name);
+    if (!entry) {
+      problems.push(`${locale.name}: absent from the manifest`);
+      continue;
+    }
+    byName.delete(locale.name);
+    if (entry.source_sha256 !== locale.sourceHash) {
+      problems.push(`${locale.name}: source sha256 ${locale.sourceHash} but the manifest records ${entry.source_sha256}`);
+    }
+    if (entry.definition_sha256 !== locale.hash) {
+      problems.push(`${locale.name}: definition sha256 ${locale.hash} but the manifest records ${entry.definition_sha256}`);
+    }
+  }
+  for (const name of byName.keys()) problems.push(`${name}: recorded in the manifest but absent from locale/`);
+  if (problems.length) {
+    throw new Error(`gen-locales --check: locale provenance drift:\n  ${problems.join("\n  ")}`);
+  }
+}
+
+async function main() {
+  const mode = parseMode(process.argv, "gen-locales.mjs");
+  const {locales, source} = buildGeneratedLocales();
+  const artifacts = new Map([[OUTPUT_PATH, source]]);
+
+  if (mode === "write") {
+    writeArtifacts(artifacts);
+    console.log(
+      `gen-locales: wrote ${OUTPUT_PATH} from ${locales.length} locale file(s); ` +
+        "manifest.json is now stale, rerun `node rust/tools/harvest.mjs --write`"
+    );
+    return;
+  }
+
+  checkAgainstManifest(locales);
+  checkArtifacts(artifacts, "gen-locales --check");
+  const withNumerals = locales.filter((locale) => locale.definition.numerals !== null).length;
+  console.log(
+    `gen-locales: ${locales.length} locale(s), ${withNumerals} with numerals, ` +
+      `names/hashes match the manifest, ${OUTPUT_PATH} byte-identical`
+  );
+}
+
+if (isMain(import.meta.url)) {
+  main().catch((error) => {
+    console.error(`gen-locales: ${error.message}`);
+    process.exitCode = 1;
+  });
+}
