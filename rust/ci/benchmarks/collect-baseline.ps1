@@ -308,6 +308,13 @@ try {
         regenerate_with = 'pwsh ci/benchmarks/collect-baseline.ps1  (run from rust/)'
         provenance = [ordered] @{
             crate = [ordered] @{ name = $crate.name; version = $crate.version }
+            # Added in Phase 6, to match ci/parity/ and ci/package/. Timings are only
+            # interpretable against the tree that produced them, and a version alone
+            # does not identify a tree: an archived baseline whose commit a reader
+            # cannot recover is a set of numbers about nothing in particular.
+            git_commit = (Get-CommandOutput -Command 'git' -Arguments @('rev-parse', 'HEAD'))[0]
+            git_worktree_dirty = @(Get-CommandOutput -Command 'git' -Arguments @(
+                    'status', '--porcelain', '--untracked-files=normal')).Count -gt 0
             criterion = $criterion.version
             rustc = (Get-CommandOutput -Command 'rustc' -Arguments @('--version'))[0]
             cargo = (Get-CommandOutput -Command 'cargo' -Arguments @('--version'))[0]

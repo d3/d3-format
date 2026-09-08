@@ -74,13 +74,18 @@ export function readJsonl(relativePath) {
  * Only `#[test]`-attributed free functions count. A mapping that names a function
  * which is merely a helper, or which was renamed or deleted, is stale, and stale
  * mappings are exactly what condition 5 forbids.
+ *
+ * The whole `rust/tests/` tree is indexed, not only the generated and ported
+ * targets. The mapping points into those two, but DIVERGENCES.md answers its
+ * entries with tests in `public_api.rs`, `properties.rs`, `concurrency.rs` and
+ * `decimal.rs` as well, and an index that did not know about those files could not
+ * tell a renamed test from one it had simply never heard of. Nothing downstream
+ * widens with it: the orphan rule below still applies to `rust/tests/ported/` only.
  */
 export function rustTestIndex() {
   const index = new Map();
   const files = new Set();
-  const stack = ["rust/tests/generated", "rust/tests/ported"].filter((root) =>
-    existsSync(repoPath(root))
-  );
+  const stack = ["rust/tests"].filter((root) => existsSync(repoPath(root)));
   while (stack.length > 0) {
     const dir = stack.pop();
     for (const entry of readdirSync(repoPath(dir)).sort()) {
@@ -111,25 +116,40 @@ export function rustTestIndex() {
 }
 
 /**
- * Parse the `ID:` and `Oracle assertions:` lines out of DIVERGENCES.md.
+ * Parse the `ID:`, `Oracle assertions:` and named-test lines out of DIVERGENCES.md.
  *
  * One heading may declare several ids when a single deviation explains several
  * distinct JavaScript behaviors, so ids accumulate onto the most recent heading.
+ *
+ * Named tests are collected wherever they appear in an entry, not only on the
+ * `Covered by:` line, because several entries name a further test mid-paragraph
+ * while making a point about it. They are recorded with their line number so a
+ * stale one can be reported at the place it is written.
  */
 export function readDivergenceDocument() {
   if (!existsSync(repoPath(DIVERGENCES_PATH))) {
-    return {entries: new Map(), missing: true};
+    return {entries: new Map(), missing: true, references: []};
   }
   const entries = new Map();
+  const references = [];
   let heading = null;
   let claimed = null;
-  for (const line of readTextLf(DIVERGENCES_PATH).split("\n")) {
+  const lines = readTextLf(DIVERGENCES_PATH).split("\n");
+  for (let index = 0; index < lines.length; index += 1) {
+    const line = lines[index];
     const headingMatch = /^##\s+(.+?)\s*$/.exec(line);
     if (headingMatch) {
       heading = headingMatch[1];
       claimed = null;
       continue;
     }
+
+    // Collected before the `continue`s below, so a reference sharing a line with an
+    // `ID:` or a count is still seen.
+    for (const match of line.matchAll(/`(rust\/tests\/[A-Za-z0-9_/-]+\.rs)::([a-z0-9_]+)`/g)) {
+      references.push({heading, file: match[1], name: match[2], line: index + 1});
+    }
+
     const idMatch = /^ID:\s*`([a-z0-9-]+)`\s*$/.exec(line);
     if (idMatch && heading) {
       entries.set(idMatch[1], {heading, ids: [], assertions: null, tests: []});
@@ -143,7 +163,13 @@ export function readDivergenceDocument() {
       }
     }
   }
-  return {entries, missing: false};
+
+  for (const reference of references) {
+    for (const entry of entries.values()) {
+      if (entry.heading === reference.heading) entry.tests.push(reference);
+    }
+  }
+  return {entries, missing: false, references};
 }
 
 // ---------------------------------------------------------------------------
@@ -411,6 +437,37 @@ function checkDivergenceDocument(problems, map, divergences, rustTests) {
     problems.add(5, `${DIVERGENCES_PATH}: entry "${entry.heading}" (${id}) is claimed by no site (orphaned)`);
   }
 
+  // Section 8 requires each deviation to be demonstrated, and every entry answers
+  // its own with a `Covered by:` line. Those lines were prose until Phase 6: nothing
+  // read them, so an entry could go on naming a test that had been renamed or
+  // deleted and the document would still pass. Both halves are checked here -- the
+  // tests it names exist, and it names some.
+  //
+  // Unlike the mapping above, this reaches outside the generated and ported targets:
+  // most of these deviations are demonstrated by `public_api.rs`, `properties.rs`,
+  // `concurrency.rs` or `decimal.rs`, because the whole point of a deviation is that
+  // no oracle assertion replays it.
+  for (const reference of divergences.references) {
+    const spelled = `${reference.file}::${reference.name}`;
+    const where = `${DIVERGENCES_PATH}:${reference.line}`;
+    if (!rustTests.has(reference.file)) {
+      problems.add(7, `${where}: names ${reference.file}, which does not exist`);
+    } else if (!rustTests.get(reference.file).has(reference.name)) {
+      problems.add(7, `${where}: names ${spelled}, which is not a #[test] there`);
+    }
+  }
+
+  for (const [id, entry] of divergences.entries) {
+    if (entry.tests.length > 0) continue;
+    problems.add(
+      7,
+      `${DIVERGENCES_PATH}: entry "${entry.heading}" (${id}) names no Rust test that demonstrates it.` +
+        " Add a Covered by: line naming a rust/tests/... test; if the deviation is genuinely" +
+        " demonstrated by something other than a test, change this rule deliberately rather than" +
+        " leaving the entry unbacked."
+    );
+  }
+
   // Every Rust test named anywhere in the mapping must exist. Checked per-site above;
   // here the reverse: a ported/divergence test that no site points at is dead weight
   // in the scoreboard and hides the fact that nothing requires it.
@@ -521,7 +578,8 @@ function main() {
       ` ${callTotals.setup} by a test block's setup position`
   );
   console.log(
-    `check-coverage: ${divergences.entries.size} divergence id(s) in ${toPosix(DIVERGENCES_PATH)}, all reachable`
+    `check-coverage: ${divergences.entries.size} divergence id(s) in ${toPosix(DIVERGENCES_PATH)}, all reachable;` +
+      ` ${divergences.references.length} named Rust test(s), all defined`
   );
 }
 

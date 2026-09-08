@@ -7,3 +7,9 @@ npm-debug.log
 .codegraph/
 /tools/
 /rust/target/
+# The canaries are sources; everything run-canaries.ps1 derives is not. .packaged/
+# is the unpacked .crate, and the lockfiles are regenerated on every run because
+# they name the crate version under test.
+/canaries/.packaged/
+/canaries/*/target/
+/canaries/*/Cargo.lock

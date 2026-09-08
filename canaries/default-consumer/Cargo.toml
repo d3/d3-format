@@ -1,0 +1,26 @@
+# Section 7's Phase 6 canary 1, default-feature half. The dependency is a path to
+# the *unpacked* .crate that run-canaries.ps1 extracts, never to ../../rust: the
+# point of the canary is that what a consumer downloads builds and behaves, and a
+# path to the workspace source would prove nothing about the tarball.
+#
+# `[workspace]` is empty rather than absent so this package is its own workspace
+# root. Without it, adding a Cargo.toml at the repository root would make cargo
+# refuse to build here until the canary were listed as a member.
+[workspace]
+
+[package]
+name = "default-consumer"
+version = "0.0.0"
+edition = "2021"
+# Matches the crate under test, so that resolver.incompatible-rust-versions from
+# the repository-root .cargo/config.toml keeps the transitive graph buildable by
+# 1.80.0 -- which is the toolchain the second half of this canary runs.
+rust-version = "1.80"
+# A canary is not a product. This is belt and braces on top of the directory
+# living outside rust/, where nothing can sweep it into the published crate.
+publish = false
+
+[dependencies]
+# No features at all: this half exists to prove that the default build works and
+# that it really is dependency-free.
+d3-format = { path = "../.packaged/d3-format", default-features = false }

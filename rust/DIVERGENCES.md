@@ -1,20 +1,48 @@
 # Intentional deviations from d3-format 3.1.2
 
-Everything not listed here is subject to the byte-for-byte differential contract in
-`MIGRATION_TO_RUST.md` §3.6 — including type `d` infinity, negative zero, unknown type letters,
-exponent spelling, the Unicode minus and micro signs, RTL marks, grouping cycles, and final
-numeral substitution. A behavior may only be treated as a deviation once it appears below.
+This is the complete list. Everything *not* listed here is subject to the byte-for-byte
+differential contract described in [`COMPATIBILITY.md`](COMPATIBILITY.md) — including type `d`
+infinity, negative zero, unknown type letters, exponent spelling, the Unicode minus and micro
+signs, RTL marks, grouping cycles, and final numeral substitution. A behavior may only be treated
+as a deviation once it appears below.
 
-Each entry carries a stable `ID:` line. `rust/tools/check-coverage.mjs` requires that every oracle
-assertion classified as a divergence in `rust/fixtures/d3-format-3.1.2/assertion-map.json` names an
-ID that exists here, and that every ID here is either claimed by an assertion or explicitly marked
-`Oracle assertions: none`. That check is what keeps this document from drifting away from the
-recording.
+Every deviation is about the *interface* rather than the digits. None of them changes the string
+any input d3 can express is formatted to; they change what happens to inputs d3 coerces, mutates,
+or leaves to the engine.
 
-Phase 3 made the specifier, locale, limit and error deviations real and Phase 4 made the layout ones
-real; every `Covered by:` line below now names a test that runs and passes. The tests under
-`rust/tests/ported/` keep their `#[ignore]` attributes for a scoreboard reason their target root
-explains — `rust/tests/ported/main.rs::the_ported_assertions_all_pass` is what executes them.
+| ID | Deviation |
+|---|---|
+| `no-mutable-default-locale` | No mutable process-global default locale |
+| `no-global-si-prefix-leak` | No stale global SI-prefix leak |
+| `immutable-typed-specifier` | `FormatSpecifier` is immutable after construction |
+| `no-specifier-field-coercion` | No `String()`/`+`/`ToInt32` coercion of specifier fields |
+| `construction-time-width-limits` | Width limits at parse and construction time; fallible allocation |
+| `no-input-coercion` | Typed input-kind errors instead of JavaScript coercion |
+| `no-non-bmp-or-newline-fill` | Control-character fill rejected, with a distinct error kind |
+| `validated-locale-shape` | Locale grouping and numeral shapes validated at construction |
+| `exact-radix-expansion` | Exact radix expansion where V8 approximates |
+
+## How this document is kept honest
+
+Each entry carries a stable `ID:` line, an `Oracle assertions:` count, and a `Covered by:` line.
+`rust/tools/check-coverage.mjs` enforces all three against the tree, and the parity CI job runs it
+on every pull request:
+
+- every oracle assertion classified as a divergence in
+  `rust/fixtures/d3-format-3.1.2/assertion-map.json` must name an ID that exists here;
+- every ID here must be either claimed by that mapping in the declared number, or explicitly
+  marked `Oracle assertions: none`;
+- every entry must name at least one Rust test, and every test it names must exist and still be a
+  `#[test]`.
+
+The last of those means a `Covered by:` line cannot quietly rot into a reference to a test that was
+renamed or deleted. All nine entries below are demonstrated by tests that run and pass; the ones
+under `rust/tests/ported/` carry `#[ignore]` for a scoreboard reason their target root explains,
+and `rust/tests/ported/main.rs::the_ported_assertions_all_pass` is what executes them.
+
+The full implementation plan and the reasoning behind each of these decisions is in
+[`MIGRATION_TO_RUST.md`](https://github.com/alexkhil/d3-format-rust/blob/main/MIGRATION_TO_RUST.md)
+at the repository root, which is not part of the published crate.
 
 ---
 

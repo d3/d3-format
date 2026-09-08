@@ -74,7 +74,12 @@ Current status:
 | Pre-release differential | Gate — passed | 13,355,832 cases and 10,268,703 formatter comparisons, zero disagreements, 12 min in release |
 | Benchmarks and baseline | Deliverable — present | `rust/benches/format.rs`, 7 groups and 41 benchmarks with allocator instrumentation; baseline archived, not a gate |
 | Ubuntu and hosted-runner legs | Gate — pending | no Linux host locally; `ubuntu-latest` jobs, the hosted Windows `dlltool` assumption, and the Actions plumbing are unverified until a real run |
-| Cargo publication | Gate — pending | `publish-rust.yml` is not written |
+| Release documentation | Deliverable — present | `rust/README.md`, crate-level rustdoc, `COMPATIBILITY.md`, `DIVERGENCES.md`, `CHANGELOG.md`; every API example is a compiled doctest |
+| Crate documentation examples | Gate — passed | `cargo test --locked --doc --all-features` runs 32 doctests, including every Rust block in `README.md`, and all pass; 31 with default features |
+| `cargo package` review | Gate — passed | `rust/ci/package/collect-listing.ps1`: 56 files, 187 KiB compressed, each matched to a rule that says why it ships; verified to fail on an unclassified file and on a lapsed exclusion |
+| Downstream canaries | Gate — passed | two consumers built from the unpacked `.crate` on 1.98.1 and 1.80.0; ~1.14 M formatted values across the four runs, zero mismatches |
+| Parity artifacts archived | Deliverable — present | `rust/ci/parity/ci-differential.json` and `prerelease-differential.json`; the runner's own summary stays ephemeral under `rust/target/` |
+| Cargo publication | Gate — pending | `publish-rust.yml` written and statically checked, never executed; `d3-format` is unclaimed on crates.io; the protected environment and credentials are a human step |
 
 ### 0.3 Verified exploratory evidence
 
@@ -135,21 +140,39 @@ d3-format-rust/
 │   ├── prerelease-differential.yml             # scheduled 10,000,000-case differential
 │   ├── publish.yml                             # existing npm publication; unchanged
 │   └── publish-rust.yml                        # gated Cargo publication
+├── canaries/                                   # Phase 6 downstream consumers; never packaged
+│   ├── run-canaries.ps1
+│   ├── default-consumer/                       # default features + multithreaded workload
+│   └── all-features-consumer/                  # locales + serde + locale-heavy workload
 └── rust/
     ├── .cargo/config.toml
     ├── Cargo.toml
     ├── Cargo.lock
     ├── rust-toolchain.toml
     ├── README.md
+    ├── CHANGELOG.md
     ├── DIVERGENCES.md
     ├── COMPATIBILITY.md
-    ├── ci/check.ps1
+    ├── ci/
+    │   ├── check.ps1
+    │   ├── benchmarks/
+    │   │   ├── collect-baseline.ps1
+    │   │   └── baseline.json
+    │   ├── package/
+    │   │   ├── collect-listing.ps1
+    │   │   └── package-listing.json
+    │   └── parity/
+    │       ├── assert-agreement.ps1
+    │       ├── collect-differential.ps1
+    │       ├── ci-differential.json
+    │       └── prerelease-differential.json
     ├── src/
     │   ├── lib.rs
     │   ├── specifier.rs
     │   ├── decimal.rs
     │   ├── bignat.rs
     │   ├── types.rs
+    │   ├── layout.rs
     │   ├── locale.rs
     │   ├── precision.rs
     │   ├── limits.rs
@@ -159,12 +182,16 @@ d3-format-rust/
     │   ├── gate.rs
     │   ├── generated/
     │   ├── ported/
+    │   ├── concurrency.rs
+    │   ├── decimal.rs
+    │   ├── layout.rs
     │   ├── properties.rs
     │   └── public_api.rs
     ├── benches/format.rs
     ├── fixtures/
     │   └── d3-format-3.1.2/
     │       ├── manifest.json
+    │       ├── corpus-manifest.json
     │       ├── oracle.json
     │       ├── calls.jsonl
     │       ├── decimal.jsonl
@@ -182,6 +209,19 @@ d3-format-rust/
         ├── oracle-diff.mjs
         └── check-oracle-metadata.mjs
 ```
+
+`canaries/` is outside `rust/` deliberately. `cargo package` walks the crate directory, so a
+consumer nested under `rust/` would be published unless `exclude` kept saying so, and an exclusion
+is precisely the thing Phase 6's packaging collector exists to catch when it stops matching. Two
+mechanical reasons agree: `rust/Cargo.toml` declares no `[workspace]`, so a nested package is a
+cargo error until it is listed as a member; and `rust/rust-toolchain.toml` applies to anything built
+from inside `rust/`, which would make the MSRV half of the canary impossible — rustup resolves that
+file by walking up from the build directory, so only a consumer outside `rust/` can choose its own
+compiler, which is the property §7 excludes `rust-toolchain.toml` from the package to preserve.
+
+The `.gitattributes` rule stays scoped to `rust/`. `canaries/` is not covered because no
+byte-comparison gate reads it: its Rust sources are compiled, never diffed, and `cargo fmt` is
+insensitive to line endings.
 
 The existing `tools/harvest/` remains evidence and a prototype. Phase 1 may reuse its code, but the
 committed production tools live at the paths above and are not considered present until added.
@@ -804,6 +844,12 @@ The proposed package name was unoccupied when this plan was reviewed, but availa
 checked again before publication. The Rust API begins at `0.1.0`; it does not claim semver `3.1.2`.
 `COMPATIBILITY.md` records that outputs target d3-format 3.1.2 at commit `ebdc2d5`.
 
+Rechecked in Phase 6: both `d3-format` and `d3_format` return 404 from the crates.io API and from
+the sparse index, and crates.io treats hyphen and underscore as the same name, so the name is
+unclaimed. The manifest now carries `0.1.0-rc.1` rather than the `0.1.0` above; see Phase 6 in §7.
+`Cargo.lock` was regenerated for the bump under the pinned toolchain, as §1 requires, and the only
+line that changed is this crate's own version.
+
 `exclude` keeps the published artifact independent of the verification and CI tooling. Without it
 the `.crate` carries `ci/check.ps1` and `fixtures/`, and the latter is what matters: Phase 1 grows it
 with `calls.jsonl`, `decimal.jsonl`, the tie and carry corpora, and the assertion map, and Phase 5
@@ -815,6 +861,14 @@ unpacked crate, defeating §9's canary that the package builds under a consumer'
 `tests/` stays packaged because `gate.rs` has no fixture dependency and §9 requires the packaged
 crate to build and test independently; whether generated tests remain packaged is decided in Phase 1
 against their measured size.
+
+Phase 6 measured it and they stay. The whole package is 56 files, 1,107,762 bytes uncompressed and
+191,251 compressed — under 2% of the crates.io limit — of which `tests/` is 36 files and 752,568
+bytes. The generalized version of "no fixture dependency" turned out to hold for every test target,
+not only `gate.rs`: nothing under `tests/` reads a file at run time, because `gen-tests.mjs` inlines
+every oracle value and `properties.rs` generates its own. That is what makes a packaged suite
+runnable with `fixtures/` excluded, and it is the property that would have to be rechecked before
+adding a test that loads a corpus from disk.
 
 `src/bin/` is excluded so the differential harness does not become a published command. Without it
 `cargo install d3-format` installs a `dump_cases` binary from a formatting library. Excluding the
@@ -1257,6 +1311,22 @@ missing summary, because an assertion nobody has seen fail is not known to work.
 The evidence it produces is a CI artifact, not a committed file: the summary is written under
 `rust/target/`, which is ignored. Phase 6 owns archiving a release's artifacts.
 
+Phase 6 settled that division rather than moving it. The runner's own summary stays exactly where it
+is and stays ephemeral: `differential.mjs` still writes `rust/target/differential/<corpus>-summary.json`,
+the parity job and the scheduled workflow still assert against and upload that file, and nothing
+reads a committed copy. What Phase 6 adds is a separate, committed *archive* per corpus —
+`rust/ci/parity/ci-differential.json` and `rust/ci/parity/prerelease-differential.json` — written by
+`rust/ci/parity/collect-differential.ps1`, which runs the differential itself, refuses a summary the
+run did not just produce, refuses to archive a run that did not report exact agreement, and adds the
+provenance the summary does not carry: commit, worktree cleanliness, Node, rustc, cargo, profile,
+host, and elapsed time. The summary block inside the archive is the runner's output copied verbatim,
+so the archive cannot drift from the run it claims to describe. The archives are records, not gates;
+no CI job reads them. Duplicating the file into the tree would have created a second source of truth
+that a later run could silently contradict, and leaving the evidence only in a CI artifact would
+have made a release's parity unreadable once the retention window closed — the archive is the third
+option and is the one that keeps a reader able to answer "what did the RC actually agree on" from
+the repository alone.
+
 The per-locale floor is half the mean, floored, applied only once the mean per locale reaches 200.
 That threshold comes from a Chernoff bound — for Binomial(n, 1/59), P(count < μ/2) ≤ exp(−μ/8), so
 at μ = 200 the union bound across 59 locales is below 1e−9 and a correct uniform draw cannot fail by
@@ -1415,6 +1485,26 @@ Canaries:
 4. Publish `0.1.0-rc.1` only after the package name is rechecked and credentials/trusted publishing
    are configured.
 
+Canaries 1 to 3 are executable without publishing anything and live in `canaries/`; see §1 for why
+they sit outside `rust/`. Both consumers depend on `canaries/.packaged/d3-format`, which
+`run-canaries.ps1` deletes and re-extracts from the tarball on every run, and the script reads
+`cargo metadata` back to assert that the manifest cargo resolved really is the extracted one — a
+path dependency that quietly pointed at `rust/` would otherwise pass while proving nothing. Each
+consumer then runs on the pinned toolchain *and* on 1.80.0, which is the only place the
+`rust-toolchain.toml` exclusion above is worth anything.
+
+`rust/Cargo.toml` carries `0.1.0-rc.1` rather than §5.1's `0.1.0`. `publish-rust.yml` refuses to
+publish unless the tag and the manifest agree, and they cannot agree on `v0.1.0-rc.1` while the
+manifest says `0.1.0`. Stable `0.1.0` is a separate approval and a separate version bump.
+
+`cargo package` review is an executable rule table rather than a read-through:
+`rust/ci/package/collect-listing.ps1` requires every packaged path to match exactly one rule stating
+what it is and why a consumer needs it, re-asserts each `exclude` entry by name, cross-checks the
+tarball against `cargo package --list`, checks the crates.io size limit, and archives the listing
+with a per-file SHA-256. A file added to the crate directory therefore cannot join the distribution
+without someone classifying it. Both failure modes were exercised: an unclassified file, and an
+`exclude` entry removed so that `rust-toolchain.toml` reappeared.
+
 Exit: RC remains green through the scheduled full differential and downstream smoke tests. Stable
 `0.1.0` is a separate approval.
 
@@ -1447,11 +1537,22 @@ deliberately adopts another benchmark harness. `cargo tree` guards the actual gr
 - rejection of control-character fill, and a distinct fill error kind;
 - validated locale grouping and numeral shape.
 
-This list is a minimum, not a closed set. Coverage enforces two independent rules: every ID above
-must exist, and every entry in `DIVERGENCES.md` must either be claimed by an assertion site or
-declare `Oracle assertions: none`. Membership of the required list is deliberately not what licenses
+This list is a minimum, not a closed set. Coverage enforces three independent rules: every ID above
+must exist; every entry in `DIVERGENCES.md` must either be claimed by an assertion site or
+declare `Oracle assertions: none`; and every entry must name at least one Rust test that exists and
+is still a `#[test]`. Membership of the required list is deliberately not what licenses
 an unclaimed entry — tying the two together makes the permitted divergences accidentally closed, so
 a genuine new divergence cannot be documented without being mislabelled as required.
+
+The third rule is Phase 6's. Every entry already carried a `Covered by:` line, but nothing read it,
+so an entry could go on naming a test that had been renamed or deleted and the document would still
+pass — which is the failure mode a "the deviation is demonstrated" claim is most likely to reach.
+Enforcing it meant widening `rustTestIndex()` from the generated and ported targets to the whole
+`rust/tests/` tree, because a deviation is by definition the thing no oracle assertion replays and
+is therefore demonstrated in `public_api.rs`, `properties.rs`, `concurrency.rs` or `decimal.rs`.
+Nothing else widened with it: the orphan rule still applies to `rust/tests/ported/` alone. Both new
+failure modes were exercised — a named test renamed out from under the document, and an entry left
+with no named test at all.
 
 An entry with no oracle assertion behind it is legitimate in both directions. `validated-locale-shape`
 is required yet unclaimed, because the locale-schema assertions in `test/locale-test.js` are
@@ -1483,19 +1584,30 @@ micro signs, RTL marks, grouping cycles, and final numeral substitution.
 
 ## 9. Objective release checklist
 
-- [ ] Phase 0 machine and gate commands pass.
-- [ ] Oracle metadata exactly matches `oracle.json`.
-- [ ] Generation is byte-deterministic in two clean runs.
-- [ ] Coverage reports 729/729 static sites, 1,078 dynamic executions, and 793 calls.
-- [ ] Fixed and significant exact-tie manifests contain the expected precision/bucket coverage.
-- [ ] All numeric primitive and carry corpora have zero mismatches.
-- [ ] Generated, ported, property, allocation, and concurrency tests pass.
-- [ ] Full formatter and all-locale differentials have zero mismatches.
-- [ ] MSRV, pinned, stable, GNU Windows, Ubuntu, feature, and core WASM compile gates pass.
-- [ ] Benchmark and parity artifacts are archived.
-- [ ] `cargo package` contents are reviewed and build independently.
-- [ ] Downstream canaries pass against the packaged crate.
-- [ ] Compatibility, deviations, release, and rollback documents are complete.
+A box is ticked only where the command was run and succeeded, per §0.2's distinction between a
+deliverable being present and a gate having passed. Everything below was last confirmed at the end
+of Phase 6, on the one available host: `x86_64-pc-windows-gnu`.
+
+- [x] Phase 0 machine and gate commands pass.
+- [x] Oracle metadata exactly matches `oracle.json`.
+- [x] Generation is byte-deterministic in two clean runs.
+- [x] Coverage reports 729/729 static sites, 1,078 dynamic executions, and 793 calls.
+- [x] Fixed and significant exact-tie manifests contain the expected precision/bucket coverage.
+- [x] All numeric primitive and carry corpora have zero mismatches.
+- [x] Generated, ported, property, allocation, and concurrency tests pass.
+- [x] Full formatter and all-locale differentials have zero mismatches.
+- [ ] MSRV, pinned, stable, GNU Windows, Ubuntu, feature, and core WASM compile gates pass. —
+      **Ubuntu is the outstanding one.** MSRV 1.80.0, pinned 1.98.1, stable, all four feature
+      combinations, and the `wasm32-unknown-unknown` compile check pass locally on GNU Windows; no
+      Linux host exists here and the hosted runners have never executed.
+- [x] Benchmark and parity artifacts are archived.
+- [x] `cargo package` contents are reviewed and build independently.
+- [x] Downstream canaries pass against the packaged crate.
+- [x] Compatibility, deviations, release, and rollback documents are complete.
+
+Two prerequisites of §7's Phase 6 canary 4 remain, and both are human decisions rather than gates:
+the crate name is unclaimed on crates.io as of the Phase 6 run, and neither the `crates-io-release`
+environment nor any credential has been configured.
 
 ## 10. Optional future WASM/JavaScript boundary
 

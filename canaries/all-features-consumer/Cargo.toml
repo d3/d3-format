@@ -1,0 +1,21 @@
+# Section 7's Phase 6 canary 1, all-feature half, and the locale-heavy workload from
+# canary 2. See ../default-consumer/Cargo.toml for why the dependency is a path to
+# the unpacked .crate and why `[workspace]` is empty.
+[workspace]
+
+[package]
+name = "all-features-consumer"
+version = "0.0.0"
+edition = "2021"
+rust-version = "1.80"
+publish = false
+
+[dependencies]
+# Every feature the crate has. Section 5.1 says features are additive and none of
+# them changes a formatting result, so this half has to produce the same bytes as
+# the default half wherever the two overlap.
+d3-format = { path = "../.packaged/d3-format", features = ["locales", "serde"] }
+
+# A real serde consumer needs a real format. serde_json is the canary's own
+# dependency, not the crate's: `serde` on d3-format only adds the derives.
+serde_json = "1"

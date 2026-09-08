@@ -2,3 +2,8 @@
 # generated sources are byte-compared against a fresh regeneration. Without this
 # rule core.autocrlf rewrites them to CRLF on checkout and the drift checks fail.
 rust/** text eol=lf
+
+# The canaries are checked out and built on both hosted Linux and this Windows
+# host. They compare formatted output byte for byte, so they get the same rule
+# rather than inheriting core.autocrlf and differing by platform.
+canaries/** text eol=lf

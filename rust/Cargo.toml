@@ -1,11 +1,22 @@
 [package]
 name = "d3-format"
-version = "0.1.0"
+# Section 5.1 writes this as 0.1.0 and section 7's Phase 6 asks for a release
+# candidate first, so the manifest carries the candidate: publish-rust.yml refuses
+# to publish unless the tag and this field agree, and it cannot agree with
+# `v0.1.0-rc.1` while this says 0.1.0. Stable 0.1.0 is a separate approval and a
+# separate version bump.
+version = "0.1.0-rc.1"
 edition = "2021"
 rust-version = "1.80"
 license = "ISC"
 repository = "https://github.com/alexkhil/d3-format-rust"
 description = "A Rust implementation of d3-format 3.1.2"
+# Cargo would find README.md anyway; naming it is what makes the dependency
+# explicit, because src/lib.rs pulls the same file in with include_str! so that
+# every Rust snippet in it is a doctest rather than a prose snippet.
+readme = "README.md"
+keywords = ["d3", "format", "number", "locale", "formatting"]
+categories = ["value-formatting", "internationalization", "localization"]
 # rust-toolchain.toml is excluded because rustup resolves it by walking up from
 # the build directory: shipping it would pin an unpacked-crate consumer to 1.98.1.
 #
