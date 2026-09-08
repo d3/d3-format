@@ -46,6 +46,32 @@ export function toD3Locale(definition) {
 }
 
 /**
+ * `d3.formatLocale` applied to a definition, memoized on the definition object.
+ *
+ * A ten-million-case formatter run would otherwise rebuild a locale for every
+ * single case, which is the dominant cost of the JavaScript side and buys nothing:
+ * `formatLocale` is a pure function of its argument, and the object it returns owns
+ * no state that a later call could observe. (The one piece of state d3 does keep --
+ * `prefixExponent` in `src/formatPrefixAuto.js` -- is a module global, so it is
+ * shared between locale objects whether or not they are reused; see the
+ * `no-global-si-prefix-leak` entry in DIVERGENCES.md.)
+ *
+ * The key is the definition object itself. `gen-corpus.mjs` hands every case that
+ * draws a named locale the *same* definition object out of the locale index, so the
+ * cache hits without hashing anything; a corpus replayed from a file parses a fresh
+ * object per record and simply misses, which is correct but slower.
+ */
+const localeCache = new WeakMap();
+
+function d3LocaleFor(definition) {
+  const cached = localeCache.get(definition);
+  if (cached !== undefined) return cached;
+  const locale = d3.formatLocale(toD3Locale(definition));
+  localeCache.set(definition, locale);
+  return locale;
+}
+
+/**
  * Computes the JavaScript answer for one corpus case.
  *
  * Returns `{status: "ok", output}` with the fixtures' value shape, `{status: "skip"}`
@@ -64,12 +90,10 @@ export function evaluateCase(record) {
   try {
     switch (record.op) {
       case "format": {
-        const locale = d3.formatLocale(toD3Locale(record.locale_definition));
-        return ok(locale.format(record.specifier)(value));
+        return ok(d3LocaleFor(record.locale_definition).format(record.specifier)(value));
       }
       case "formatPrefix": {
-        const locale = d3.formatLocale(toD3Locale(record.locale_definition));
-        return ok(locale.formatPrefix(record.specifier, reference)(value));
+        return ok(d3LocaleFor(record.locale_definition).formatPrefix(record.specifier, reference)(value));
       }
       case "formatSpecifier": {
         // The recorder tags a rendered specifier `kind: "specifier"` rather than

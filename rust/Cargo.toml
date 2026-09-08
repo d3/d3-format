@@ -32,3 +32,13 @@ serde = { version = "1", optional = true, features = ["derive"] }
 
 [dev-dependencies]
 criterion = { version = "=0.7.0", default-features = false, features = ["cargo_bench_support"] }
+
+# Section 7's Phase 5 benchmark. `harness = false` hands `main` to the file, which
+# it needs: section 7 forbids an "allocation-free" claim without allocator
+# instrumentation, so `benches/format.rs` installs a counting global allocator and
+# prints an exact allocation profile before Criterion's timing runs. Criterion
+# stays at exactly 0.7.0 with default features off; 0.8 pulls `alloca` through
+# `cc`, and ci/check.ps1 fails the build if either enters the graph.
+[[bench]]
+name = "format"
+harness = false

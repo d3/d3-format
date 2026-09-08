@@ -68,7 +68,12 @@ Current status:
 | Specifier, locale, and public API | Gate — passed | §5 surface implemented; parser checked against an independent matcher over 62,823 inputs |
 | Types, layout, SI, and locales | Gate — passed | all 793 recorded d3 calls agree exactly; 2,655,832 differential cases with zero mismatches; 161 of 168 conformance blocks execute and pass |
 | Rust CI jobs | Deliverable — present | `rust/ci/check.ps1` plus pinned, MSRV, stable, and WASM jobs; every step reproduced locally, never yet run on GitHub |
-| Parity CI job | Gate — pending | §6.3 references `rust/tools/`, so it follows Phase 1 |
+| Parity CI job | Deliverable — present | `parity` in `test.yml`; every step but the `actions/*` ones reproduced locally |
+| Property and hardening tests | Gate — passed | 17 property tests; 525,121 values through 15,913 accepted specifiers with no panic; owned/reused equivalence, trimming, padding, all-locale, and allocation-budget properties |
+| Per-PR differential | Gate — passed | 213,784 cases, zero disagreements, in debug |
+| Pre-release differential | Gate — passed | 13,355,832 cases and 10,268,703 formatter comparisons, zero disagreements, 12 min in release |
+| Benchmarks and baseline | Deliverable — present | `rust/benches/format.rs`, 7 groups and 41 benchmarks with allocator instrumentation; baseline archived, not a gate |
+| Ubuntu and hosted-runner legs | Gate — pending | no Linux host locally; `ubuntu-latest` jobs, the hosted Windows `dlltool` assumption, and the Actions plumbing are unverified until a real run |
 | Cargo publication | Gate — pending | `publish-rust.yml` is not written |
 
 ### 0.3 Verified exploratory evidence
@@ -127,6 +132,7 @@ d3-format-rust/
 ├── tools/harvest/                              # existing exploratory prototype; retained
 ├── .github/workflows/
 │   ├── test.yml                                # JS, Rust, feature, and parity gates
+│   ├── prerelease-differential.yml             # scheduled 10,000,000-case differential
 │   ├── publish.yml                             # existing npm publication; unchanged
 │   └── publish-rust.yml                        # gated Cargo publication
 └── rust/
@@ -315,11 +321,18 @@ broken: it ships `dlltool.exe` under
 The working remedy on this machine was the plan's second option: install MSYS2 with
 `mingw-w64-x86_64-binutils` and append `C:\msys64\mingw64\bin` to the user `PATH`. Append rather
 than prepend, so it shadows nothing. MSVC Build Tools remain the final fallback and were not needed.
-This is host configuration, not a repository artifact. GitHub's `windows-latest` images are believed
-to ship MinGW binutils, but that has not been confirmed against a real run and is the highest-risk
-unverified assumption in the Windows GNU job. If it is wrong, the job fails with the same
-`dlltool.exe: program not found` error recorded above, and the fix is to install MinGW binutils in
-the workflow. Confirm on the first CI execution. If GNU linking fails for some other reason, capture
+This is host configuration, not a repository artifact. With it in place the real graph links
+Criterion through `windows-sys` successfully, so `raw-dylib` is proven for this toolchain
+combination — on this host, which is not evidence about the hosted image.
+
+GitHub's `windows-latest` images are believed to ship MinGW binutils, but that has not been
+confirmed against a real run and remains the highest-risk unverified assumption in the Windows GNU
+job. Rather than leave it silent, the job makes the assumption self-diagnosing: a step reports
+whether `dlltool` is on `PATH`, adds it from the known install locations if it is merely absent from
+`PATH`, and otherwise emits a warning and lets the real linker error surface rather than masking it.
+If the image genuinely lacks binutils the job fails with the same `dlltool.exe: program not found`
+error recorded above, now preceded by a step that says so plainly, and the fix is to install MinGW
+binutils in the workflow. Confirm on the first CI execution. If GNU linking fails for some other reason, capture
 the complete linker command and error before changing toolchains.
 
 ### 2.3 Commit-ready Rust semantics gate
@@ -376,6 +389,10 @@ untracked evidence.**
 ### 3.1 Oracle identity
 
 Node 24 as a moving major is not a pin. CI and fixture generation use exactly Node `24.18.0`.
+
+The pre-existing `test` job keeps `node-version: 24` deliberately. That job tests the JavaScript
+product's own compatibility across the major, where a moving version is the point; oracle identity
+is satisfied by `parity`, which runs the same vitest suite at the exact pin.
 `rust/fixtures/d3-format-3.1.2/oracle.json` records:
 
 ```json
@@ -1139,9 +1156,9 @@ local use; CI checks out clean and never sets it.
 The Windows entry tests the same GNU host selected for local development. An additional MSVC job may
 be added as compatibility coverage, but it does not replace the GNU job.
 
-Until Phase 5 adds `benches/format.rs`, `cargo bench --no-run` compiles Criterion and the implicit
-library bench target only. It is a real dependency-graph and linking check from Phase 0 onward, but
-it is not benchmark coverage and must not be reported as such.
+The profile also runs `cargo bench --locked -- --test` after `--no-run`. Compiling a benchmark is
+not running it, and the smoke run is the only thing that catches a benchmark which builds and then
+panics on its first iteration.
 
 ### 6.2 MSRV, stable, features, and WASM compile
 
@@ -1167,8 +1184,8 @@ or crate configuration blocks wasm. It begins constraining real code in Phase 2.
 The stable job is intentionally moving compatibility coverage; it does not define fixture
 semantics. Pinned 1.98.1 defines the reproducible implementation baseline.
 
-As of Phase 0, 1.98.1 is itself current stable, so the stable job builds the same compiler as the
-pinned job and adds no independent coverage yet. That is expected and self-correcting once stable
+As of Phase 5, 1.98.1 is still itself current stable, so the stable job builds the same compiler as
+the pinned job and adds no independent coverage yet. That is expected and self-correcting once stable
 advances; the job is not evidence of forward compatibility until then. Only the MSRV job currently
 exercises a genuinely different compiler.
 
@@ -1193,8 +1210,35 @@ parity:
     - run: node rust/tools/check-coverage.mjs
     - run: node rust/tools/gen-tests.mjs --check
     - run: node rust/tools/gen-locales.mjs --check
+    - run: node rust/tools/gen-corpus.mjs --check-manifest
     - run: node rust/tools/differential.mjs --corpus ci --seed 1 --cases 200000
+    - run: |
+        $status = git status --porcelain -- rust/fixtures rust/tests/generated rust/src/locales/generated.rs
+        if ($status) { throw "generated artifacts are dirty:`n$status" }
+      shell: pwsh
 ```
+
+`ci` and `prerelease` are **named** corpora, not paths; `--corpus` accepts either, disambiguating a
+path by a separator or a `.jsonl` extension. `--cases` sizes the *drawn formatter section*, and the
+corpus's fixed structured sections run in full on top of it. That definition is what makes §7's two
+exit clauses consistent under one flag: a per-PR run of 200,000 drawn cases and a pre-release run of
+10,000,000 drawn cases *plus* the complete structured corpora.
+
+Roughly one drawn specifier in fifteen is type `c`, which is a policy check rather than an output
+comparison, so a drawn count is not a comparison count. The pre-release corpus declares a minimum
+output-comparison count and asserts it, otherwise a corpus change that quietly converted comparisons
+into declines would pass.
+
+Two steps beyond §6.3's original list are load-bearing. `gen-corpus.mjs --check-manifest` gates the
+bucket census, which §4.3 treats as gate material but which no workflow previously checked for
+staleness. §3.7's drift clause is repeated here because the `--check` tools prove that generated
+bytes match a fresh generation and cannot catch a generated file that is present but untracked. The
+job also sets `RUSTUP_TOOLCHAIN` explicitly rather than inheriting the image default, which removes
+the ambiguity §6.3 warns about at its source.
+
+The differential runs in **debug** here. Overflow checks and debug assertions stay live, which is
+the stronger reading of "no accepted input panics", and it costs about 2.8× — well under a minute
+for the whole per-PR corpus.
 
 The parity runner invokes the Rust binary with `--manifest-path rust/Cargo.toml` or sets its child
 working directory to `rust`; it does not rely on toolchain discovery from the repository root.
@@ -1202,6 +1246,23 @@ working directory to `rust`; it does not rely on toolchain discovery from the re
 A scheduled workflow runs the versioned pre-release corpus, at least 10,000,000 formatter
 comparisons, and uploads the seed, manifest, mismatch artifacts, and summary. Unchanged state is not
 success unless the command completed and reported the expected case count.
+
+It lives in `.github/workflows/prerelease-differential.yml`, a fourth workflow file beyond the three
+§1 lists. A separate step re-asserts the counts **out of the written summary artifact** rather than
+trusting the runner's exit status: zero findings, zero unimplemented, an empty census-problem list,
+the output-comparison floor, drawn equal to asked, every declared structured section non-empty, and
+the locale floor both applied and met. That step is itself verified against a mutated summary and a
+missing summary, because an assertion nobody has seen fail is not known to work.
+
+The evidence it produces is a CI artifact, not a committed file: the summary is written under
+`rust/target/`, which is ignored. Phase 6 owns archiving a release's artifacts.
+
+The per-locale floor is half the mean, floored, applied only once the mean per locale reaches 200.
+That threshold comes from a Chernoff bound — for Binomial(n, 1/59), P(count < μ/2) ≤ exp(−μ/8), so
+at μ = 200 the union bound across 59 locales is below 1e−9 and a correct uniform draw cannot fail by
+chance. Below that many draws the runner states outright that the floor did not apply, and a named
+corpus is refused at parse time if `--cases` is small enough to reach the lenient path. "At least
+zero" is not an assertion, and this is what keeps one from silently occurring.
 
 ## 7. Implementation and rollout phases
 
@@ -1307,6 +1368,29 @@ Exit:
 Benchmark reports owned output and reused-output paths separately. Each case reserves enough
 capacity outside the timed loop; worst-case subnormal and maximum radix outputs are distinct groups.
 No “allocation-free” claim is made without allocator instrumentation.
+
+Reserving capacity outside the timed loop is asserted, not assumed: each reused case checks that the
+buffer's capacity is unchanged after the run. A `String`'s capacity moves if and only if it
+reallocated, so this is proof rather than inference, and it is what stops the reused group from
+quietly reverting into the owned one.
+
+The instrumentation is a counting global allocator wrapping `System`. It records `alloc` and
+`alloc_zeroed` calls, `realloc` calls separately so that a growth-heavy path cannot advertise itself
+as allocation-free while repeatedly copying, and fresh bytes requested. Each case is sampled twice
+and any count the repeat does not reproduce is marked. Recording is gated off during the timed
+portion, so the timings are not identical to those of an uninstrumented build.
+
+What that licenses is exact per-call `GlobalAlloc` counts for one build. It does not license any
+general "allocation-free" statement, anything about peak resident memory or fragmentation, or any
+claim about a different allocator, optimization level, or toolchain. Measured: the reused path makes
+exactly one fewer allocation than the owned path in every case, and only the type `c` text case,
+which performs no numeric conversion, reaches zero. Every numeric path allocates, which is what
+§5.3 already states.
+
+The archived baseline is explicitly **not** a regression gate and no CI job reads it. Every field is
+read out of the run rather than transcribed, and the collector fails if a defined benchmark has no
+estimate or a stale one. For small outputs the owned/reused delta is within run-to-run spread and
+individual pairs can invert; read the direction across the group, never a single pair.
 
 ### Phase 6 — Release candidate and canaries
 

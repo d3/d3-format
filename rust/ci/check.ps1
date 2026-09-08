@@ -28,10 +28,10 @@
     Selects the check set.
 
     Pinned  The full set from section 6.1: formatting, lints, the four feature
-            combinations, the conformance inventory guard, benchmark compilation,
-            packaging, and the forbidden dependency guard. "Pinned" names the
-            check set, not a toolchain: section 6.2 runs this same set on current
-            stable as moving compatibility coverage.
+            combinations, the conformance inventory guard, benchmark compilation
+            and a benchmark smoke run, packaging, and the forbidden dependency
+            guard. "Pinned" names the check set, not a toolchain: section 6.2 runs
+            this same set on current stable as moving compatibility coverage.
 
     Msrv    The lighter set from section 6.2: the four feature-combination test
             runs only. MSRV coverage answers "does the declared minimum compiler
@@ -397,10 +397,21 @@ try {
             # inventory queries reuse that build instead of triggering another.
             Assert-ConformanceInventoryMatchesTheArtifacts
 
-            # Until Phase 5 adds benches/format.rs this compiles Criterion and the
-            # implicit library bench target only. It is a dependency-graph and
-            # linking check, not benchmark coverage.
+            # Section 6.1's benchmark gate. Before Phase 5 this compiled Criterion
+            # and the implicit library bench target only, and the profile said so;
+            # it now also compiles benches/format.rs, so it is a real check that the
+            # benchmark still builds against the API it measures. On a GNU Windows
+            # host this is the step that exercises the criterion -> windows-sys
+            # raw-dylib link section 2.2 flags.
             Invoke-Step -Command 'cargo' -Arguments @('bench', '--locked', '--no-run')
+
+            # Compiling a benchmark is not running it. Criterion's --test mode runs
+            # each benchmark once, with no measurement, which is cheap because the
+            # build above is reused -- and it is the only thing that would catch a
+            # benchmark that builds and then panics on its first iteration. It is
+            # not a performance gate: nothing here compares timings, and a hosted
+            # runner's timings would not be worth comparing.
+            Invoke-Step -Command 'cargo' -Arguments @('bench', '--locked', '--', '--test')
 
             $packageArguments = @('package', '--locked')
             if ($AllowDirty) {

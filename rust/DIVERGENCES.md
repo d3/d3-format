@@ -139,8 +139,10 @@ Covered by: `rust/tests/public_api.rs::parsing_rejects_a_width_the_syntax_cannot
 `rust/tests/public_api.rs::the_default_taking_entry_points_use_the_default_limits`, and
 `rust/tests/properties.rs::the_parser_accepts_exactly_the_grammar_the_reference_matcher_does`,
 which checks the rejection against an independent implementation of d3's grammar over 62,823
-inputs. The allocation half — `rust/tests/properties.rs` (Phase 5: no input produces an unbounded
-allocation) — waits for the layout path that would do the allocating.
+inputs. The allocation half is
+`rust/tests/properties.rs::no_accepted_input_produces_an_unbounded_allocation`, which walks the
+layout path that does the allocating and shows that an accepted input's output — and the capacity
+reserved for it — stays inside what the limits admit.
 
 ---
 

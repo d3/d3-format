@@ -33,10 +33,28 @@
 //! is not committed, because it would make the test suite depend on Node; what is
 //! committed is [`the_reference_matcher_agrees_with_node_on_the_documented_examples`],
 //! which pins the cases the oracle suite states outright.
+//!
+//! # The formatting half
+//!
+//! Everything from [`SWEEP_LIMITS`] onwards is about what happens *after* a
+//! specifier parses. Section 3.6's differential already compares the port's output
+//! against d3's byte for byte, so nothing below re-checks a digit; what it checks is
+//! the structure the differential cannot see, because the differential only ever
+//! looks at one string at a time. That the owned and the reusing entry point produce
+//! the same string. That a padded result is the unpadded one with a run of the fill
+//! inserted where the alignment says. That a trimmed fraction never ends in a zero.
+//! That numeral substitution reaches every ASCII digit in the assembled string. That
+//! no accepted input can produce an output larger than the limits admit, which is
+//! the allocation half of the `construction-time-width-limits` divergence.
+//!
+//! Where a property has an independent implementation to be compared against, it
+//! gets one, exactly as the parser does above: grouping is checked against a
+//! transcription of `src/formatGroup.js` rather than against the layout's own
+//! reading of it.
 
 use d3_format::{
-    Align, FormatError, FormatLimits, FormatSpecifier, FormatType, InputKind, Locale,
-    ParseErrorKind, Sign, Symbol,
+    as_precision, precision_fixed, precision_prefix, precision_round, Align, FormatError,
+    FormatLimits, FormatSpecifier, FormatType, InputKind, Locale, ParseErrorKind, Sign, Symbol,
 };
 
 // ---------------------------------------------------------------------------
@@ -922,4 +940,1241 @@ fn a_pathological_width_still_produces_the_right_string() {
         },
     );
     assert!(matches!(over, Err(FormatError::WidthLimit { .. })));
+}
+
+// ---------------------------------------------------------------------------
+// Formatting properties
+// ---------------------------------------------------------------------------
+
+/// The limits the layout sweeps below run under.
+///
+/// The same pair the two sweeps above use, and for the same reason: the default
+/// million-code-unit width would let the corpus's twelve-digit widths allocate a
+/// megabyte of padding apiece. [`a_pathological_width_still_produces_the_right_string`]
+/// walks the wide path once, on purpose.
+const SWEEP_LIMITS: FormatLimits = FormatLimits {
+    max_width_utf16: 4096,
+    max_output_bytes: 1 << 20,
+};
+
+/// Text inputs for the type `c` half of the sweeps.
+///
+/// A grapheme cluster, an astral pair and a lone combining mark are the three shapes
+/// that make UTF-16 length differ from bytes and from `char`s. The last two carry
+/// ASCII digits, which numeral substitution has to reach even though they are text
+/// the port otherwise promises to preserve byte for byte.
+const TEXT_SAMPLES: [&str; 7] = [
+    "",
+    "x",
+    "e\u{301}",
+    "\u{1f600}",
+    "\u{301}",
+    "2024",
+    "-1.5e+3",
+];
+
+/// Whether value `index` is exercised for the specifier at `position`.
+///
+/// The full cross product of the corpus and [`AWKWARD_VALUES`] is half a million
+/// pairs, and several properties below measure each pair twice. Offsetting the
+/// residue by the specifier's position keeps every value in the sweep -- each is
+/// reached by a `stride`th of the specifiers, and each specifier sees a different
+/// subset from its neighbour -- while dividing the work by `stride`. Every test that
+/// samples asserts how many pairs it actually reached, so a corpus that silently
+/// shrank would fail rather than quietly check less.
+fn sampled(position: usize, index: usize, stride: usize) -> bool {
+    (position + index) % stride == 0
+}
+
+/// The UTF-16 code units of `text`, which is the unit d3 measures a width in.
+fn code_units(text: &str) -> Vec<u16> {
+    text.encode_utf16().collect()
+}
+
+/// What an output buffer carries into a `*_into` call.
+///
+/// Section 5.3 has the call clear the buffer before doing any work, so every one of
+/// these must be gone from every result. Handing in an empty buffer instead would
+/// check nothing.
+const JUNK: &str = "left over from the last caller";
+
+/// Whether every code unit in `units` is the fill character.
+///
+/// The parser refuses a fill outside the Basic Multilingual Plane, so one fill is
+/// one code unit and a padding run is a run of equal units; the assertion inside
+/// says so rather than assuming it.
+fn all_fill(units: &[u16], fill: char) -> bool {
+    let mut buffer = [0u16; 2];
+    let encoded = fill.encode_utf16(&mut buffer);
+    assert_eq!(encoded.len(), 1, "fill {fill:?} is not one code unit");
+    units.iter().all(|unit| *unit == encoded[0])
+}
+
+#[test]
+fn owned_and_reused_output_are_the_same_string() {
+    // Section 5.3 gives `format_number` and `format_number_into` as two spellings of
+    // one operation, and the Phase 5 benchmark reports them as two measured paths.
+    // Nothing in the differential can tell them apart: it compares one of them
+    // against d3 and never the two against each other. A reusing path that forgot to
+    // clear, or that took a shortcut for a buffer that already had the capacity it
+    // needed, would leave the benchmark comparing two different operations and the
+    // differential none the wiser.
+    //
+    // The buffer carries junk into every call and is never emptied by the test, so a
+    // call that appended instead of clearing is caught on the first value and on
+    // every value after it.
+    let locale = Locale::en_us();
+    let mut out = String::new();
+    let mut capacity = out.capacity();
+    let mut numeric = 0usize;
+    let mut textual = 0usize;
+
+    for (position, input) in corpus().into_iter().enumerate() {
+        let Ok(specifier) = input.parse::<FormatSpecifier>() else {
+            continue;
+        };
+        let Ok(formatter) = locale.formatter_for_with_limits(&specifier, SWEEP_LIMITS) else {
+            continue;
+        };
+        match formatter.input_kind() {
+            InputKind::Number => {
+                for (index, value) in AWKWARD_VALUES.iter().enumerate() {
+                    if !sampled(position, index, 2) {
+                        continue;
+                    }
+                    let owned = formatter
+                        .format_number(*value)
+                        .unwrap_or_else(|error| panic!("{specifier} on {value}: {error}"));
+                    out.push_str(JUNK);
+                    formatter
+                        .format_number_into(&mut out, *value)
+                        .unwrap_or_else(|error| panic!("{specifier} on {value}: {error}"));
+                    assert_eq!(
+                        out,
+                        owned,
+                        "{specifier} on {:016X} differs between the owned and reused paths",
+                        value.to_bits()
+                    );
+                    numeric += 1;
+                }
+            }
+            InputKind::Text => {
+                for (index, text) in TEXT_SAMPLES.iter().enumerate() {
+                    if !sampled(position, index, 2) {
+                        continue;
+                    }
+                    let owned = formatter
+                        .format_text(text)
+                        .unwrap_or_else(|error| panic!("{specifier} on {text:?}: {error}"));
+                    out.push_str(JUNK);
+                    formatter
+                        .format_text_into(&mut out, text)
+                        .unwrap_or_else(|error| panic!("{specifier} on {text:?}: {error}"));
+                    assert_eq!(
+                        out, owned,
+                        "{specifier} on {text:?} differs between the owned and reused paths"
+                    );
+                    textual += 1;
+                }
+            }
+        }
+
+        // Capacity is the other half of the section 5.3 claim. It can only grow:
+        // `clear` keeps it and `try_reserve` never gives it back, so a call that
+        // rebuilt the buffer instead of reusing it would show up as a drop here.
+        assert!(
+            out.capacity() >= capacity,
+            "{specifier} shrank the caller's buffer from {capacity} to {}",
+            out.capacity()
+        );
+        capacity = out.capacity();
+    }
+
+    assert!(
+        numeric > 200_000,
+        "only {numeric} numeric pairs were compared"
+    );
+    assert!(textual > 500, "only {textual} text pairs were compared");
+    eprintln!(
+        "d3-format: {numeric} numeric and {textual} text results compared owned against reused"
+    );
+}
+
+/// One bounded call, checked against the budget it was given.
+///
+/// Returns whether the result fitted. `owned` re-runs the same call through the
+/// allocating entry point, and is only consulted on the refusal path.
+fn assert_bounded(
+    what: &str,
+    outcome: Result<(), FormatError>,
+    out: &str,
+    limits: FormatLimits,
+    width: u32,
+    owned: impl FnOnce() -> Result<String, FormatError>,
+) -> bool {
+    match outcome {
+        Ok(()) => {
+            assert!(
+                out.len() <= limits.max_output_bytes,
+                "{what} produced {} bytes, over the {} it was given",
+                out.len(),
+                limits.max_output_bytes
+            );
+            // A width the formatter accepted is a width the result reaches: the
+            // padding cannot have been quietly dropped to stay inside the budget.
+            assert!(
+                code_units(out).len() >= width as usize,
+                "{what} produced {out:?}, narrower than its width"
+            );
+            true
+        }
+        Err(FormatError::OutputLimit { requested, maximum }) => {
+            assert_eq!(maximum, limits.max_output_bytes, "{what}");
+            assert!(
+                requested > maximum,
+                "{what} refused {requested} bytes, which fits"
+            );
+            // Section 5.3: nothing partial is left behind, so a caller that ignores
+            // the error reads an empty buffer rather than a truncated number.
+            assert!(out.is_empty(), "{what} left {out:?} behind");
+            // Both entry points refuse, and refuse identically. The agreement on the
+            // *success* path is what `owned_and_reused_output_are_the_same_string`
+            // sweeps; what that test cannot reach is a failure, because it runs under
+            // limits nothing in the corpus exceeds.
+            assert_eq!(
+                owned(),
+                Err(FormatError::OutputLimit { requested, maximum }),
+                "{what} disagrees between its two entry points"
+            );
+            false
+        }
+        Err(error) => panic!("{what} failed as {error:?}, which is not a limit"),
+    }
+}
+
+#[test]
+fn no_accepted_input_produces_an_unbounded_allocation() {
+    // Section 5.4, and the allocation half of the `construction-time-width-limits`
+    // entry in rust/DIVERGENCES.md. The width half is settled at construction and is
+    // checked by the parser sweep above; this is the other half, and it is the one
+    // that needed the layout path to exist before it could be written: that for
+    // every accepted specifier and every `f64` bit pattern, the output either fits
+    // the declared budget or is refused by a typed error naming that budget. Never a
+    // panic, never a silent truncation, and never a success larger than the caller
+    // agreed to.
+    //
+    // The budget is deliberately far too small. At 48 bytes a `.20f` of `1e308`, a
+    // binary expansion of `f64::MAX` and a padded currency amount all overflow it,
+    // so the refusal path is the common case rather than a corner reached once.
+    const TIGHT: FormatLimits = FormatLimits {
+        max_width_utf16: 32,
+        max_output_bytes: 48,
+    };
+
+    let locale = Locale::en_us();
+    let mut out = String::new();
+    let mut within = 0usize;
+    let mut refused = 0usize;
+    let mut too_wide = 0usize;
+
+    for (position, input) in corpus().into_iter().enumerate() {
+        let Ok(specifier) = input.parse::<FormatSpecifier>() else {
+            continue;
+        };
+        let formatter = match locale.formatter_for_with_limits(&specifier, TIGHT) {
+            Ok(formatter) => formatter,
+            Err(FormatError::WidthLimit { requested, maximum }) => {
+                too_wide += 1;
+                assert_eq!(maximum, TIGHT.max_width_utf16, "{specifier}");
+                assert!(
+                    requested > maximum,
+                    "{specifier} was refused a width it fits"
+                );
+                continue;
+            }
+            Err(error) => panic!("{specifier} failed to compile: {error:?}"),
+        };
+        let width = specifier.width().unwrap_or(0);
+
+        match formatter.input_kind() {
+            InputKind::Number => {
+                for (index, value) in AWKWARD_VALUES.iter().enumerate() {
+                    if !sampled(position, index, 2) {
+                        continue;
+                    }
+                    out.push_str(JUNK);
+                    let outcome = formatter.format_number_into(&mut out, *value);
+                    let label = format!("{specifier} on {:016X}", value.to_bits());
+                    let fitted = assert_bounded(&label, outcome, &out, TIGHT, width, || {
+                        formatter.format_number(*value)
+                    });
+                    if fitted {
+                        within += 1;
+                    } else {
+                        refused += 1;
+                    }
+                }
+            }
+            InputKind::Text => {
+                // Type `c` counts its text against the same budget, and a text longer
+                // than the whole budget is the only way to reach the refusal through
+                // that entry point, since the samples are all short.
+                let long = "x".repeat(200);
+                for text in TEXT_SAMPLES.iter().copied().chain([long.as_str()]) {
+                    out.push_str(JUNK);
+                    let outcome = formatter.format_text_into(&mut out, text);
+                    let label = format!("{specifier} on {} bytes of text", text.len());
+                    let fitted = assert_bounded(&label, outcome, &out, TIGHT, width, || {
+                        formatter.format_text(text)
+                    });
+                    if fitted {
+                        within += 1;
+                    } else {
+                        refused += 1;
+                    }
+                }
+            }
+        }
+    }
+
+    assert!(
+        within > 100_000,
+        "only {within} results stayed inside the budget"
+    );
+    assert!(refused > 10_000, "only {refused} results were refused");
+    assert!(
+        too_wide > 1_000,
+        "only {too_wide} specifiers were too wide to compile"
+    );
+    eprintln!(
+        "d3-format: {within} results within a 48-byte budget, {refused} refused by it, \
+{too_wide} specifiers refused a width over 32"
+    );
+}
+
+/// What one padded result turned out to be worth checking.
+#[derive(Debug, Clone, Copy)]
+enum Padded {
+    /// A padding run was pinned in the position this alignment puts it.
+    Run(Align),
+    /// The natural result already reached the width, so the two had to be equal.
+    Nothing,
+    /// The zero-grouping escape: only the width floor was checked.
+    Regrouped,
+}
+
+/// How many results of each kind a sweep produced.
+///
+/// Tallied and asserted because "the padding is where the alignment says" is only
+/// worth anything if every alignment was reached: a corpus that stopped producing
+/// centred specifiers would leave one quarter of the rule unchecked and still pass.
+#[derive(Debug, Default)]
+struct Tally {
+    /// Padding runs pinned, indexed by `<`, `>`, `^`, `=` in that order.
+    runs: [usize; 4],
+    nothing: usize,
+    regrouped: usize,
+}
+
+impl Tally {
+    fn record(&mut self, padded: Padded) {
+        match padded {
+            Padded::Run(Align::Left) => self.runs[0] += 1,
+            Padded::Run(Align::Right) => self.runs[1] += 1,
+            Padded::Run(Align::Center) => self.runs[2] += 1,
+            Padded::Run(Align::AfterSign) => self.runs[3] += 1,
+            Padded::Nothing => self.nothing += 1,
+            Padded::Regrouped => self.regrouped += 1,
+        }
+    }
+}
+
+/// The width invariant, for one specifier under one locale.
+fn check_width(
+    locale: &Locale,
+    position: usize,
+    specifier: &FormatSpecifier,
+    stride: usize,
+    tally: &mut Tally,
+) {
+    let Some(width) = specifier.width().filter(|width| *width > 0) else {
+        return;
+    };
+    let Ok(formatter) = locale.formatter_for_with_limits(specifier, SWEEP_LIMITS) else {
+        return;
+    };
+    let unpadded = specifier
+        .to_builder()
+        .width(None)
+        .build()
+        .expect("dropping a width cannot invalidate a specifier");
+    let unpadded = locale
+        .formatter_for_with_limits(&unpadded, SWEEP_LIMITS)
+        .expect("a specifier with no width is inside every width limit");
+
+    // `newFormat`'s first two resolutions, restated from outside the crate: fill `0`
+    // with align `=` *is* the zero flag, and type `n` *is* a comma. Both decide what
+    // the padding looks like, so a test that read the specifier's own fields would
+    // check the wrong shape for `0=12d` and for `012n`.
+    let zero =
+        specifier.zero() || (specifier.fill() == '0' && specifier.align() == Align::AfterSign);
+    let (fill, align) = if zero {
+        ('0', Align::AfterSign)
+    } else {
+        (specifier.fill(), specifier.align())
+    };
+    let comma = specifier.comma() || specifier.format_type() == FormatType::Grouped;
+    let regrouped = comma && zero && locale.grouping().is_some();
+
+    match formatter.input_kind() {
+        InputKind::Number => {
+            for (index, value) in AWKWARD_VALUES.iter().enumerate() {
+                if !sampled(position, index, stride) {
+                    continue;
+                }
+                let padded = formatter
+                    .format_number(*value)
+                    .unwrap_or_else(|error| panic!("{specifier} on {value}: {error}"));
+                let natural = unpadded
+                    .format_number(*value)
+                    .unwrap_or_else(|error| panic!("{specifier} on {value}: {error}"));
+                let label = format!("{specifier} on {:016X}", value.to_bits());
+                tally.record(assert_padding(
+                    &label, &padded, &natural, width, fill, align, regrouped,
+                ));
+            }
+        }
+        InputKind::Text => {
+            let empty = unpadded.format_text("").expect("type c takes any text");
+            for (index, text) in TEXT_SAMPLES.iter().enumerate() {
+                if !sampled(position, index, stride) {
+                    continue;
+                }
+                let padded = formatter
+                    .format_text(text)
+                    .unwrap_or_else(|error| panic!("{specifier} on {text:?}: {error}"));
+                let natural = unpadded
+                    .format_text(text)
+                    .unwrap_or_else(|error| panic!("{specifier} on {text:?}: {error}"));
+                // Section 5.3: type `c` preserves its text byte for byte, and only
+                // the affixes, the width and the alignment touch the result. Removing
+                // the text once must therefore leave exactly what the empty string
+                // produced -- which is a stronger statement than `contains`, because
+                // it also says nothing else was added.
+                if !text.is_empty() {
+                    assert_eq!(
+                        natural.replacen(text, "", 1),
+                        empty,
+                        "{specifier} did not preserve {text:?}"
+                    );
+                }
+                let label = format!("{specifier} on {text:?}");
+                tally.record(assert_padding(
+                    &label, &padded, &natural, width, fill, align, regrouped,
+                ));
+            }
+        }
+    }
+}
+
+/// A successful result is `max(width, natural)` code units long, and the difference
+/// is a run of the fill where the alignment puts it.
+fn assert_padding(
+    what: &str,
+    padded: &str,
+    natural: &str,
+    width: u32,
+    fill: char,
+    align: Align,
+    regrouped: bool,
+) -> Padded {
+    let padded_units = code_units(padded);
+    let natural_units = code_units(natural);
+    let padding = (width as usize).saturating_sub(natural_units.len());
+
+    if regrouped {
+        // `if (comma && zero) value = group(padding + value, padding.length ? width -
+        // valueSuffix.length : Infinity)`. Two things about that statement put it
+        // outside the rule below, and both are d3's.
+        //
+        // The padding is decided *before* the grouping rather than after, so it is
+        // measured against the ungrouped digits and the separators are added on top
+        // of a run already sized to the width. And the group budget then drops
+        // leading fill once it runs out, counting every separator as one unit
+        // whatever it spells. The result is a width that overshoots by an amount no
+        // relation between the padded and unpadded strings predicts -- the private
+        // test `layout::tests::grouping_is_d3s_substring_walk` records eight zero-fill
+        // digits reaching nine code units against a budget of eight, and
+        // `tests/layout.rs::numerals_are_substituted_over_the_assembled_string`
+        // records the same path landing exactly on twenty.
+        //
+        // What survives is the floor, which is the half a caller relies on: a width
+        // is a minimum, and this path never pads to less than one.
+        assert!(
+            padded_units.len() >= width as usize,
+            "{what}: {padded:?} is narrower than the {width} it asked for"
+        );
+        return Padded::Regrouped;
+    }
+
+    assert_eq!(
+        padded_units.len(),
+        natural_units.len().max(width as usize),
+        "{what}: {padded:?} is not max(width, natural) code units long"
+    );
+    if padding == 0 {
+        assert_eq!(padded, natural, "{what}: padded when nothing was needed");
+        return Padded::Nothing;
+    }
+
+    match align {
+        Align::Right => {
+            assert!(
+                all_fill(&padded_units[..padding], fill),
+                "{what}: {padded:?} is not padded with {fill:?} on the left"
+            );
+            assert_eq!(
+                &padded_units[padding..],
+                &natural_units[..],
+                "{what}: {padded:?} is not {natural:?} behind its padding"
+            );
+        }
+        Align::Left => {
+            let body = padded_units.len() - padding;
+            assert_eq!(
+                &padded_units[..body],
+                &natural_units[..],
+                "{what}: {padded:?} is not {natural:?} in front of its padding"
+            );
+            assert!(
+                all_fill(&padded_units[body..], fill),
+                "{what}: {padded:?} is not padded with {fill:?} on the right"
+            );
+        }
+        Align::Center => {
+            // `padding.slice(0, length = padding.length >> 1)` and the rest: an odd
+            // run puts the extra character on the right.
+            let head = padding >> 1;
+            let body = padded_units.len() - (padding - head);
+            assert!(
+                all_fill(&padded_units[..head], fill),
+                "{what}: {padded:?} is not centred in {fill:?}"
+            );
+            assert_eq!(
+                &padded_units[head..body],
+                &natural_units[..],
+                "{what}: {padded:?} is not {natural:?} between its padding"
+            );
+            assert!(
+                all_fill(&padded_units[body..], fill),
+                "{what}: {padded:?} is not centred in {fill:?}"
+            );
+        }
+        Align::AfterSign => {
+            // The run goes between the sign and the digits, and the sign is the
+            // locale's text rather than a character this test can name, so the
+            // position is pinned by construction instead: the padded result must be
+            // the natural one with a single run of the fill inserted into it. Taking
+            // the longest common prefix finds that run wherever it is, and the two
+            // assertions together admit no other reading.
+            let shared = padded_units
+                .iter()
+                .zip(&natural_units)
+                .take_while(|(padded, natural)| padded == natural)
+                .count();
+            assert!(
+                all_fill(&padded_units[shared..shared + padding], fill),
+                "{what}: {padded:?} is not {natural:?} with a run of {fill:?} inserted"
+            );
+            assert_eq!(
+                &padded_units[shared + padding..],
+                &natural_units[shared..],
+                "{what}: {padded:?} is not {natural:?} with a run of {fill:?} inserted"
+            );
+        }
+    }
+    Padded::Run(align)
+}
+
+#[test]
+fn a_width_is_reached_exactly_and_padded_with_the_resolved_fill() {
+    // Sections 5.3 and 4.4: a width is a number of UTF-16 code units, and it is a
+    // minimum rather than a field size. The generated suite pins the padded strings
+    // d3 was recorded producing; what it cannot say is that the rule holds for a
+    // specifier nobody recorded. Stated as a relation between the padded result and
+    // the unpadded one, it can be checked for every accepted specifier in the corpus
+    // without a single hand-written expectation -- and it catches the two mistakes a
+    // rewrite of the padding actually makes: counting bytes or `char`s instead of
+    // code units, and putting the run on the wrong side of the sign.
+    let locale = Locale::en_us();
+    let mut tally = Tally::default();
+    for (position, input) in corpus().into_iter().enumerate() {
+        let Ok(specifier) = input.parse::<FormatSpecifier>() else {
+            continue;
+        };
+        check_width(&locale, position, &specifier, 2, &mut tally);
+    }
+
+    // Affix text counts toward the width like any other output, which is only
+    // visible in a locale whose affixes are not ASCII: `\u{2796}` is one code unit,
+    // `\u{a0}\u{20ac}` is two, and the narrow no-break space in front of the percent
+    // sign is one more. A port measuring bytes would pad these three too little.
+    let unicode = Locale::builder()
+        .decimal(",")
+        .thousands("\u{202f}")
+        .grouping([3])
+        .currency("", "\u{a0}\u{20ac}")
+        .percent("\u{202f}%")
+        .minus("\u{2796}")
+        .nan("N/A")
+        .build()
+        .expect("valid");
+    for (position, spec) in [
+        "$12,.2f",
+        "<$12.2f",
+        "^$13.2f",
+        "=$12.2f",
+        "\u{2212}>12.1%",
+        "$012,.2f",
+        "12,.3s",
+        "020c",
+        "\u{2796}^11c",
+    ]
+    .into_iter()
+    .enumerate()
+    {
+        let specifier: FormatSpecifier = spec.parse().expect("valid");
+        check_width(&unicode, position, &specifier, 1, &mut tally);
+    }
+
+    let runs: usize = tally.runs.iter().sum();
+    for (alignment, count) in ['<', '>', '^', '='].iter().zip(&tally.runs) {
+        assert!(
+            *count > 100,
+            "only {count} padding runs were checked for alignment {alignment:?}"
+        );
+    }
+    assert!(runs > 30_000, "only {runs} padding runs were pinned");
+    assert!(
+        tally.regrouped > 100,
+        "only {} took the zero-grouping path",
+        tally.regrouped
+    );
+    eprintln!(
+        "d3-format: {runs} padding runs pinned as {:?} for < > ^ =, {} results needed none, \
+{} held to the width floor through zero-fill grouping",
+        tally.runs, tally.nothing, tally.regrouped
+    );
+}
+
+/// The digits between the first decimal point and whatever ends the fraction.
+fn fraction_of<'a>(text: &'a str, decimal: &str) -> Option<&'a str> {
+    let at = text.find(decimal)? + decimal.len();
+    let rest = &text[at..];
+    let end = rest
+        .find(|character: char| !character.is_ascii_digit())
+        .unwrap_or(rest.len());
+    Some(&rest[..end])
+}
+
+/// Values chosen to end in an insignificant zero under some precision.
+const TRIM_VALUES: [f64; 12] = [
+    1.0,
+    1.05,
+    1.5,
+    100.0,
+    0.25,
+    0.000_010_5,
+    1.000_000_1,
+    123_456.7,
+    1.2e21,
+    9.999_5,
+    1.048_576e6,
+    0.1 + 0.2,
+];
+
+#[test]
+fn a_trimmed_result_never_ends_in_an_insignificant_zero() {
+    // `~` promises that the fraction carries no digit d3 considers insignificant, and
+    // `src/formatTrim.js` keeps that promise with a two-position scan that is easy to
+    // get subtly wrong: one position too far and a significant digit leaves with the
+    // zeros, one too few and a zero survives. The generated suite pins the trims that
+    // were recorded; this pins the invariant, over the specifiers nobody recorded and
+    // over the three tails that arrive *after* the trim and must not be mistaken for
+    // part of it -- the percent sign, the SI prefix and the currency suffix.
+    //
+    // Every specifier loses its width first. Padding would otherwise decide the
+    // question and decide it wrongly: `format("0<10~f")(1.5)` is `"1.50000000"`,
+    // whose trailing zeros are fill rather than digits.
+    //
+    // The locale is en-US, so the decimal point is `.` and the group separator is
+    // `,`: the first `.` in the result is always the decimal point, never a
+    // separator, and never a fill character.
+    let locale = Locale::en_us();
+    let mut checked = 0usize;
+    let mut fractions = 0usize;
+    for (position, input) in corpus().into_iter().enumerate() {
+        let Ok(specifier) = input.parse::<FormatSpecifier>() else {
+            continue;
+        };
+        // Trimming is on for `~`, and also for the empty type and any unknown letter,
+        // which `newFormat` resolves to `.12~g`. `n` is rewritten a line earlier and
+        // never reaches the fallback.
+        let format_type = specifier.format_type();
+        let trims =
+            specifier.trim() || (format_type != FormatType::Grouped && !format_type.is_known());
+        if !trims {
+            continue;
+        }
+        let unpadded = specifier
+            .to_builder()
+            .width(None)
+            .build()
+            .expect("dropping a width cannot invalidate a specifier");
+        let formatter = locale
+            .formatter_for_with_limits(&unpadded, SWEEP_LIMITS)
+            .expect("a specifier with no width is inside every width limit");
+        if formatter.input_kind() == InputKind::Text {
+            continue;
+        }
+        for (index, value) in AWKWARD_VALUES.iter().chain(&TRIM_VALUES).enumerate() {
+            if !sampled(position, index, 3) {
+                continue;
+            }
+            let formatted = formatter
+                .format_number(*value)
+                .unwrap_or_else(|error| panic!("{unpadded} on {value}: {error}"));
+            checked += 1;
+            let Some(fraction) = fraction_of(&formatted, locale.decimal()) else {
+                continue;
+            };
+            fractions += 1;
+            assert!(
+                !fraction.ends_with('0'),
+                "{unpadded} on {:016X} produced {formatted:?}, whose fraction still ends in a zero",
+                value.to_bits()
+            );
+            // A decimal point with nothing behind it is the other way the scan can
+            // go wrong: `formatTrim` removes the point along with the run it opened.
+            assert!(
+                !fraction.is_empty(),
+                "{unpadded} on {:016X} produced {formatted:?}, a decimal point with no fraction",
+                value.to_bits()
+            );
+        }
+    }
+    assert!(
+        checked > 20_000,
+        "only {checked} trimmed results were checked"
+    );
+    assert!(
+        fractions > 2_000,
+        "only {fractions} of them kept a fraction"
+    );
+    eprintln!("d3-format: {checked} trimmed results checked, {fractions} of them with a fraction");
+}
+
+/// A locale whose ten numerals are the Arabic-Indic digits.
+///
+/// Built here rather than taken from the generated table because the property has
+/// nothing to do with the `locales` feature and has to hold in all four feature
+/// combinations. Every string in it is free of ASCII digits, which is what makes the
+/// assertion below a statement about the substitution rather than about the locale.
+fn arabic_numerals() -> Locale {
+    Locale::builder()
+        .decimal("\u{66b}")
+        .thousands("\u{66c}")
+        .grouping([3])
+        .currency("", " \u{62f}.\u{625}.")
+        .numerals([
+            "\u{660}".to_owned(),
+            "\u{661}".to_owned(),
+            "\u{662}".to_owned(),
+            "\u{663}".to_owned(),
+            "\u{664}".to_owned(),
+            "\u{665}".to_owned(),
+            "\u{666}".to_owned(),
+            "\u{667}".to_owned(),
+            "\u{668}".to_owned(),
+            "\u{669}".to_owned(),
+        ])
+        .build()
+        .expect("valid")
+}
+
+#[test]
+fn numeral_substitution_reaches_every_ascii_digit_in_the_result() {
+    // Section 4.4: `formatNumerals` runs last, over the whole assembled string. The
+    // consequence is not that the digits are translated -- any implementation does
+    // that -- but that the translation reaches text no digit-emitting routine ever
+    // touches: the `0` of a `0x` base prefix, a `0` used as a fill character, the
+    // digits inside type `c`'s text, and the exponent of an `e`-notation result.
+    // `tests/layout.rs::numerals_are_substituted_over_the_assembled_string` pins the
+    // four examples section 4.4 names; this says the same thing as a closed
+    // property, over every accepted specifier in the corpus, and it is closed in a
+    // useful way -- an implementation that substituted before padding, or that
+    // substituted only the value part, leaves an ASCII digit behind *somewhere*, and
+    // the somewhere is what varies from bug to bug.
+    let locale = arabic_numerals();
+    let mut numeric = 0usize;
+    let mut textual = 0usize;
+    for (position, input) in corpus().into_iter().enumerate() {
+        let Ok(specifier) = input.parse::<FormatSpecifier>() else {
+            continue;
+        };
+        let Ok(formatter) = locale.formatter_for_with_limits(&specifier, SWEEP_LIMITS) else {
+            continue;
+        };
+        match formatter.input_kind() {
+            InputKind::Number => {
+                for (index, value) in AWKWARD_VALUES.iter().enumerate() {
+                    if !sampled(position, index, 4) {
+                        continue;
+                    }
+                    let formatted = formatter
+                        .format_number(*value)
+                        .unwrap_or_else(|error| panic!("{specifier} on {value}: {error}"));
+                    assert!(
+                        !formatted.chars().any(|c| c.is_ascii_digit()),
+                        "{specifier} on {:016X} left an ASCII digit in {formatted:?}",
+                        value.to_bits()
+                    );
+                    numeric += 1;
+                }
+            }
+            InputKind::Text => {
+                for (index, text) in TEXT_SAMPLES.iter().enumerate() {
+                    if !sampled(position, index, 4) {
+                        continue;
+                    }
+                    let formatted = formatter
+                        .format_text(text)
+                        .unwrap_or_else(|error| panic!("{specifier} on {text:?}: {error}"));
+                    assert!(
+                        !formatted.chars().any(|c| c.is_ascii_digit()),
+                        "{specifier} on {text:?} left an ASCII digit in {formatted:?}"
+                    );
+                    textual += 1;
+                }
+            }
+        }
+    }
+
+    // The sharpest case section 4.4 states outright, kept here as well so that the
+    // property above is anchored to a value and not only to an absence.
+    let hexadecimal = locale.formatter("#x").expect("valid");
+    assert_eq!(
+        hexadecimal.format_number(48879.0).expect("valid"),
+        "\u{660}xbeef"
+    );
+
+    assert!(
+        numeric > 100_000,
+        "only {numeric} numeric results were checked"
+    );
+    assert!(textual > 200, "only {textual} text results were checked");
+    eprintln!("d3-format: {numeric} numeric and {textual} text results carried no ASCII digit");
+}
+
+/// `src/formatGroup.js` with an unbounded width, transcribed from the JavaScript.
+///
+/// Written from the source and not from `rust/src/layout.rs`, for the same reason
+/// [`reference_match`] is: the rule this checks -- that the sizes *cycle* -- is one
+/// line of the loop, and a port that repeated the last size instead would agree with
+/// itself on every input.
+fn reference_group(digits: &str, sizes: &[u32], thousands: &str) -> String {
+    let units: Vec<char> = digits.chars().collect();
+    let mut groups: Vec<String> = Vec::new();
+    let mut index = units.len() as i64;
+    let mut cursor = 0usize;
+    let mut size = i64::from(sizes[0]);
+    while index > 0 && size > 0 {
+        let end = index as usize;
+        index -= size;
+        // `value.substring(i -= g, i + g)`, whose start is clamped at zero.
+        let start = index.max(0) as usize;
+        groups.push(units[start..end].iter().collect());
+        cursor = (cursor + 1) % sizes.len();
+        size = i64::from(sizes[cursor]);
+    }
+    groups.reverse();
+    groups.join(thousands)
+}
+
+#[test]
+fn grouping_cycles_through_its_sizes_rather_than_repeating_the_last() {
+    // Section 4.4 states the rule and warns that a hand-written expectation is not
+    // evidence for it, because the wrong answer is the plausible one: `[3, 2]` is the
+    // Indian grouping in every description of the Indian grouping, and d3 does not
+    // read it that way. So the corpus is generated, the expectation comes from a
+    // transcription of `src/formatGroup.js`, and the two examples that make the
+    // difference visible are stated as well.
+    let separators = [",", ".", "\u{202f}", "\u{a0}", "'"];
+    let grouped = |sizes: &[u32], thousands: &str, digits: &str| -> String {
+        let locale = Locale::builder()
+            .grouping(sizes.to_vec())
+            .thousands(thousands)
+            .build()
+            .expect("a positive grouping size is valid");
+        let value: f64 = digits.parse().expect("under 2^53, so exact");
+        locale
+            .formatter(",d")
+            .expect("valid")
+            .format_number(value)
+            .expect("valid")
+    };
+
+    // Section 4.4's example, and the answer it is not.
+    assert_eq!(grouped(&[3, 2], ",", "1234567890"), "12,345,67,890");
+    assert_ne!(grouped(&[3, 2], ",", "1234567890"), "1,23,45,67,890");
+    // The Indian grouping is spelled out entry by entry instead, which is exactly
+    // what `locale/en-IN.json` does.
+    assert_eq!(
+        grouped(&[3, 2, 2, 2, 2, 2, 2, 2, 2, 2], ",", "1234567890"),
+        "1,23,45,67,890"
+    );
+
+    // Fifteen digits is the most a `f64` holds exactly for every value in the range,
+    // so `d` renders the digit string back unchanged and the only question left is
+    // where the separators went.
+    const DIGITS: &str = "123456789012345";
+    let mut rng = Rng(0x1234_5678_9abc_def1);
+    let mut checked = 0usize;
+    for round in 0..500 {
+        // Sizes above the digit count reach `substring`'s clamp, and a list longer
+        // than the number of groups the digits need reaches the cycle's wrap-around
+        // from the other side; both are in range here.
+        let length = 1 + rng.below(5);
+        let sizes: Vec<u32> = (0..length).map(|_| 1 + rng.below(8) as u32).collect();
+        let thousands = separators[round % separators.len()];
+        for count in 1..=DIGITS.len() {
+            let digits = &DIGITS[..count];
+            assert_eq!(
+                grouped(&sizes, thousands, digits),
+                reference_group(digits, &sizes, thousands),
+                "grouping {digits} by {sizes:?} with {thousands:?}"
+            );
+            checked += 1;
+        }
+    }
+    assert!(checked > 7_000, "only {checked} groupings were checked");
+}
+
+/// Whether `x` is a value `src/exponent.js` has no decimal exponent for.
+///
+/// `formatDecimalParts` returns `null` for either zero, either infinity and NaN, and
+/// `exponent.js` turns that into NaN. Every NaN the precision helpers can answer
+/// with comes from one of these.
+fn has_no_exponent(x: f64) -> bool {
+    x == 0.0 || !x.is_finite()
+}
+
+/// The contract section 5.5 states for a precision suggestion.
+fn assert_suggestion(what: &str, suggestion: f64, expected_nan: bool) {
+    assert_eq!(
+        suggestion.is_nan(),
+        expected_nan,
+        "{what} answered {suggestion}"
+    );
+    if expected_nan {
+        // Not `f64::NAN`. `Math.max` answers with the negative quiet NaN whatever its
+        // operands were, and section 3.6 compares numeric results by bit pattern, so
+        // `is_nan()` alone would accept an answer the oracle disagrees with.
+        assert_eq!(
+            format!("{:016X}", suggestion.to_bits()),
+            "FFF8000000000000",
+            "{what} answered the wrong NaN"
+        );
+        assert_eq!(as_precision(suggestion), None, "{what}");
+        return;
+    }
+    assert!(
+        suggestion.is_finite() && suggestion >= 0.0 && suggestion.fract() == 0.0,
+        "{what} answered {suggestion}, which is not a whole non-negative count"
+    );
+    // `Math.max(+0, -0)` is `+0`, and that is also compared by bit pattern.
+    assert!(
+        suggestion != 0.0 || suggestion.is_sign_positive(),
+        "{what} answered a negative zero"
+    );
+    let precision = as_precision(suggestion).unwrap_or_else(|| {
+        panic!("{what} answered {suggestion}, which as_precision refused to convert")
+    });
+    assert_eq!(f64::from(precision), suggestion, "{what}");
+}
+
+/// Steps and values for the precision sweep, beyond [`AWKWARD_VALUES`].
+///
+/// Raw bit patterns reach the NaN payloads and the subnormals; the powers of ten
+/// reach the exponent extremes on both sides, including the two that overflow to
+/// infinity, which is one of the four ways the helpers are required to answer NaN.
+fn precision_operands(count: usize, seed: u64) -> Vec<f64> {
+    let mut rng = Rng(seed);
+    let mut values = Vec::with_capacity(count);
+    for index in 0..count {
+        let value = match index % 4 {
+            0 => f64::from_bits(rng.next()),
+            1 => {
+                let exponent = rng.below(650) as i32 - 330;
+                format!("1e{exponent}").parse::<f64>().expect("a literal")
+            }
+            2 => rng.next() as i64 as f64 / 1e9,
+            _ => -(rng.below(1_000_000) as f64) / 1024.0,
+        };
+        values.push(value);
+    }
+    values
+}
+
+#[test]
+fn the_precision_helpers_propagate_nan_where_a_float_max_would_lose_it() {
+    // Section 5.5, and the trap it names: `Math.max` propagates NaN and `f64::max`
+    // discards it, so `0.0_f64.max(f64::NAN)` is `0.0`. A port that reached for the
+    // Rust builtin would turn every NaN answer the contract requires into a zero,
+    // and would keep passing any suite that only exercised finite steps -- which is
+    // most of the recorded ones, since a caller asking for a precision has a real
+    // step in hand. The sweep is over the degenerate values on purpose, and it
+    // asserts how many NaN answers it saw so that a corpus of only finite steps
+    // fails here instead of passing.
+    let mut steps: Vec<f64> = AWKWARD_VALUES.to_vec();
+    steps.extend(precision_operands(200, 0x9e37_79b9_7f4a_7c15));
+    let mut others: Vec<f64> = AWKWARD_VALUES.to_vec();
+    others.extend(precision_operands(40, 0xd1b5_4a32_d192_ed03));
+
+    let mut nan_answers = 0usize;
+    let mut real_answers = 0usize;
+    for step in &steps {
+        let step = *step;
+        assert_suggestion(
+            &format!("precision_fixed({step})"),
+            precision_fixed(step),
+            has_no_exponent(step),
+        );
+
+        for other in &others {
+            let other = *other;
+
+            // `step = Math.abs(step), max = Math.abs(max) - step`, an ordinary `f64`
+            // subtraction whose own degeneracies -- an infinity minus an infinity, a
+            // difference that cancels to zero -- are the second way this answers NaN.
+            let difference = other.abs() - step.abs();
+            let round = precision_round(step, other);
+            assert_suggestion(
+                &format!("precision_round({step}, {other})"),
+                round,
+                has_no_exponent(step) || has_no_exponent(difference),
+            );
+            if !round.is_nan() {
+                assert!(round >= 1.0, "precision_round({step}, {other}) is {round}");
+            }
+
+            // The SI bucket of a zero, NaN or infinite value is the third way, and it
+            // is the one section 4.1 warns must not be cast to an integer or used to
+            // index the prefix table.
+            let prefix = precision_prefix(step, other);
+            assert_suggestion(
+                &format!("precision_prefix({step}, {other})"),
+                prefix,
+                has_no_exponent(step) || has_no_exponent(other),
+            );
+
+            for suggestion in [round, prefix] {
+                if suggestion.is_nan() {
+                    nan_answers += 1;
+                } else {
+                    real_answers += 1;
+                }
+            }
+        }
+    }
+    assert!(nan_answers > 3_000, "only {nan_answers} answers were NaN");
+    assert!(
+        real_answers > 25_000,
+        "only {real_answers} answers were real"
+    );
+    eprintln!("d3-format: {nan_answers} NaN and {real_answers} real precision suggestions checked");
+}
+
+#[test]
+fn every_accepted_specifier_round_trips_through_its_own_builder() {
+    // Section 5.2 makes `FormatSpecifier` immutable and the builder the only way to
+    // derive one from another, which puts `to_builder` on the path of every change a
+    // caller can make. A field it forgot to carry across would be silently reset to
+    // the default -- and the default is a *valid* value for every field, so nothing
+    // would fail except the caller's output. The corpus supplies the specifiers, and
+    // the identity is the assertion.
+    let mut checked = 0usize;
+    for input in corpus() {
+        let Ok(specifier) = input.parse::<FormatSpecifier>() else {
+            continue;
+        };
+        let rebuilt = specifier
+            .to_builder()
+            .build()
+            .unwrap_or_else(|error| panic!("{input:?} did not survive its own builder: {error}"));
+        assert_eq!(rebuilt, specifier, "{input:?} changed through its builder");
+        assert_eq!(
+            rebuilt.to_string(),
+            specifier.to_string(),
+            "{input:?} renders differently after its builder"
+        );
+        checked += 1;
+    }
+    assert!(checked > 5_000, "only {checked} specifiers were rebuilt");
+}
+
+// ---------------------------------------------------------------------------
+// The generated locale table
+// ---------------------------------------------------------------------------
+
+/// A generated locale as a [`LocaleDefinition`], through the public table only.
+#[cfg(feature = "locales")]
+fn definition_of(generated: &d3_format::locales::GeneratedLocale) -> d3_format::LocaleDefinition {
+    d3_format::LocaleDefinition {
+        decimal: generated.decimal.map(str::to_owned),
+        thousands: generated.thousands.map(str::to_owned),
+        grouping: generated.grouping.map(<[u32]>::to_vec),
+        currency: generated
+            .currency
+            .map(|[prefix, suffix]| [prefix.to_owned(), suffix.to_owned()]),
+        numerals: generated.numerals.map(|ten| ten.map(str::to_owned)),
+        percent: generated.percent.map(str::to_owned),
+        minus: generated.minus.map(str::to_owned),
+        nan: generated.nan.map(str::to_owned),
+    }
+}
+
+/// Whether every string this locale can emit is free of ASCII digits.
+///
+/// Only then does "no ASCII digit survives" say something about the substitution
+/// rather than about the locale's own text.
+#[cfg(feature = "locales")]
+fn substitutes_every_digit(locale: &Locale) -> bool {
+    let Some(numerals) = locale.numerals() else {
+        return false;
+    };
+    let mut texts: Vec<&str> = vec![
+        locale.decimal(),
+        locale.thousands(),
+        locale.currency_prefix(),
+        locale.currency_suffix(),
+        locale.percent(),
+        locale.minus(),
+        locale.nan(),
+    ];
+    texts.extend(numerals.iter().map(String::as_str));
+    !texts
+        .iter()
+        .any(|text| text.chars().any(|character| character.is_ascii_digit()))
+}
+
+/// A specifier sample broad enough to reach every conversion and every affix.
+#[cfg(feature = "locales")]
+const LOCALE_SPECIFIERS: [&str; 26] = [
+    "",
+    "d",
+    "f",
+    ".2f",
+    ".0f",
+    "e",
+    ".3e",
+    "g",
+    ".0g",
+    "n",
+    ",g",
+    "s",
+    ".3s",
+    "~s",
+    "r",
+    ".2r",
+    "p",
+    "%",
+    ".0%",
+    "b",
+    "#b",
+    "#x",
+    "$,.2f",
+    "0>12,.2f",
+    "_^+$012,.2~f",
+    "020c",
+];
+
+#[cfg(feature = "locales")]
+#[test]
+fn every_named_locale_matches_its_definition_and_formats_everything() {
+    // Section 5.4's "no accepted input may trigger a panic, for any accepted
+    // specifier, locale or `f64` bit pattern" names the locale as one of the three
+    // axes, and the sweeps above hold it fixed at en-US. This is that axis: all 59
+    // bundled definitions, with their 23 distinct numeral sets, their multi-code-unit
+    // separators and their right-to-left affixes, crossed with a specifier sample and
+    // every awkward bit pattern.
+    //
+    // It also closes the door between the table and the constructor. `Locale::named`
+    // is documented as `from_definition` of the table entry; asserting that from
+    // outside means a future named locale that took a shortcut -- a cached
+    // `LocaleInner`, a post-processing step, a different table -- is a failure rather
+    // than a divergence nobody notices.
+    let mut names = 0usize;
+    let mut formatted = 0usize;
+    let mut substituting = 0usize;
+    for generated in &d3_format::locales::LOCALES {
+        let name = generated.name;
+        let locale = Locale::named(name).unwrap_or_else(|| panic!("{name} is in the table"));
+        let rebuilt = Locale::from_definition(definition_of(generated))
+            .unwrap_or_else(|error| panic!("{name} does not satisfy its own schema: {error}"));
+        assert_eq!(locale, rebuilt, "{name} differs from its definition");
+        names += 1;
+
+        let digits_are_substituted = substitutes_every_digit(&locale);
+        substituting += usize::from(digits_are_substituted);
+
+        for spec in LOCALE_SPECIFIERS {
+            let formatter = locale
+                .formatter_with_limits(spec, SWEEP_LIMITS)
+                .unwrap_or_else(|error| panic!("{name} refused {spec:?}: {error}"));
+            match formatter.input_kind() {
+                InputKind::Number => {
+                    for value in AWKWARD_VALUES {
+                        let out = formatter.format_number(value).unwrap_or_else(|error| {
+                            panic!("{name} {spec:?} on {:016X}: {error}", value.to_bits())
+                        });
+                        if digits_are_substituted {
+                            assert!(
+                                !out.chars().any(|c| c.is_ascii_digit()),
+                                "{name} {spec:?} on {:016X} left an ASCII digit in {out:?}",
+                                value.to_bits()
+                            );
+                        }
+                        formatted += 1;
+                    }
+                }
+                InputKind::Text => {
+                    for text in TEXT_SAMPLES {
+                        let out = formatter
+                            .format_text(text)
+                            .unwrap_or_else(|error| panic!("{name} {spec:?} on {text:?}: {error}"));
+                        if digits_are_substituted {
+                            assert!(
+                                !out.chars().any(|c| c.is_ascii_digit()),
+                                "{name} {spec:?} on {text:?} left an ASCII digit in {out:?}"
+                            );
+                        }
+                        formatted += 1;
+                    }
+                }
+            }
+        }
+    }
+
+    assert_eq!(names, d3_format::locales::LOCALE_COUNT);
+    assert_eq!(names, 59, "the bundled locale count changed");
+    assert_eq!(names, d3_format::locales::names().count());
+    assert!(
+        substituting >= 20,
+        "only {substituting} bundled locales carry numerals"
+    );
+    eprintln!(
+        "d3-format: {formatted} values laid out through {names} named locales, \
+{substituting} of them substituting every digit"
+    );
 }

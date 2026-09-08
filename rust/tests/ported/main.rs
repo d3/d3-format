@@ -15,10 +15,10 @@
 //!
 //! All eleven pass. They nevertheless keep their `#[ignore]`, and that is a
 //! constraint rather than a judgement about them: `ci/check.ps1`'s scoreboard guard
-//! asserts that this target has exactly as many ignored tests as
-//! `assertion-map.json` names distinct ported tests -- eleven -- and the expected
-//! count is derived from the mapping's *names*, not from how many of them run. The
-//! mapping is oracle data and does not change as the port advances, so the count
+//! asserts that this target *defines* exactly as many tests as
+//! `assertion-map.json` names distinct ported tests -- eleven -- and it reports the
+//! ignored count for information only. Inventory is what the mapping can speak to;
+//! the mapping is oracle data and does not change as the port advances, so it
 //! cannot record a phase either way.
 //!
 //! So the `#[ignore]` attributes stay, and [`the_ported_assertions_all_pass`] runs
