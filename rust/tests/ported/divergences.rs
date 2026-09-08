@@ -5,18 +5,11 @@
 //! `divergence` field of `rust/fixtures/d3-format-3.1.2/assertion-map.json`. None of
 //! them may be declared "passed" by some other Rust call: the point is to assert the
 //! replacement contract, not to pretend the JavaScript behaviour survived.
-//!
-//! Three of the four are complete. The fourth,
-//! [`numeric_formatters_reject_non_numeric_input`], asserts the half of its contract
-//! Phase 3 owns and then diverges, because the other half needs the NaN rendering
-//! Phase 4 brings.
 
 use d3_format::{
     Align, FormatError, FormatSpecifier, FormatType, InputKind, Locale, ParseErrorKind, Sign,
     Symbol,
 };
-
-const PHASE_4: &str = "Phase 4 placeholder: numeric layout does not exist yet";
 
 /// `format === locale.format` and `formatPrefix === locale.formatPrefix`, from
 /// `test/defaultLocale-test.js`.
@@ -224,8 +217,10 @@ pub(crate) fn specifier_construction_does_not_coerce_arbitrary_javascript_values
 /// NaN outputs `"   N/A"`, `"-     "` and `"   NaN"` must be produced for
 /// `f64::NAN`, and non-numeric input must be rejected rather than coerced.
 ///
-/// The rejection half is Phase 3 and is asserted below. The rendering half needs
-/// value layout, so this test still diverges; Phase 4 replaces the last line.
+/// This is also where the three assertions of that oracle block are checked, since
+/// the generated block is `#[ignore]`d for taking `undefined`: what d3 computes from
+/// `+undefined` is what the port computes from `f64::NAN`, and the expected strings
+/// are the oracle's own.
 #[test]
 #[ignore = "runs in the target root; see the module documentation"]
 pub(crate) fn numeric_formatters_reject_non_numeric_input() {
@@ -233,11 +228,19 @@ pub(crate) fn numeric_formatters_reject_non_numeric_input() {
     // number. In JavaScript each call succeeds by coercion; here each is a typed
     // refusal naming both kinds.
     let cases = [
-        (Locale::builder().nan("N/A").build().expect("valid"), "6.2f"),
-        (Locale::builder().nan("-").build().expect("valid"), "<6.2g"),
-        (Locale::builder().build().expect("valid"), " 6.2f"),
+        (
+            Locale::builder().nan("N/A").build().expect("valid"),
+            "6.2f",
+            "   N/A",
+        ),
+        (
+            Locale::builder().nan("-").build().expect("valid"),
+            "<6.2g",
+            "-     ",
+        ),
+        (Locale::builder().build().expect("valid"), " 6.2f", "   NaN"),
     ];
-    for (locale, spec) in &cases {
+    for (locale, spec, expected) in &cases {
         let formatter = locale.formatter(spec).expect("valid");
         assert_eq!(formatter.input_kind(), InputKind::Number);
         assert_eq!(
@@ -248,6 +251,10 @@ pub(crate) fn numeric_formatters_reject_non_numeric_input() {
             },
             "{spec:?}"
         );
+
+        // The replacement for the coercion: the value `+undefined` produces, passed
+        // as itself. The oracle's expected strings are unchanged.
+        assert_eq!(formatter.format_number(f64::NAN).expect("valid"), *expected);
     }
 
     // The converse, which d3 also coerces: a `c` formatter given a number.
@@ -259,22 +266,12 @@ pub(crate) fn numeric_formatters_reject_non_numeric_input() {
             actual: InputKind::Number,
         }
     );
-
-    // The other half of the contract: `f64::NAN` itself must render as the locale's
-    // NaN text, padded. That is value layout, which Phase 4 owns.
-    crate::placeholder(
-        PHASE_4,
-        "f64::NAN to render as \"   N/A\", \"-     \" and \"   NaN\" \
-         through the three locales above",
-    );
 }
 
-/// Every assertion in this module that Phase 3 completes.
-///
-/// [`numeric_formatters_reject_non_numeric_input`] is deliberately absent: it still
-/// diverges, and `main.rs` asserts that it does.
+/// Every assertion in this module, for the runner in the target root.
 pub(crate) fn all() {
     default_locale_is_not_a_mutable_process_global();
     format_specifier_is_immutable_after_construction();
     specifier_construction_does_not_coerce_arbitrary_javascript_values();
+    numeric_formatters_reject_non_numeric_input();
 }

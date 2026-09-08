@@ -442,7 +442,6 @@ pub static BLOCKS: &[Block] = &[
 // test/format-type-r-test.js #0: format("r") can round to significant digits
 // 27 assertion execution(s), 27 recorded call(s)
 #[test]
-#[ignore = "Phase 1 placeholder: the Rust formatting API does not exist yet (MIGRATION_TO_RUST.md, Phase 2 through Phase 4)"]
 fn t000_format_r_can_round_to_significant_digits() {
     crate::support::run(&BLOCKS[0]);
 }
@@ -450,7 +449,6 @@ fn t000_format_r_can_round_to_significant_digits() {
 // test/format-type-r-test.js #1: format("r") can round zero
 // 3 assertion execution(s), 3 recorded call(s)
 #[test]
-#[ignore = "Phase 1 placeholder: the Rust formatting API does not exist yet (MIGRATION_TO_RUST.md, Phase 2 through Phase 4)"]
 fn t001_format_r_can_round_zero() {
     crate::support::run(&BLOCKS[1]);
 }
@@ -458,7 +456,6 @@ fn t001_format_r_can_round_zero() {
 // test/format-type-r-test.js #2: format("r") can round very small numbers
 // 1 assertion execution(s), 1 recorded call(s)
 #[test]
-#[ignore = "Phase 1 placeholder: the Rust formatting API does not exist yet (MIGRATION_TO_RUST.md, Phase 2 through Phase 4)"]
 fn t002_format_r_can_round_very_small_numbers() {
     crate::support::run(&BLOCKS[2]);
 }

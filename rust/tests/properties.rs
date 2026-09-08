@@ -35,7 +35,8 @@
 //! which pins the cases the oracle suite states outright.
 
 use d3_format::{
-    Align, FormatError, FormatSpecifier, FormatType, Locale, ParseErrorKind, Sign, Symbol,
+    Align, FormatError, FormatLimits, FormatSpecifier, FormatType, InputKind, Locale,
+    ParseErrorKind, Sign, Symbol,
 };
 
 // ---------------------------------------------------------------------------
@@ -732,29 +733,193 @@ fn the_reference_matcher_agrees_with_node_on_the_documented_examples() {
     assert_eq!(full.format_type, Some(u16::from(b'f')));
 }
 
+/// Values chosen so that every branch of the layout is reached by something.
+///
+/// The three sign cases including both zeros, the two infinities, both NaN sign
+/// bits, the subnormal and normal extremes, the exponent boundaries where notation
+/// switches, and the SI table's ends and one step past each of them.
+const AWKWARD_VALUES: [f64; 34] = [
+    0.0,
+    -0.0,
+    1.0,
+    -1.0,
+    f64::INFINITY,
+    f64::NEG_INFINITY,
+    f64::NAN,
+    -f64::NAN,
+    f64::MIN,
+    f64::MAX,
+    f64::MIN_POSITIVE,
+    -f64::MIN_POSITIVE,
+    5e-324,
+    -5e-324,
+    f64::EPSILON,
+    0.1,
+    0.5,
+    -0.5,
+    1.5,
+    2.5,
+    9.995,
+    0.000_001,
+    0.000_000_1,
+    999_999.5,
+    1e6,
+    1e21,
+    1e-7,
+    1.797_693_134_862_315_7e308,
+    1e24,
+    1e25,
+    -1e25,
+    1e-24,
+    1e-25,
+    4_294_967_296.0,
+];
+
 #[test]
-fn no_corpus_input_panics_anywhere_in_the_phase_3_surface() {
-    // Section 5.4: no accepted input may trigger a panic or an integer wrap. Value
-    // layout is Phase 4 and diverges on purpose, so this covers everything up to
-    // it: parsing, rendering, compiling, and the input-kind gate.
+fn no_corpus_input_panics_anywhere_in_the_public_surface() {
+    // Section 5.4: no accepted input may trigger a panic or an integer wrap, for
+    // any accepted specifier, locale or `f64` bit pattern. The corpus supplies the
+    // specifiers, `AWKWARD_VALUES` the bit patterns, and every accepted pair is
+    // formatted for real -- parse, render, compile, the input-kind gate, and the
+    // layout behind it.
+    //
+    // The width limit is lowered from the default million so that the corpus's
+    // deliberately huge widths are refused at compile time instead of allocating a
+    // megabyte apiece; `the_width_limit_is_enforced_before_allocating` in
+    // `tests/public_api.rs` covers the wide path, and
+    // `a_pathological_width_still_produces_the_right_string` below covers it here.
+    let limits = FormatLimits {
+        max_width_utf16: 4096,
+        max_output_bytes: 1 << 20,
+    };
     let locale = Locale::en_us();
+    let mut out = String::new();
+    let mut specifiers = 0usize;
+    let mut formatted = 0usize;
     for input in corpus() {
         let Ok(specifier) = input.parse::<FormatSpecifier>() else {
             continue;
         };
         let _ = specifier.to_string();
         let _ = specifier.to_builder().build();
-        match locale.formatter_for(&specifier) {
-            Err(_) => continue,
-            Ok(formatter) => {
-                // The wrong-kind path returns rather than panicking; the right-kind
-                // path is the Phase 4 seam and is not called.
-                let wrong = match formatter.input_kind() {
-                    d3_format::InputKind::Number => formatter.format_text("x"),
-                    d3_format::InputKind::Text => formatter.format_number(0.0),
-                };
-                assert!(matches!(wrong, Err(FormatError::InputTypeMismatch { .. })));
+        let Ok(formatter) = locale.formatter_for_with_limits(&specifier, limits) else {
+            continue;
+        };
+        specifiers += 1;
+
+        // The wrong-kind path returns rather than panicking.
+        let wrong = match formatter.input_kind() {
+            InputKind::Number => formatter.format_text("x"),
+            InputKind::Text => formatter.format_number(0.0),
+        };
+        assert!(matches!(wrong, Err(FormatError::InputTypeMismatch { .. })));
+
+        match formatter.input_kind() {
+            InputKind::Text => {
+                // A grapheme cluster, an astral pair and a lone combining mark: the
+                // three shapes that make UTF-16 width differ from bytes and chars.
+                for text in ["", "x", "e\u{301}", "\u{1f600}", "\u{0301}"] {
+                    formatter
+                        .format_text_into(&mut out, text)
+                        .unwrap_or_else(|error| panic!("{specifier} on {text:?}: {error}"));
+                    formatted += 1;
+                }
+            }
+            InputKind::Number => {
+                for value in AWKWARD_VALUES {
+                    formatter
+                        .format_number_into(&mut out, value)
+                        .unwrap_or_else(|error| {
+                            panic!("{specifier} on {:016X}: {error}", value.to_bits())
+                        });
+                    formatted += 1;
+                }
             }
         }
     }
+    eprintln!(
+        "d3-format: {formatted} values laid out through {specifiers} accepted specifiers, \
+no panic and no error"
+    );
+}
+
+/// The references the `formatPrefix` sweep uses.
+///
+/// A ninth of `AWKWARD_VALUES` because that sweep is quadratic -- every reference is
+/// crossed with every value, for every accepted specifier in the corpus -- and these
+/// are the ones that select a different code path rather than a different digit: all
+/// four degenerate references, both signs of a real bucket, and the two ends of the
+/// SI table.
+const PREFIX_REFERENCES: [f64; 9] = [
+    0.0,
+    -0.0,
+    f64::NAN,
+    f64::INFINITY,
+    1e6,
+    -1e6,
+    1.0,
+    1e24,
+    1e-24,
+];
+
+#[test]
+fn no_corpus_input_panics_through_a_prefix_formatter() {
+    // `formatPrefix` is the other entry point, and section 4.1's degenerate
+    // references -- the ones whose scale is NaN -- are the reason it needs its own
+    // sweep: nothing there may index the SI table with a NaN exponent.
+    let limits = FormatLimits {
+        max_width_utf16: 4096,
+        max_output_bytes: 1 << 20,
+    };
+    let locale = Locale::en_us();
+    let mut out = String::new();
+    let mut formatted = 0usize;
+    for input in corpus() {
+        let Ok(specifier) = input.parse::<FormatSpecifier>() else {
+            continue;
+        };
+        let rendered = specifier.to_string();
+        for reference in PREFIX_REFERENCES {
+            let compiled = locale.prefix_formatter_with_limits(&rendered, reference, limits);
+            let Ok(formatter) = compiled else { continue };
+            // `formatPrefix` forces type `f`, so the formatter is always numeric.
+            assert_eq!(formatter.input_kind(), InputKind::Number);
+            for value in PREFIX_REFERENCES {
+                formatter
+                    .format_number_into(&mut out, value)
+                    .unwrap_or_else(|error| {
+                        panic!(
+                            "{specifier} @ {:016X} on {:016X}: {error}",
+                            reference.to_bits(),
+                            value.to_bits()
+                        )
+                    });
+                formatted += 1;
+            }
+        }
+    }
+    eprintln!(
+        "d3-format: {formatted} values laid out through prefix formatters, \
+no panic and no error"
+    );
+}
+
+#[test]
+fn a_pathological_width_still_produces_the_right_string() {
+    // The wide path the sweep above declines to walk 40,000 times, walked once.
+    let formatter = Locale::en_us().formatter("*^999999.2f").expect("valid");
+    let formatted = formatter.format_number(-1.5).expect("valid");
+    assert_eq!(formatted.chars().count(), 999_999);
+    assert_eq!(formatted.matches('*').count(), 999_994);
+    assert!(formatted.contains("\u{2212}1.50"));
+
+    // And one code unit further is refused rather than truncated or aborted.
+    let over = Locale::en_us().formatter_with_limits(
+        "999999f",
+        FormatLimits {
+            max_width_utf16: 999_998,
+            max_output_bytes: 1 << 20,
+        },
+    );
+    assert!(matches!(over, Err(FormatError::WidthLimit { .. })));
 }

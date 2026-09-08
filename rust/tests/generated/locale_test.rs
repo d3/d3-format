@@ -641,7 +641,6 @@ pub static BLOCKS: &[Block] = &[
 // test/locale-test.js #0: formatLocale({decimal: decimal}) observes the specified decimal point
 // 2 assertion execution(s), 2 recorded call(s)
 #[test]
-#[ignore = "Phase 1 placeholder: the Rust formatting API does not exist yet (MIGRATION_TO_RUST.md, Phase 2 through Phase 4)"]
 fn t000_formatlocale_decimal_decimal_observes_the_specified_decimal_point() {
     crate::support::run(&BLOCKS[0]);
 }
@@ -649,7 +648,6 @@ fn t000_formatlocale_decimal_decimal_observes_the_specified_decimal_point() {
 // test/locale-test.js #1: formatLocale({currency: [prefix, suffix]}) observes the specified currency prefix and suffix
 // 2 assertion execution(s), 2 recorded call(s)
 #[test]
-#[ignore = "Phase 1 placeholder: the Rust formatting API does not exist yet (MIGRATION_TO_RUST.md, Phase 2 through Phase 4)"]
 fn t001_formatlocale_currency_prefix_suffix_observes_the_specified_currency_pref() {
     crate::support::run(&BLOCKS[1]);
 }
@@ -657,7 +655,6 @@ fn t001_formatlocale_currency_prefix_suffix_observes_the_specified_currency_pref
 // test/locale-test.js #2: formatLocale({currency: [prefix, suffix]}) places the currency suffix after the SI suffix
 // 1 assertion execution(s), 1 recorded call(s)
 #[test]
-#[ignore = "Phase 1 placeholder: the Rust formatting API does not exist yet (MIGRATION_TO_RUST.md, Phase 2 through Phase 4)"]
 fn t002_formatlocale_currency_prefix_suffix_places_the_currency_suffix_after_the() {
     crate::support::run(&BLOCKS[2]);
 }
@@ -665,7 +662,6 @@ fn t002_formatlocale_currency_prefix_suffix_places_the_currency_suffix_after_the
 // test/locale-test.js #3: formatLocale({grouping: undefined}) does not perform any grouping
 // 1 assertion execution(s), 1 recorded call(s)
 #[test]
-#[ignore = "Phase 1 placeholder: the Rust formatting API does not exist yet (MIGRATION_TO_RUST.md, Phase 2 through Phase 4)"]
 fn t003_formatlocale_grouping_undefined_does_not_perform_any_grouping() {
     crate::support::run(&BLOCKS[3]);
 }
@@ -673,7 +669,6 @@ fn t003_formatlocale_grouping_undefined_does_not_perform_any_grouping() {
 // test/locale-test.js #4: formatLocale({grouping: [sizes\u{2026}]}) observes the specified group sizes
 // 4 assertion execution(s), 4 recorded call(s)
 #[test]
-#[ignore = "Phase 1 placeholder: the Rust formatting API does not exist yet (MIGRATION_TO_RUST.md, Phase 2 through Phase 4)"]
 fn t004_formatlocale_grouping_sizes_observes_the_specified_group_sizes() {
     crate::support::run(&BLOCKS[4]);
 }
@@ -681,7 +676,6 @@ fn t004_formatlocale_grouping_sizes_observes_the_specified_group_sizes() {
 // test/locale-test.js #5: formatLocale(\u{2026}) can format numbers using the Indian numbering system.
 // 20 assertion execution(s), 20 recorded call(s)
 #[test]
-#[ignore = "Phase 1 placeholder: the Rust formatting API does not exist yet (MIGRATION_TO_RUST.md, Phase 2 through Phase 4)"]
 fn t005_formatlocale_can_format_numbers_using_the_indian_numbering_system() {
     crate::support::run(&BLOCKS[5]);
 }
@@ -689,7 +683,6 @@ fn t005_formatlocale_can_format_numbers_using_the_indian_numbering_system() {
 // test/locale-test.js #6: formatLocale({thousands: separator}) observes the specified group separator
 // 2 assertion execution(s), 2 recorded call(s)
 #[test]
-#[ignore = "Phase 1 placeholder: the Rust formatting API does not exist yet (MIGRATION_TO_RUST.md, Phase 2 through Phase 4)"]
 fn t006_formatlocale_thousands_separator_observes_the_specified_group_separator() {
     crate::support::run(&BLOCKS[6]);
 }
@@ -697,7 +690,6 @@ fn t006_formatlocale_thousands_separator_observes_the_specified_group_separator(
 // test/locale-test.js #7: formatLocale({percent: percent}) observes the specified percent sign
 // 2 assertion execution(s), 2 recorded call(s)
 #[test]
-#[ignore = "Phase 1 placeholder: the Rust formatting API does not exist yet (MIGRATION_TO_RUST.md, Phase 2 through Phase 4)"]
 fn t007_formatlocale_percent_percent_observes_the_specified_percent_sign() {
     crate::support::run(&BLOCKS[7]);
 }
@@ -705,7 +697,6 @@ fn t007_formatlocale_percent_percent_observes_the_specified_percent_sign() {
 // test/locale-test.js #8: formatLocale({minus: minus}) observes the specified minus sign
 // 4 assertion execution(s), 4 recorded call(s)
 #[test]
-#[ignore = "Phase 1 placeholder: the Rust formatting API does not exist yet (MIGRATION_TO_RUST.md, Phase 2 through Phase 4)"]
 fn t008_formatlocale_minus_minus_observes_the_specified_minus_sign() {
     crate::support::run(&BLOCKS[8]);
 }
@@ -713,7 +704,7 @@ fn t008_formatlocale_minus_minus_observes_the_specified_minus_sign() {
 // test/locale-test.js #9: formatLocale({nan: nan}) observes the specified not-a-number representation
 // 3 assertion execution(s), 3 recorded call(s)
 #[test]
-#[ignore = "Phase 1 placeholder: the Rust formatting API does not exist yet (MIGRATION_TO_RUST.md, Phase 2 through Phase 4)"]
+#[ignore = "every recorded call in this block passes a JavaScript value the typed API declines; see no-input-coercion in rust/DIVERGENCES.md"]
 fn t009_formatlocale_nan_nan_observes_the_specified_not_a_number_representation() {
     crate::support::run(&BLOCKS[9]);
 }
@@ -721,7 +712,7 @@ fn t009_formatlocale_nan_nan_observes_the_specified_not_a_number_representation(
 // test/locale-test.js #10: locale data is valid
 // 236 assertion execution(s), 0 recorded call(s)
 #[test]
-#[ignore = "Phase 1 placeholder: the Rust formatting API does not exist yet (MIGRATION_TO_RUST.md, Phase 2 through Phase 4)"]
+#[ignore = "the oracle recorded no boundary call for this block, so running it would assert nothing; assertion-map.json routes its assertions to rust/tests/ported"]
 fn t010_locale_data_is_valid() {
     crate::support::run(&BLOCKS[10]);
 }

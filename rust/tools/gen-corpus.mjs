@@ -326,19 +326,38 @@ export function randomCases(count, seed) {
   const cases = [];
   for (let index = 0; index < count; index++) {
     const locale = byName.get(names[Number(next() % BigInt(names.length))]);
+    const specifier = drawSpecifier(next);
+    const oracle = {expected: null, assertion_id: null, test_file: null, test_index: null};
     cases.push(
       makeCase({
         id: `random-${seed}-${String(index).padStart(6, "0")}`,
         op: "format",
         origin: "random",
         locale: {id: locale.name, hash: locale.hash, definition: locale.definition},
-        specifier: drawSpecifier(next),
+        specifier,
         value: drawValue(next),
-        oracle: {expected: null, assertion_id: null, test_file: null, test_index: null}
+        // A type `c` formatter takes text. JavaScript coerces the drawn number to a
+        // string and formats that; the Rust port answers `InputTypeMismatch`, which
+        // is DIVERGENCES.md entry `no-input-coercion` -- the same entry callCases
+        // attaches when a *recorded* call passes a non-number. Marking the case is
+        // what makes the port's refusal the expected answer instead of a finding;
+        // type `c` itself is covered with text input by the generated suite.
+        oracle: isTextType(specifier) ? {...oracle, skip: "no-input-coercion"} : oracle
       })
     );
   }
   return cases;
+}
+
+/**
+ * True when a drawn specifier's type is `c`, the one type that takes text.
+ *
+ * The type is the last character when there is one, and no other slot of a drawn
+ * specifier can end in `c`: `FILLS` has no letter in it, and every other trailing
+ * slot is a digit, a comma or a tilde.
+ */
+export function isTextType(specifier) {
+  return specifier.endsWith("c");
 }
 
 // ---------------------------------------------------------------------------

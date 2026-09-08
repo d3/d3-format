@@ -65,7 +65,8 @@ Current status:
 | Locale generator and drift check | Gate — passed | 59 locales emitted with per-source hashes; `--check` verifies byte identity |
 | Differential runner | Deliverable — present | numeric primitives wired; formatter operations decline until Phase 4 rather than claiming agreement |
 | Exact number conversion | Gate — passed | 2,344,808 differential cases agree with Node v24.18.0 under MSRV, pinned, and stable, with zero mismatches |
-| Specifier, locale, and public API | Gate — passed | §5 surface implemented; parser checked against an independent matcher over 62,823 inputs; value layout still diverges pending Phase 4 |
+| Specifier, locale, and public API | Gate — passed | §5 surface implemented; parser checked against an independent matcher over 62,823 inputs |
+| Types, layout, SI, and locales | Gate — passed | all 793 recorded d3 calls agree exactly; 2,655,832 differential cases with zero mismatches; 161 of 168 conformance blocks execute and pass |
 | Rust CI jobs | Deliverable — present | `rust/ci/check.ps1` plus pinned, MSRV, stable, and WASM jobs; every step reproduced locally, never yet run on GitHub |
 | Parity CI job | Gate — pending | §6.3 references `rust/tools/`, so it follows Phase 1 |
 | Cargo publication | Gate — pending | `publish-rust.yml` is not written |
@@ -739,7 +740,16 @@ The implementation and regression suite must preserve:
 - trim-before-grouping and numeral-substitution-last ordering;
 - lowercase `0x` prefix for uppercase `X`;
 - ordinary f64 subtraction in `precisionRound`;
-- exact `Math.pow` scale bits and multiplication order for `formatPrefix`.
+- exact `Math.pow` scale bits and multiplication order for `formatPrefix`;
+- `Math.max` and `Math.min` returning the negative NaN bit pattern.
+
+Grouping *cycles* through its sizes rather than repeating the last one, and the consequence is easy
+to get backwards: `[3, 2]` renders ten digits as `12,345,67,890`, not as the Indian
+`1,23,45,67,890`. A hand-written expectation is not evidence here; the oracle is.
+
+Numeral substitution running last over the fully assembled string is observable, not an internal
+detail. Under the Arabic locale, `format("#x")(48879)` is `"٠xbeef"` — the `0` of the `0x` base
+prefix is substituted while the hex digits are not, which is true only in that order.
 
 ## 5. Public Rust API and safety policy
 
@@ -1257,6 +1267,26 @@ helpers, generated locales.
 
 Exit: all generated and ported tests pass; the 59-locale differential and concurrency stress tests
 report zero mismatches; no accepted input panics.
+
+"All generated tests pass" means every block the oracle recorded something replayable for. A block
+is ignored only when it recorded no boundary call, or when every call it made passes a JavaScript
+value the typed API declines; its assertions are then covered in `rust/tests/ported`. That rule is
+derived from the recorded calls rather than hand-maintained, and the generated target asserts in
+Rust that the emitted ignore table matches the rule, so a block that *could* run cannot sit skipped.
+
+The concurrency stress test is `rust/tests/concurrency.rs`. Its specific target is d3's
+`prefixExponent` module global: it must format from several threads through `formatPrefix` with
+adjacent work items in different SI buckets, where a leak appears as one call's suffix on another's
+output. It also covers per-call compilation, one `&Formatter` shared across threads, and a locale
+moved off its building thread.
+
+The 59-locale differential draws from every named locale. Per the same rule §4.3 applies to corpus
+buckets, a locale drawing zero cases is a gate failure rather than a pass, so the runner records
+per-locale counts and asserts a floor.
+
+No accepted input panics is established by sweep, not by inspection: parse the specifier corpus,
+compile every accepted specifier, and lay out awkward `f64` bit patterns and strings through each,
+treating any error — not merely a panic — as a failure.
 
 Failure: minimize to `(assertion ID, specifier, locale hash, input bits)`, add a regression, and fix
 the lowest layer. Locale or layout code must not compensate for wrong numeric digits.

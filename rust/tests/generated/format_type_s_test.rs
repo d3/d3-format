@@ -1609,7 +1609,6 @@ pub static BLOCKS: &[Block] = &[
 // test/format-type-s-test.js #0: format("s") outputs SI-prefix notation with default precision 6
 // 12 assertion execution(s), 12 recorded call(s)
 #[test]
-#[ignore = "Phase 1 placeholder: the Rust formatting API does not exist yet (MIGRATION_TO_RUST.md, Phase 2 through Phase 4)"]
 fn t000_format_s_outputs_si_prefix_notation_with_default_precision_6() {
     crate::support::run(&BLOCKS[0]);
 }
@@ -1617,7 +1616,6 @@ fn t000_format_s_outputs_si_prefix_notation_with_default_precision_6() {
 // test/format-type-s-test.js #1: format("s") does not get confused by NaN, Infinity, etc.
 // 3 assertion execution(s), 3 recorded call(s)
 #[test]
-#[ignore = "Phase 1 placeholder: the Rust formatting API does not exist yet (MIGRATION_TO_RUST.md, Phase 2 through Phase 4)"]
 fn t001_format_s_does_not_get_confused_by_nan_infinity_etc() {
     crate::support::run(&BLOCKS[1]);
 }
@@ -1625,7 +1623,6 @@ fn t001_format_s_does_not_get_confused_by_nan_infinity_etc() {
 // test/format-type-s-test.js #2: format("[.precision]s") outputs SI-prefix notation with precision significant digits
 // 16 assertion execution(s), 16 recorded call(s)
 #[test]
-#[ignore = "Phase 1 placeholder: the Rust formatting API does not exist yet (MIGRATION_TO_RUST.md, Phase 2 through Phase 4)"]
 fn t002_format_precision_s_outputs_si_prefix_notation_with_precision_significant() {
     crate::support::run(&BLOCKS[2]);
 }
@@ -1633,7 +1630,6 @@ fn t002_format_precision_s_outputs_si_prefix_notation_with_precision_significant
 // test/format-type-s-test.js #3: format("s") formats numbers smaller than 1e-24 with yocto
 // 20 assertion execution(s), 20 recorded call(s)
 #[test]
-#[ignore = "Phase 1 placeholder: the Rust formatting API does not exist yet (MIGRATION_TO_RUST.md, Phase 2 through Phase 4)"]
 fn t003_format_s_formats_numbers_smaller_than_1e_24_with_yocto() {
     crate::support::run(&BLOCKS[3]);
 }
@@ -1641,7 +1637,6 @@ fn t003_format_s_formats_numbers_smaller_than_1e_24_with_yocto() {
 // test/format-type-s-test.js #4: format("s") formats numbers larger than 1e24 with yotta
 // 20 assertion execution(s), 20 recorded call(s)
 #[test]
-#[ignore = "Phase 1 placeholder: the Rust formatting API does not exist yet (MIGRATION_TO_RUST.md, Phase 2 through Phase 4)"]
 fn t004_format_s_formats_numbers_larger_than_1e24_with_yotta() {
     crate::support::run(&BLOCKS[4]);
 }
@@ -1649,7 +1644,6 @@ fn t004_format_s_formats_numbers_larger_than_1e24_with_yotta() {
 // test/format-type-s-test.js #5: format("$s") outputs SI-prefix notation with a currency symbol
 // 20 assertion execution(s), 20 recorded call(s)
 #[test]
-#[ignore = "Phase 1 placeholder: the Rust formatting API does not exist yet (MIGRATION_TO_RUST.md, Phase 2 through Phase 4)"]
 fn t005_format_s_outputs_si_prefix_notation_with_a_currency_symbol() {
     crate::support::run(&BLOCKS[5]);
 }
@@ -1657,7 +1651,6 @@ fn t005_format_s_outputs_si_prefix_notation_with_a_currency_symbol() {
 // test/format-type-s-test.js #6: format("s") SI-prefix notation precision is consistent for small and large numbers
 // 22 assertion execution(s), 22 recorded call(s)
 #[test]
-#[ignore = "Phase 1 placeholder: the Rust formatting API does not exist yet (MIGRATION_TO_RUST.md, Phase 2 through Phase 4)"]
 fn t006_format_s_si_prefix_notation_precision_is_consistent_for_small_and_large() {
     crate::support::run(&BLOCKS[6]);
 }
@@ -1665,7 +1658,6 @@ fn t006_format_s_si_prefix_notation_precision_is_consistent_for_small_and_large(
 // test/format-type-s-test.js #7: format("0[width],s") will group thousands due to zero fill
 // 2 assertion execution(s), 2 recorded call(s)
 #[test]
-#[ignore = "Phase 1 placeholder: the Rust formatting API does not exist yet (MIGRATION_TO_RUST.md, Phase 2 through Phase 4)"]
 fn t007_format_0_width_s_will_group_thousands_due_to_zero_fill() {
     crate::support::run(&BLOCKS[7]);
 }
@@ -1673,7 +1665,6 @@ fn t007_format_0_width_s_will_group_thousands_due_to_zero_fill() {
 // test/format-type-s-test.js #8: format(",s") will group thousands for very large numbers
 // 1 assertion execution(s), 1 recorded call(s)
 #[test]
-#[ignore = "Phase 1 placeholder: the Rust formatting API does not exist yet (MIGRATION_TO_RUST.md, Phase 2 through Phase 4)"]
 fn t008_format_s_will_group_thousands_for_very_large_numbers() {
     crate::support::run(&BLOCKS[8]);
 }

@@ -570,7 +570,6 @@ pub static BLOCKS: &[Block] = &[
 // test/arabicLocale-test.js #0: formatLocale() can format numbers using ar-001 locale
 // 1 assertion execution(s), 1 recorded call(s)
 #[test]
-#[ignore = "Phase 1 placeholder: the Rust formatting API does not exist yet (MIGRATION_TO_RUST.md, Phase 2 through Phase 4)"]
 fn t000_formatlocale_can_format_numbers_using_ar_001_locale() {
     crate::support::run(&BLOCKS[0]);
 }
@@ -578,7 +577,6 @@ fn t000_formatlocale_can_format_numbers_using_ar_001_locale() {
 // test/arabicLocale-test.js #1: formatLocale() can format numbers using ar-AE locale
 // 1 assertion execution(s), 1 recorded call(s)
 #[test]
-#[ignore = "Phase 1 placeholder: the Rust formatting API does not exist yet (MIGRATION_TO_RUST.md, Phase 2 through Phase 4)"]
 fn t001_formatlocale_can_format_numbers_using_ar_ae_locale() {
     crate::support::run(&BLOCKS[1]);
 }
@@ -586,7 +584,6 @@ fn t001_formatlocale_can_format_numbers_using_ar_ae_locale() {
 // test/arabicLocale-test.js #2: formatLocale() can format numbers using ar-BH locale
 // 1 assertion execution(s), 1 recorded call(s)
 #[test]
-#[ignore = "Phase 1 placeholder: the Rust formatting API does not exist yet (MIGRATION_TO_RUST.md, Phase 2 through Phase 4)"]
 fn t002_formatlocale_can_format_numbers_using_ar_bh_locale() {
     crate::support::run(&BLOCKS[2]);
 }
@@ -594,7 +591,6 @@ fn t002_formatlocale_can_format_numbers_using_ar_bh_locale() {
 // test/arabicLocale-test.js #3: formatLocale() can format numbers using ar-DJ locale
 // 1 assertion execution(s), 1 recorded call(s)
 #[test]
-#[ignore = "Phase 1 placeholder: the Rust formatting API does not exist yet (MIGRATION_TO_RUST.md, Phase 2 through Phase 4)"]
 fn t003_formatlocale_can_format_numbers_using_ar_dj_locale() {
     crate::support::run(&BLOCKS[3]);
 }
@@ -602,7 +598,6 @@ fn t003_formatlocale_can_format_numbers_using_ar_dj_locale() {
 // test/arabicLocale-test.js #4: formatLocale() can format numbers using ar-DZ locale
 // 1 assertion execution(s), 1 recorded call(s)
 #[test]
-#[ignore = "Phase 1 placeholder: the Rust formatting API does not exist yet (MIGRATION_TO_RUST.md, Phase 2 through Phase 4)"]
 fn t004_formatlocale_can_format_numbers_using_ar_dz_locale() {
     crate::support::run(&BLOCKS[4]);
 }
@@ -610,7 +605,6 @@ fn t004_formatlocale_can_format_numbers_using_ar_dz_locale() {
 // test/arabicLocale-test.js #5: formatLocale() can format numbers using ar-EG locale
 // 1 assertion execution(s), 1 recorded call(s)
 #[test]
-#[ignore = "Phase 1 placeholder: the Rust formatting API does not exist yet (MIGRATION_TO_RUST.md, Phase 2 through Phase 4)"]
 fn t005_formatlocale_can_format_numbers_using_ar_eg_locale() {
     crate::support::run(&BLOCKS[5]);
 }
@@ -618,7 +612,6 @@ fn t005_formatlocale_can_format_numbers_using_ar_eg_locale() {
 // test/arabicLocale-test.js #6: formatLocale() can format numbers using ar-EH locale
 // 1 assertion execution(s), 1 recorded call(s)
 #[test]
-#[ignore = "Phase 1 placeholder: the Rust formatting API does not exist yet (MIGRATION_TO_RUST.md, Phase 2 through Phase 4)"]
 fn t006_formatlocale_can_format_numbers_using_ar_eh_locale() {
     crate::support::run(&BLOCKS[6]);
 }
@@ -626,7 +619,6 @@ fn t006_formatlocale_can_format_numbers_using_ar_eh_locale() {
 // test/arabicLocale-test.js #7: formatLocale() can format numbers using ar-ER locale
 // 1 assertion execution(s), 1 recorded call(s)
 #[test]
-#[ignore = "Phase 1 placeholder: the Rust formatting API does not exist yet (MIGRATION_TO_RUST.md, Phase 2 through Phase 4)"]
 fn t007_formatlocale_can_format_numbers_using_ar_er_locale() {
     crate::support::run(&BLOCKS[7]);
 }
@@ -634,7 +626,6 @@ fn t007_formatlocale_can_format_numbers_using_ar_er_locale() {
 // test/arabicLocale-test.js #8: formatLocale() can format numbers using ar-IL locale
 // 1 assertion execution(s), 1 recorded call(s)
 #[test]
-#[ignore = "Phase 1 placeholder: the Rust formatting API does not exist yet (MIGRATION_TO_RUST.md, Phase 2 through Phase 4)"]
 fn t008_formatlocale_can_format_numbers_using_ar_il_locale() {
     crate::support::run(&BLOCKS[8]);
 }
@@ -642,7 +633,6 @@ fn t008_formatlocale_can_format_numbers_using_ar_il_locale() {
 // test/arabicLocale-test.js #9: formatLocale() can format numbers using ar-IQ locale
 // 1 assertion execution(s), 1 recorded call(s)
 #[test]
-#[ignore = "Phase 1 placeholder: the Rust formatting API does not exist yet (MIGRATION_TO_RUST.md, Phase 2 through Phase 4)"]
 fn t009_formatlocale_can_format_numbers_using_ar_iq_locale() {
     crate::support::run(&BLOCKS[9]);
 }
@@ -650,7 +640,6 @@ fn t009_formatlocale_can_format_numbers_using_ar_iq_locale() {
 // test/arabicLocale-test.js #10: formatLocale() can format numbers using ar-JO locale
 // 1 assertion execution(s), 1 recorded call(s)
 #[test]
-#[ignore = "Phase 1 placeholder: the Rust formatting API does not exist yet (MIGRATION_TO_RUST.md, Phase 2 through Phase 4)"]
 fn t010_formatlocale_can_format_numbers_using_ar_jo_locale() {
     crate::support::run(&BLOCKS[10]);
 }
@@ -658,7 +647,6 @@ fn t010_formatlocale_can_format_numbers_using_ar_jo_locale() {
 // test/arabicLocale-test.js #11: formatLocale() can format numbers using ar-KM locale
 // 1 assertion execution(s), 1 recorded call(s)
 #[test]
-#[ignore = "Phase 1 placeholder: the Rust formatting API does not exist yet (MIGRATION_TO_RUST.md, Phase 2 through Phase 4)"]
 fn t011_formatlocale_can_format_numbers_using_ar_km_locale() {
     crate::support::run(&BLOCKS[11]);
 }
@@ -666,7 +654,6 @@ fn t011_formatlocale_can_format_numbers_using_ar_km_locale() {
 // test/arabicLocale-test.js #12: formatLocale() can format numbers using ar-KW locale
 // 1 assertion execution(s), 1 recorded call(s)
 #[test]
-#[ignore = "Phase 1 placeholder: the Rust formatting API does not exist yet (MIGRATION_TO_RUST.md, Phase 2 through Phase 4)"]
 fn t012_formatlocale_can_format_numbers_using_ar_kw_locale() {
     crate::support::run(&BLOCKS[12]);
 }
@@ -674,7 +661,6 @@ fn t012_formatlocale_can_format_numbers_using_ar_kw_locale() {
 // test/arabicLocale-test.js #13: formatLocale() can format numbers using ar-LB locale
 // 1 assertion execution(s), 1 recorded call(s)
 #[test]
-#[ignore = "Phase 1 placeholder: the Rust formatting API does not exist yet (MIGRATION_TO_RUST.md, Phase 2 through Phase 4)"]
 fn t013_formatlocale_can_format_numbers_using_ar_lb_locale() {
     crate::support::run(&BLOCKS[13]);
 }
@@ -682,7 +668,6 @@ fn t013_formatlocale_can_format_numbers_using_ar_lb_locale() {
 // test/arabicLocale-test.js #14: formatLocale() can format numbers using ar-MA locale
 // 1 assertion execution(s), 1 recorded call(s)
 #[test]
-#[ignore = "Phase 1 placeholder: the Rust formatting API does not exist yet (MIGRATION_TO_RUST.md, Phase 2 through Phase 4)"]
 fn t014_formatlocale_can_format_numbers_using_ar_ma_locale() {
     crate::support::run(&BLOCKS[14]);
 }
@@ -690,7 +675,6 @@ fn t014_formatlocale_can_format_numbers_using_ar_ma_locale() {
 // test/arabicLocale-test.js #15: formatLocale() can format numbers using ar-MR locale
 // 1 assertion execution(s), 1 recorded call(s)
 #[test]
-#[ignore = "Phase 1 placeholder: the Rust formatting API does not exist yet (MIGRATION_TO_RUST.md, Phase 2 through Phase 4)"]
 fn t015_formatlocale_can_format_numbers_using_ar_mr_locale() {
     crate::support::run(&BLOCKS[15]);
 }
@@ -698,7 +682,6 @@ fn t015_formatlocale_can_format_numbers_using_ar_mr_locale() {
 // test/arabicLocale-test.js #16: formatLocale() can format numbers using ar-OM locale
 // 1 assertion execution(s), 1 recorded call(s)
 #[test]
-#[ignore = "Phase 1 placeholder: the Rust formatting API does not exist yet (MIGRATION_TO_RUST.md, Phase 2 through Phase 4)"]
 fn t016_formatlocale_can_format_numbers_using_ar_om_locale() {
     crate::support::run(&BLOCKS[16]);
 }
@@ -706,7 +689,6 @@ fn t016_formatlocale_can_format_numbers_using_ar_om_locale() {
 // test/arabicLocale-test.js #17: formatLocale() can format numbers using ar-PS locale
 // 1 assertion execution(s), 1 recorded call(s)
 #[test]
-#[ignore = "Phase 1 placeholder: the Rust formatting API does not exist yet (MIGRATION_TO_RUST.md, Phase 2 through Phase 4)"]
 fn t017_formatlocale_can_format_numbers_using_ar_ps_locale() {
     crate::support::run(&BLOCKS[17]);
 }
@@ -714,7 +696,6 @@ fn t017_formatlocale_can_format_numbers_using_ar_ps_locale() {
 // test/arabicLocale-test.js #18: formatLocale() can format numbers using ar-QA locale
 // 1 assertion execution(s), 1 recorded call(s)
 #[test]
-#[ignore = "Phase 1 placeholder: the Rust formatting API does not exist yet (MIGRATION_TO_RUST.md, Phase 2 through Phase 4)"]
 fn t018_formatlocale_can_format_numbers_using_ar_qa_locale() {
     crate::support::run(&BLOCKS[18]);
 }
@@ -722,7 +703,6 @@ fn t018_formatlocale_can_format_numbers_using_ar_qa_locale() {
 // test/arabicLocale-test.js #19: formatLocale() can format numbers using ar-SA locale
 // 1 assertion execution(s), 1 recorded call(s)
 #[test]
-#[ignore = "Phase 1 placeholder: the Rust formatting API does not exist yet (MIGRATION_TO_RUST.md, Phase 2 through Phase 4)"]
 fn t019_formatlocale_can_format_numbers_using_ar_sa_locale() {
     crate::support::run(&BLOCKS[19]);
 }
@@ -730,7 +710,6 @@ fn t019_formatlocale_can_format_numbers_using_ar_sa_locale() {
 // test/arabicLocale-test.js #20: formatLocale() can format numbers using ar-SD locale
 // 1 assertion execution(s), 1 recorded call(s)
 #[test]
-#[ignore = "Phase 1 placeholder: the Rust formatting API does not exist yet (MIGRATION_TO_RUST.md, Phase 2 through Phase 4)"]
 fn t020_formatlocale_can_format_numbers_using_ar_sd_locale() {
     crate::support::run(&BLOCKS[20]);
 }
@@ -738,7 +717,6 @@ fn t020_formatlocale_can_format_numbers_using_ar_sd_locale() {
 // test/arabicLocale-test.js #21: formatLocale() can format numbers using ar-SO locale
 // 1 assertion execution(s), 1 recorded call(s)
 #[test]
-#[ignore = "Phase 1 placeholder: the Rust formatting API does not exist yet (MIGRATION_TO_RUST.md, Phase 2 through Phase 4)"]
 fn t021_formatlocale_can_format_numbers_using_ar_so_locale() {
     crate::support::run(&BLOCKS[21]);
 }
@@ -746,7 +724,6 @@ fn t021_formatlocale_can_format_numbers_using_ar_so_locale() {
 // test/arabicLocale-test.js #22: formatLocale() can format numbers using ar-SS locale
 // 1 assertion execution(s), 1 recorded call(s)
 #[test]
-#[ignore = "Phase 1 placeholder: the Rust formatting API does not exist yet (MIGRATION_TO_RUST.md, Phase 2 through Phase 4)"]
 fn t022_formatlocale_can_format_numbers_using_ar_ss_locale() {
     crate::support::run(&BLOCKS[22]);
 }
@@ -754,7 +731,6 @@ fn t022_formatlocale_can_format_numbers_using_ar_ss_locale() {
 // test/arabicLocale-test.js #23: formatLocale() can format numbers using ar-SY locale
 // 1 assertion execution(s), 1 recorded call(s)
 #[test]
-#[ignore = "Phase 1 placeholder: the Rust formatting API does not exist yet (MIGRATION_TO_RUST.md, Phase 2 through Phase 4)"]
 fn t023_formatlocale_can_format_numbers_using_ar_sy_locale() {
     crate::support::run(&BLOCKS[23]);
 }
@@ -762,7 +738,6 @@ fn t023_formatlocale_can_format_numbers_using_ar_sy_locale() {
 // test/arabicLocale-test.js #24: formatLocale() can format numbers using ar-TD locale
 // 1 assertion execution(s), 1 recorded call(s)
 #[test]
-#[ignore = "Phase 1 placeholder: the Rust formatting API does not exist yet (MIGRATION_TO_RUST.md, Phase 2 through Phase 4)"]
 fn t024_formatlocale_can_format_numbers_using_ar_td_locale() {
     crate::support::run(&BLOCKS[24]);
 }
@@ -770,7 +745,6 @@ fn t024_formatlocale_can_format_numbers_using_ar_td_locale() {
 // test/arabicLocale-test.js #25: formatLocale() can format numbers using ar-TN locale
 // 1 assertion execution(s), 1 recorded call(s)
 #[test]
-#[ignore = "Phase 1 placeholder: the Rust formatting API does not exist yet (MIGRATION_TO_RUST.md, Phase 2 through Phase 4)"]
 fn t025_formatlocale_can_format_numbers_using_ar_tn_locale() {
     crate::support::run(&BLOCKS[25]);
 }
@@ -778,7 +752,6 @@ fn t025_formatlocale_can_format_numbers_using_ar_tn_locale() {
 // test/arabicLocale-test.js #26: formatLocale() can format numbers using ar-YE locale
 // 1 assertion execution(s), 1 recorded call(s)
 #[test]
-#[ignore = "Phase 1 placeholder: the Rust formatting API does not exist yet (MIGRATION_TO_RUST.md, Phase 2 through Phase 4)"]
 fn t026_formatlocale_can_format_numbers_using_ar_ye_locale() {
     crate::support::run(&BLOCKS[26]);
 }

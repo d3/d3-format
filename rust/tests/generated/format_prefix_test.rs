@@ -218,7 +218,6 @@ pub static BLOCKS: &[Block] = &[
 // test/formatPrefix-test.js #0: formatPrefix(",.0s", value)(number) formats with the SI prefix appropriate to the specified value
 // 2 assertion execution(s), 2 recorded call(s)
 #[test]
-#[ignore = "Phase 1 placeholder: the Rust formatting API does not exist yet (MIGRATION_TO_RUST.md, Phase 2 through Phase 4)"]
 fn t000_formatprefix_0s_value_number_formats_with_the_si_prefix_appropriate_to_t() {
     crate::support::run(&BLOCKS[0]);
 }
@@ -226,7 +225,6 @@ fn t000_formatprefix_0s_value_number_formats_with_the_si_prefix_appropriate_to_t
 // test/formatPrefix-test.js #1: formatPrefix(",.3s", value)(number) formats with the SI prefix appropriate to the specified value
 // 1 assertion execution(s), 1 recorded call(s)
 #[test]
-#[ignore = "Phase 1 placeholder: the Rust formatting API does not exist yet (MIGRATION_TO_RUST.md, Phase 2 through Phase 4)"]
 fn t001_formatprefix_3s_value_number_formats_with_the_si_prefix_appropriate_to_t() {
     crate::support::run(&BLOCKS[1]);
 }
@@ -234,7 +232,6 @@ fn t001_formatprefix_3s_value_number_formats_with_the_si_prefix_appropriate_to_t
 // test/formatPrefix-test.js #2: formatPrefix(",.0s", value)(number) uses yocto for very small reference values
 // 1 assertion execution(s), 1 recorded call(s)
 #[test]
-#[ignore = "Phase 1 placeholder: the Rust formatting API does not exist yet (MIGRATION_TO_RUST.md, Phase 2 through Phase 4)"]
 fn t002_formatprefix_0s_value_number_uses_yocto_for_very_small_reference_values() {
     crate::support::run(&BLOCKS[2]);
 }
@@ -242,7 +239,6 @@ fn t002_formatprefix_0s_value_number_uses_yocto_for_very_small_reference_values(
 // test/formatPrefix-test.js #3: formatPrefix(",.0s", value)(number) uses yotta for very small reference values
 // 1 assertion execution(s), 1 recorded call(s)
 #[test]
-#[ignore = "Phase 1 placeholder: the Rust formatting API does not exist yet (MIGRATION_TO_RUST.md, Phase 2 through Phase 4)"]
 fn t003_formatprefix_0s_value_number_uses_yotta_for_very_small_reference_values() {
     crate::support::run(&BLOCKS[3]);
 }
@@ -250,7 +246,6 @@ fn t003_formatprefix_0s_value_number_uses_yotta_for_very_small_reference_values(
 // test/formatPrefix-test.js #4: formatPrefix(" $12,.1s", value)(number) formats with the specified SI prefix
 // 2 assertion execution(s), 2 recorded call(s)
 #[test]
-#[ignore = "Phase 1 placeholder: the Rust formatting API does not exist yet (MIGRATION_TO_RUST.md, Phase 2 through Phase 4)"]
 fn t004_formatprefix_12_1s_value_number_formats_with_the_specified_si_prefix() {
     crate::support::run(&BLOCKS[4]);
 }
@@ -258,7 +253,6 @@ fn t004_formatprefix_12_1s_value_number_formats_with_the_specified_si_prefix() {
 // test/formatPrefix-test.js #5: formatPrefix(" $12,.1s", value)(number) matches format(" $12,.2s")(number) when the units are the same
 // 2 assertion execution(s), 2 recorded call(s)
 #[test]
-#[ignore = "Phase 1 placeholder: the Rust formatting API does not exist yet (MIGRATION_TO_RUST.md, Phase 2 through Phase 4)"]
 fn t005_formatprefix_12_1s_value_number_matches_format_12_2s_number_when_the_uni() {
     crate::support::run(&BLOCKS[5]);
 }
@@ -266,7 +260,6 @@ fn t005_formatprefix_12_1s_value_number_matches_format_12_2s_number_when_the_uni
 // test/formatPrefix-test.js #6: formatPrefix("($~s", value)(number) formats with the SI prefix inside parentheses
 // 2 assertion execution(s), 2 recorded call(s)
 #[test]
-#[ignore = "Phase 1 placeholder: the Rust formatting API does not exist yet (MIGRATION_TO_RUST.md, Phase 2 through Phase 4)"]
 fn t006_formatprefix_s_value_number_formats_with_the_si_prefix_inside_parenthese() {
     crate::support::run(&BLOCKS[6]);
 }

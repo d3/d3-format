@@ -4,22 +4,23 @@
 //! repository root for the implementation plan and the compatibility contract.
 //! Phase 0 establishes the toolchain, the crate skeleton, and the standard
 //! library semantics gate in `tests/gate.rs`. Phase 2 adds the exact number
-//! conversion engine of section 4.2. Phase 3 -- this one -- adds section 5's
-//! public surface: the specifier grammar, the locale model, the precision
-//! suggestions, and the errors and limits they report through.
+//! conversion engine of section 4.2. Phase 3 adds section 5's public surface: the
+//! specifier grammar, the locale model, the precision suggestions, and the errors
+//! and limits they report through. Phase 4 -- this one -- adds value layout, so the
+//! crate now produces d3's output.
 //!
-//! # Phase 3 is not a working formatter
+//! # What agreement means here
 //!
-//! [`Formatter`] construction is complete: a formatter resolves its specifier
-//! against its locale, enforces the width limit, and knows which kind of input it
-//! takes. Laying a *value* out -- type dispatch, grouping, trimming, sign handling,
-//! SI selection and `formatPrefix` arithmetic -- is Phase 4, so
-//! [`Formatter::format_number`] and [`Formatter::format_text`] check their input
-//! kind and then panic with `unimplemented!`. That is deliberate: section 7 says
-//! nothing may report agreement it has not demonstrated, and returning a
-//! plausible-looking string from an unfinished path is exactly that.
+//! Byte-for-byte with `d3-format` 3.1.2 under Node, for every specifier the grammar
+//! accepts, every locale the model accepts and every `f64` bit pattern. The port is
+//! checked against a recorded oracle rather than against a reimplementation of the
+//! spec: `rust/tools/` records d3's own answers and compares them.
 //!
-//! Everything else here is finished and tested against the JavaScript oracle.
+//! The deliberate exceptions are enumerated in `rust/DIVERGENCES.md`, and they are
+//! about the *interface*, not the digits: no mutable process-global default locale,
+//! no coercion of a non-number to a number, typed errors where d3 throws or
+//! silently produces nonsense, and explicit limits on how much output a single call
+//! may allocate.
 //!
 //! # Examples
 //!
@@ -34,7 +35,14 @@
 //!
 //! // Compiled against a locale, which owns no global state.
 //! let formatter = Locale::en_us().formatter_for(&specifier)?;
-//! assert_eq!(formatter.specifier(), &specifier);
+//! assert_eq!(formatter.format_number(1234.5)?, "$1,234.50");
+//!
+//! // The minus sign is the locale's, and it is U+2212, not a hyphen.
+//! assert_eq!(formatter.format_number(-1234.5)?, "\u{2212}$1,234.50");
+//!
+//! // SI prefixes, and the grouping the `n` type turns on.
+//! assert_eq!(Locale::en_us().formatter(".3s")?.format_number(1.3e6)?, "1.30M");
+//! assert_eq!(Locale::en_us().formatter(",d")?.format_number(1234567.0)?, "1,234,567");
 //! # Ok::<(), Box<dyn std::error::Error>>(())
 //! ```
 
@@ -54,6 +62,7 @@ mod bignat;
 #[doc(hidden)]
 pub mod decimal;
 
+mod layout;
 mod limits;
 mod locale;
 mod precision;
@@ -67,8 +76,8 @@ pub use crate::specifier::{FormatSpecifier, FormatSpecifierBuilder, ParseError, 
 pub use crate::types::{Align, FormatType, InputKind, Sign, Symbol};
 
 // The generated locale table is data only: it has no dependency on the formatting
-// API that arrives in Phase 3. It is compiled unconditionally so that the Phase 1
-// drift gate -- `cargo test --no-run` with default features -- really builds it,
+// API. It is compiled unconditionally so that the section 3.7 drift gate --
+// `cargo test --no-run` with default features -- really builds it,
 // and it is only reachable from outside the crate under the `locales` feature, as
 // section 5.1's feature policy requires.
 // The generated file carries its own `#![allow(dead_code)]`, so repeating it here

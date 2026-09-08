@@ -2085,7 +2085,6 @@ pub static BLOCKS: &[Block] = &[
 // test/precisionPrefix-test.js #0: precisionPrefix(step, value) returns zero if step has the same units as value
 // 51 assertion execution(s), 51 recorded call(s)
 #[test]
-#[ignore = "Phase 1 placeholder: the Rust formatting API does not exist yet (MIGRATION_TO_RUST.md, Phase 2 through Phase 4)"]
 fn t000_precisionprefix_step_value_returns_zero_if_step_has_the_same_units_as_va() {
     crate::support::run(&BLOCKS[0]);
 }
@@ -2093,7 +2092,6 @@ fn t000_precisionprefix_step_value_returns_zero_if_step_has_the_same_units_as_va
 // test/precisionPrefix-test.js #1: precisionPrefix(step, value) returns greater than zero if fractional digits are needed
 // 68 assertion execution(s), 68 recorded call(s)
 #[test]
-#[ignore = "Phase 1 placeholder: the Rust formatting API does not exist yet (MIGRATION_TO_RUST.md, Phase 2 through Phase 4)"]
 fn t001_precisionprefix_step_value_returns_greater_than_zero_if_fractional_digit() {
     crate::support::run(&BLOCKS[1]);
 }
@@ -2101,7 +2099,6 @@ fn t001_precisionprefix_step_value_returns_greater_than_zero_if_fractional_digit
 // test/precisionPrefix-test.js #2: precisionPrefix(step, value) returns the expected precision when value is less than one yocto
 // 5 assertion execution(s), 5 recorded call(s)
 #[test]
-#[ignore = "Phase 1 placeholder: the Rust formatting API does not exist yet (MIGRATION_TO_RUST.md, Phase 2 through Phase 4)"]
 fn t002_precisionprefix_step_value_returns_the_expected_precision_when_value_is() {
     crate::support::run(&BLOCKS[2]);
 }
@@ -2109,7 +2106,6 @@ fn t002_precisionprefix_step_value_returns_the_expected_precision_when_value_is(
 // test/precisionPrefix-test.js #3: precisionPrefix(step, value) returns the expected precision when value is greater than than one yotta
 // 5 assertion execution(s), 5 recorded call(s)
 #[test]
-#[ignore = "Phase 1 placeholder: the Rust formatting API does not exist yet (MIGRATION_TO_RUST.md, Phase 2 through Phase 4)"]
 fn t003_precisionprefix_step_value_returns_the_expected_precision_when_value_is() {
     crate::support::run(&BLOCKS[3]);
 }
@@ -2117,7 +2113,6 @@ fn t003_precisionprefix_step_value_returns_the_expected_precision_when_value_is(
 // test/precisionPrefix-test.js #4: precisionPrefix(0, value) returns NaN
 // 1 assertion execution(s), 1 recorded call(s)
 #[test]
-#[ignore = "Phase 1 placeholder: the Rust formatting API does not exist yet (MIGRATION_TO_RUST.md, Phase 2 through Phase 4)"]
 fn t004_precisionprefix_0_value_returns_nan() {
     crate::support::run(&BLOCKS[4]);
 }
@@ -2125,7 +2120,6 @@ fn t004_precisionprefix_0_value_returns_nan() {
 // test/precisionPrefix-test.js #5: precisionPrefix(NaN, value) returns NaN
 // 1 assertion execution(s), 1 recorded call(s)
 #[test]
-#[ignore = "Phase 1 placeholder: the Rust formatting API does not exist yet (MIGRATION_TO_RUST.md, Phase 2 through Phase 4)"]
 fn t005_precisionprefix_nan_value_returns_nan() {
     crate::support::run(&BLOCKS[5]);
 }
@@ -2133,7 +2127,6 @@ fn t005_precisionprefix_nan_value_returns_nan() {
 // test/precisionPrefix-test.js #6: precisionPrefix(Infinity, value) returns NaN
 // 2 assertion execution(s), 2 recorded call(s)
 #[test]
-#[ignore = "Phase 1 placeholder: the Rust formatting API does not exist yet (MIGRATION_TO_RUST.md, Phase 2 through Phase 4)"]
 fn t006_precisionprefix_infinity_value_returns_nan() {
     crate::support::run(&BLOCKS[6]);
 }

@@ -5,26 +5,22 @@
 //! whose formatters own a cheap clone of it, so a `Formatter` has no lifetime
 //! parameter and nothing in the crate is a process-global.
 //!
-//! # What Phase 3 builds and what it does not
+//! # Resolution here, layout next door
 //!
 //! `newFormat` in `src/locale.js` does two separable jobs. It *resolves* a
 //! specifier -- rewriting `n` to `,g` and an unknown type to `.12~g`, folding fill
 //! `0` with align `=` into the zero flag, composing the affixes, and defaulting and
 //! clamping the precision -- and it then returns a closure that *lays out* a value
-//! using that resolution. Section 7 gives the layout to Phase 4: type dispatch,
-//! grouping, trimming, sign handling, SI selection, and `formatPrefix`'s
-//! arithmetic. Phase 3 builds everything up to and including the resolution, plus
-//! the input-kind gate, and stops at the seam.
-//!
-//! So [`Formatter`] construction is complete and tested here, and
-//! [`Formatter::format_number`] is not. The two `format_*` entry points check the
-//! input kind -- which is a Phase 3 contract, since section 5.4's
-//! `InputTypeMismatch` is one of the variants this phase adds -- and then reach a
-//! placeholder that panics. Nothing reports agreement it has not demonstrated.
+//! using that resolution. This module is the first half: [`Formatter::compile`]
+//! produces the [`Layout`] that resolution amounts to. The second half -- type
+//! dispatch, trimming, sign policy, the SI suffix, grouping, UTF-16 padding,
+//! alignment and numerals -- is [`crate::layout`], which the two `format_*` entry
+//! points hand off to once the input-kind gate has passed.
 
 use std::sync::{Arc, LazyLock};
 
 use crate::decimal;
+use crate::layout::Layout;
 use crate::limits::{FormatError, FormatLimits};
 use crate::specifier::FormatSpecifier;
 use crate::types::{Align, FormatType, InputKind, Symbol, SI_PREFIXES};
@@ -331,8 +327,8 @@ impl Locale {
     ///
     /// A zero, NaN or infinite `reference` has no decimal exponent, so d3's scale
     /// is NaN and its suffix is absent. That is reproduced rather than rejected:
-    /// the formatter builds, and Phase 4 will have it render the locale's NaN text
-    /// with no SI suffix, whatever value it is given.
+    /// the formatter builds, and renders the locale's NaN text with no SI suffix,
+    /// whatever value it is given.
     ///
     /// # Errors
     ///
@@ -517,36 +513,6 @@ impl LocaleBuilder {
     }
 }
 
-/// The resolution `newFormat` performs before it returns its closure.
-///
-/// Immutable, and a pure function of the locale, the specifier and the limits.
-#[derive(Debug, Clone, PartialEq, Eq)]
-struct Layout {
-    fill: char,
-    align: Align,
-    zero: bool,
-    /// The padded width, in UTF-16 code units. Zero means "no padding requested",
-    /// which is also what a width of zero means, since a run of `width - length`
-    /// characters is empty either way.
-    width: u32,
-    comma: bool,
-    precision: u32,
-    trim: bool,
-    /// The type after `n` becomes `,g` and an unknown letter becomes `.12~g`.
-    resolved_type: FormatType,
-    /// `/[defgprs%]/.test(type)`: whether the result can carry a fractional or
-    /// exponential tail that must not be grouped.
-    maybe_suffix: bool,
-    prefix: String,
-    suffix: String,
-    /// `Math.pow(10, -e)` for a `formatPrefix` formatter, as raw bits.
-    ///
-    /// Bits rather than an `f64` because the scale can be NaN -- a zero, NaN or
-    /// infinite reference makes it so -- and two formatters built the same way must
-    /// compare equal. Section 4.2 pins these values by bit pattern anyway.
-    prefix_scale: Option<u64>,
-}
-
 /// A compiled formatter: one locale, one specifier, one set of limits.
 ///
 /// Owns a cheap clone of its locale, so it has no lifetime parameter and can be
@@ -658,6 +624,7 @@ impl Formatter {
             },
         };
 
+        let sign = specifier.sign();
         let maybe_suffix = matches!(
             resolved_type,
             FormatType::Decimal
@@ -678,6 +645,7 @@ impl Formatter {
             layout: Layout {
                 fill,
                 align,
+                sign,
                 zero,
                 width,
                 comma,
@@ -720,17 +688,28 @@ impl Formatter {
 
     /// Formats a number.
     ///
+    /// Total over `f64`: every bit pattern, including both zeros, both infinities
+    /// and every NaN payload, formats or returns an error. It never panics.
+    ///
+    /// ```
+    /// use d3_format::Locale;
+    ///
+    /// let locale = Locale::en_us();
+    /// assert_eq!(locale.formatter("$,.2f")?.format_number(-1234.5)?, "\u{2212}$1,234.50");
+    /// assert_eq!(locale.formatter(".3s")?.format_number(0.00042)?, "420\u{b5}");
+    /// # Ok::<(), d3_format::FormatError>(())
+    /// ```
+    ///
     /// # Errors
     ///
     /// [`FormatError::InputTypeMismatch`] if this is a type `c` formatter, which
     /// takes text. d3 would coerce; see `no-input-coercion` in
     /// `rust/DIVERGENCES.md`.
     ///
-    /// # Panics
-    ///
-    /// Numeric layout is Phase 4 of `MIGRATION_TO_RUST.md`, so this panics once the
-    /// input kind has been checked. The check happens first and is complete, which
-    /// is why the error above is reachable.
+    /// [`FormatError::OutputLimit`] or [`FormatError::AllocationFailed`] if the
+    /// result would exceed [`FormatLimits::max_output_bytes`] or the allocator
+    /// refuses the buffer. A wide pad with a multi-byte fill is the usual way to
+    /// reach either.
     pub fn format_number(&self, value: f64) -> Result<String, FormatError> {
         let mut out = String::new();
         self.format_number_into(&mut out, value)?;
@@ -739,28 +718,41 @@ impl Formatter {
 
     /// Formats a number into `out`, which is cleared first and left empty on error.
     ///
+    /// Section 5.3: the buffer's capacity is reused, and no claim is made that a
+    /// warm buffer makes the call allocation-free -- grouping and numerals both
+    /// build their own.
+    ///
     /// # Errors
-    ///
-    /// As [`Formatter::format_number`].
-    ///
-    /// # Panics
     ///
     /// As [`Formatter::format_number`].
     pub fn format_number_into(&self, out: &mut String, value: f64) -> Result<(), FormatError> {
         out.clear();
         self.accept(InputKind::Number)?;
-        unimplemented_layout(self, "format_number", &value.to_bits().to_string())
+        self.layout
+            .number(&self.locale, &self.limits, out, value)
+            .inspect_err(|_| out.clear())
     }
 
     /// Formats text, for a type `c` formatter.
     ///
+    /// The text is preserved byte for byte, and only the prefix, the suffix, the
+    /// width and alignment, and the final numeral substitution touch the result.
+    ///
+    /// The width is a UTF-16 code-unit count, as everywhere in d3, so the
+    /// astral-plane character below is two units wide and takes six spaces to reach
+    /// eight, not seven.
+    ///
+    /// ```
+    /// use d3_format::Locale;
+    ///
+    /// assert_eq!(Locale::en_us().formatter(">8c")?.format_text("\u{1f600}")?, "      \u{1f600}");
+    /// # Ok::<(), d3_format::FormatError>(())
+    /// ```
+    ///
     /// # Errors
     ///
-    /// [`FormatError::InputTypeMismatch`] unless this is a type `c` formatter.
-    ///
-    /// # Panics
-    ///
-    /// As [`Formatter::format_number`].
+    /// [`FormatError::InputTypeMismatch`] unless this is a type `c` formatter, plus
+    /// the limit errors [`Formatter::format_number`] documents.
     pub fn format_text(&self, value: &str) -> Result<String, FormatError> {
         let mut out = String::new();
         self.format_text_into(&mut out, value)?;
@@ -772,14 +764,12 @@ impl Formatter {
     /// # Errors
     ///
     /// As [`Formatter::format_text`].
-    ///
-    /// # Panics
-    ///
-    /// As [`Formatter::format_number`].
     pub fn format_text_into(&self, out: &mut String, value: &str) -> Result<(), FormatError> {
         out.clear();
         self.accept(InputKind::Text)?;
-        unimplemented_layout(self, "format_text", value)
+        self.layout
+            .text(&self.locale, &self.limits, out, value)
+            .inspect_err(|_| out.clear())
     }
 
     /// Rejects the input kind this formatter does not take.
@@ -792,23 +782,6 @@ impl Formatter {
             actual,
         })
     }
-}
-
-/// The Phase 3/Phase 4 seam.
-///
-/// Section 7 gives type dispatch, grouping, trimming, sign handling, SI selection
-/// and `formatPrefix`'s arithmetic to Phase 4. Phase 1's placeholder discipline
-/// says a seam must diverge rather than return something that could be mistaken for
-/// output, so this panics and names what is missing. `tests/public_api.rs` asserts
-/// that it still does, which is the prompt to delete it when Phase 4 lands.
-fn unimplemented_layout(formatter: &Formatter, entry: &str, argument: &str) -> ! {
-    unimplemented!(
-        "Formatter::{entry} for specifier {} (resolved type {:?}, precision {}) with argument {argument}: \
-value layout arrives in Phase 4 of MIGRATION_TO_RUST.md",
-        formatter.specifier,
-        formatter.layout.resolved_type,
-        formatter.layout.precision,
-    )
 }
 
 /// Concatenates `parts` under the output-byte limit, with checked arithmetic.

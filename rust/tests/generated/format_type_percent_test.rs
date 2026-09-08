@@ -235,7 +235,6 @@ pub static BLOCKS: &[Block] = &[
 // test/format-type-%-test.js #0: format("%") can output a whole percentage
 // 7 assertion execution(s), 7 recorded call(s)
 #[test]
-#[ignore = "Phase 1 placeholder: the Rust formatting API does not exist yet (MIGRATION_TO_RUST.md, Phase 2 through Phase 4)"]
 fn t000_format_can_output_a_whole_percentage() {
     crate::support::run(&BLOCKS[0]);
 }
@@ -243,7 +242,6 @@ fn t000_format_can_output_a_whole_percentage() {
 // test/format-type-%-test.js #1: format(".%") can output a percentage with precision
 // 2 assertion execution(s), 2 recorded call(s)
 #[test]
-#[ignore = "Phase 1 placeholder: the Rust formatting API does not exist yet (MIGRATION_TO_RUST.md, Phase 2 through Phase 4)"]
 fn t001_format_can_output_a_percentage_with_precision() {
     crate::support::run(&BLOCKS[1]);
 }
@@ -251,7 +249,6 @@ fn t001_format_can_output_a_percentage_with_precision() {
 // test/format-type-%-test.js #2: format("%") fill respects suffix
 // 2 assertion execution(s), 2 recorded call(s)
 #[test]
-#[ignore = "Phase 1 placeholder: the Rust formatting API does not exist yet (MIGRATION_TO_RUST.md, Phase 2 through Phase 4)"]
 fn t002_format_fill_respects_suffix() {
     crate::support::run(&BLOCKS[2]);
 }
@@ -259,7 +256,6 @@ fn t002_format_fill_respects_suffix() {
 // test/format-type-%-test.js #3: format("^%") align center puts suffix adjacent to number
 // 3 assertion execution(s), 3 recorded call(s)
 #[test]
-#[ignore = "Phase 1 placeholder: the Rust formatting API does not exist yet (MIGRATION_TO_RUST.md, Phase 2 through Phase 4)"]
 fn t003_format_align_center_puts_suffix_adjacent_to_number() {
     crate::support::run(&BLOCKS[3]);
 }

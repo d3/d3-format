@@ -254,7 +254,6 @@ pub static BLOCKS: &[Block] = &[
 // test/format-type-p-test.js #0: format("p") can output a percentage
 // 9 assertion execution(s), 9 recorded call(s)
 #[test]
-#[ignore = "Phase 1 placeholder: the Rust formatting API does not exist yet (MIGRATION_TO_RUST.md, Phase 2 through Phase 4)"]
 fn t000_format_p_can_output_a_percentage() {
     crate::support::run(&BLOCKS[0]);
 }
@@ -262,7 +261,6 @@ fn t000_format_p_can_output_a_percentage() {
 // test/format-type-p-test.js #1: format("+p") can output a percentage with rounding and sign
 // 8 assertion execution(s), 8 recorded call(s)
 #[test]
-#[ignore = "Phase 1 placeholder: the Rust formatting API does not exist yet (MIGRATION_TO_RUST.md, Phase 2 through Phase 4)"]
 fn t001_format_p_can_output_a_percentage_with_rounding_and_sign() {
     crate::support::run(&BLOCKS[1]);
 }

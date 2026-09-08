@@ -4,14 +4,15 @@
 //! The generated d3-format conformance suite.
 //!
 //! One Rust test per original JavaScript test block, carrying the recorded oracle
-//! calls and the static assertion id of each one. The conformance tests are
-//! `#[ignore]`d and their bodies are `unimplemented!()` until the Rust formatting
-//! API exists; see `support::run`.
+//! calls and the static assertion id of each one. Each test replays its calls
+//! against the public API and compares every answer with what d3 returned; see
+//! `support::run`.
 //!
-//! Exactly two tests here run. Neither exercises the port: one asserts that the
-//! `support::run` seam still diverges, so this target's `test result: ok.` cannot
-//! be read as conformance, and the other checks the emitted inventory against the
-//! provenance manifest, so it cannot be read as a stale generation either.
+//! 161 of the 168 blocks run. The other 7 are
+//! `#[ignore]`d because the oracle recorded nothing they could replay -- either no
+//! boundary call at all, or only calls whose JavaScript arguments the typed API
+//! declines. `IGNORED` below lists them, and a test asserts that list is exactly
+//! the set the recorded calls justify, so a passing block cannot stay skipped.
 
 mod support;
 
@@ -80,21 +81,68 @@ static MODULES: [(&str, &[support::Block]); 24] = [
     ("test/precisionRound-test.js", precision_round_test::BLOCKS),
 ];
 
-/// Proves the 168 generated conformance blocks cannot pass yet.
+/// Every `#[ignore]`d block: its file, its index in that file, and the reason.
 ///
-/// `support::run` is the single seam where the Rust formatting API will be
-/// called. Until it exists the seam diverges, and this test asserts exactly
-/// that on a real block, so the suite cannot quietly begin reporting coverage.
-/// Implementing the API makes this test fail, which is the intended prompt to
-/// delete it and un-`#[ignore]` the blocks in the same change.
+/// Emitted by the generator from the recorded calls, and checked below against
+/// the same calls as compiled in. Nothing here is a judgement call about the
+/// port: a block is listed when the oracle gave it nothing to replay.
+static IGNORED: [(&str, u32, &str); 7] = [
+    (
+        "test/format-test.js",
+        1,
+        "the oracle recorded no boundary call for this block, so running it would assert nothing; assertion-map.json routes its assertions to rust/tests/ported",
+    ),
+    (
+        "test/format-test.js",
+        2,
+        "the oracle recorded no boundary call for this block, so running it would assert nothing; assertion-map.json routes its assertions to rust/tests/ported",
+    ),
+    (
+        "test/formatSpecifier-test.js",
+        0,
+        "the oracle recorded no boundary call for this block, so running it would assert nothing; assertion-map.json routes its assertions to rust/tests/ported",
+    ),
+    (
+        "test/formatSpecifier-test.js",
+        8,
+        "the oracle recorded no boundary call for this block, so running it would assert nothing; assertion-map.json routes its assertions to rust/tests/ported",
+    ),
+    (
+        "test/formatSpecifier-test.js",
+        9,
+        "the oracle recorded no boundary call for this block, so running it would assert nothing; assertion-map.json routes its assertions to rust/tests/ported",
+    ),
+    (
+        "test/locale-test.js",
+        9,
+        "every recorded call in this block passes a JavaScript value the typed API declines; see no-input-coercion in rust/DIVERGENCES.md",
+    ),
+    (
+        "test/locale-test.js",
+        10,
+        "the oracle recorded no boundary call for this block, so running it would assert nothing; assertion-map.json routes its assertions to rust/tests/ported",
+    ),
+];
+
+/// The skipped blocks are exactly the ones the oracle cannot ask about.
+///
+/// The `#[ignore]` attributes are baked into the generated source, so on their
+/// own they are a claim from generation time. This recomputes the reasons from
+/// the recorded calls and compares, which fails if a block that could run is
+/// still skipped -- the one way this suite could report agreement it never
+/// tested.
 #[test]
-fn the_rust_formatting_api_is_unimplemented_so_all_168_conformance_blocks_are_ignored() {
-    let seam = std::panic::catch_unwind(|| support::run(&MODULES[0].1[0]));
-    assert!(
-        seam.is_err(),
-        "support::run returned a value: the port now exists, so this test and the \
-#[ignore] attributes on the generated blocks are both stale"
-    );
+fn the_ignored_blocks_are_exactly_the_ones_with_no_replayable_call() {
+    let expected: Vec<(&str, u32, &str)> = MODULES
+        .iter()
+        .flat_map(|(_, blocks)| blocks.iter())
+        .filter_map(|block| {
+            let reason = block.ignore_reason()?;
+            Some((block.file, block.test_index, reason))
+        })
+        .collect();
+
+    assert_eq!(expected, IGNORED, "ignored conformance blocks");
 }
 
 /// The generated suite reproduces the recorded oracle inventory exactly.
@@ -148,8 +196,8 @@ fn generated_suite_matches_the_recorded_oracle_inventory() {
     }
 
     eprintln!(
-        "d3-format: {blocks} generated conformance blocks covering {cases} oracle calls \
-are compiled but ignored; the Rust formatting API arrives in Phase 2 of \
-MIGRATION_TO_RUST.md"
+        "d3-format: {blocks} generated conformance blocks covering {cases} oracle calls, \
+{} of them ignored for want of a replayable call",
+        IGNORED.len()
     );
 }

@@ -14,17 +14,36 @@
 //! argument makes the result NaN. Rust's `f64::max` is the opposite -- it returns
 //! the non-NaN operand, so `0.0_f64.max(f64::NAN)` is `0.0`. Reaching for it here
 //! would turn every one of d3's NaN results into zero and would pass a suite that
-//! only checked the finite cases. [`js_max`] is the IEEE `maximum`-style operation
-//! `Math.max` actually is.
+//! only checked the finite cases. [`js_max`] is the operation `Math.max` actually
+//! is, down to the bits of the NaN it answers with -- see [`MATH_NAN`].
 
 use crate::decimal;
+
+/// The NaN `Math.max` and `Math.min` answer with.
+///
+/// Not `f64::NAN`. Rust's is the positive quiet NaN, `0x7FF8000000000000`; the
+/// oracle's two builtins return the *negative* one whatever their operands are,
+/// including a NaN with a payload and a NaN that arrived positive:
+///
+/// ```text
+/// Math.max(0, NaN)                 FFF8000000000000
+/// Math.max(0, fromBits(7FF8..ABCDEF))  FFF8000000000000
+/// Math.min(0, NaN)                 FFF8000000000000
+/// NaN - 0                          7FF8000000000000   // ordinary arithmetic does not
+/// ```
+///
+/// It matters because every NaN these helpers can return passes through one of the
+/// two builtins on its way out, `precisionRound`'s `1 + …` included, and section
+/// 3.6 compares numeric results by bit pattern. Answering `f64::NAN` disagrees with
+/// the oracle on all twelve of the recorded degenerate calls.
+const MATH_NAN: f64 = -f64::NAN;
 
 /// `Math.max(a, b)`.
 ///
 /// NaN-propagating, and `Math.max(+0, -0)` is `+0`.
 fn js_max(a: f64, b: f64) -> f64 {
     if a.is_nan() || b.is_nan() {
-        return f64::NAN;
+        return MATH_NAN;
     }
     if a > b {
         a
@@ -79,7 +98,15 @@ pub fn precision_fixed(step: f64) -> f64 {
 pub fn precision_round(step: f64, max: f64) -> f64 {
     let step = step.abs();
     let max = max.abs() - step;
-    js_max(0.0, js_exponent(max) - js_exponent(step)) + 1.0
+    let digits = js_max(0.0, js_exponent(max) - js_exponent(step));
+    // `1 + NaN` keeps the NaN's sign bit on every target this crate builds for, but
+    // "on every target" is a claim about hardware rather than about the language,
+    // and the sign is compared. Returning the NaN says so instead of assuming it.
+    if digits.is_nan() {
+        digits
+    } else {
+        digits + 1.0
+    }
 }
 
 /// The number of digits needed to show `step` under the SI prefix `value` selects.
@@ -131,10 +158,35 @@ pub fn as_precision(value: f64) -> Option<u32> {
 mod tests {
     use super::*;
 
+    /// Every NaN the three helpers can answer with, by bit pattern.
+    ///
+    /// `assert!(x.is_nan())` passes for both signs and every payload, so it cannot
+    /// see the difference the differential compares on.
+    fn assert_math_nan(value: f64, what: &str) {
+        assert_eq!(
+            format!("{:016X}", value.to_bits()),
+            "FFF8000000000000",
+            "{what} must be the NaN Math.max answers with"
+        );
+    }
+
+    #[test]
+    fn math_nan_is_the_negative_quiet_nan_the_oracle_returns() {
+        assert_math_nan(MATH_NAN, "MATH_NAN");
+        // Rust's own NaN is the other one, which is the whole reason for the
+        // constant.
+        assert_eq!(format!("{:016X}", f64::NAN.to_bits()), "7FF8000000000000");
+    }
+
     #[test]
     fn js_max_propagates_nan_where_f64_max_would_swallow_it() {
-        assert!(js_max(0.0, f64::NAN).is_nan());
-        assert!(js_max(f64::NAN, 0.0).is_nan());
+        assert_math_nan(js_max(0.0, f64::NAN), "js_max(0, NaN)");
+        assert_math_nan(js_max(f64::NAN, 0.0), "js_max(NaN, 0)");
+        // A payload, and a sign, are both discarded: Math.max answers with one
+        // fixed pattern.
+        let payload = f64::from_bits(0x7FF8_0000_00AB_CDEF);
+        assert_math_nan(js_max(0.0, payload), "js_max(0, NaN with a payload)");
+        assert_math_nan(js_max(0.0, -f64::NAN), "js_max(0, -NaN)");
         // The trap this function exists to avoid.
         assert_eq!(0.0_f64.max(f64::NAN), 0.0);
 
@@ -159,11 +211,9 @@ mod tests {
 
     #[test]
     fn precision_fixed_is_nan_where_there_is_no_exponent() {
-        assert!(precision_fixed(0.0).is_nan());
-        assert!(precision_fixed(-0.0).is_nan());
-        assert!(precision_fixed(f64::NAN).is_nan());
-        assert!(precision_fixed(f64::INFINITY).is_nan());
-        assert!(precision_fixed(f64::NEG_INFINITY).is_nan());
+        for step in [0.0, -0.0, f64::NAN, f64::INFINITY, f64::NEG_INFINITY] {
+            assert_math_nan(precision_fixed(step), &format!("precisionFixed({step})"));
+        }
     }
 
     #[test]
@@ -176,10 +226,12 @@ mod tests {
 
     #[test]
     fn precision_round_is_nan_where_there_is_no_exponent() {
-        assert!(precision_round(0.0, 1.0).is_nan());
-        assert!(precision_round(f64::NAN, 1.0).is_nan());
-        assert!(precision_round(f64::INFINITY, 1.0).is_nan());
-        assert!(precision_round(f64::NEG_INFINITY, 1.0).is_nan());
+        for step in [0.0, f64::NAN, f64::INFINITY, f64::NEG_INFINITY] {
+            assert_math_nan(
+                precision_round(step, 1.0),
+                &format!("precisionRound({step}, 1)"),
+            );
+        }
     }
 
     #[test]
@@ -246,13 +298,19 @@ mod tests {
 
     #[test]
     fn precision_prefix_is_nan_where_there_is_no_exponent() {
-        assert!(precision_prefix(0.0, 1.0).is_nan());
-        assert!(precision_prefix(f64::NAN, 1.0).is_nan());
-        assert!(precision_prefix(f64::INFINITY, 1.0).is_nan());
-        assert!(precision_prefix(f64::NEG_INFINITY, 1.0).is_nan());
+        for step in [0.0, f64::NAN, f64::INFINITY, f64::NEG_INFINITY] {
+            assert_math_nan(
+                precision_prefix(step, 1.0),
+                &format!("precisionPrefix({step}, 1)"),
+            );
+        }
         // A degenerate *value* has no bucket either.
-        assert!(precision_prefix(1.0, 0.0).is_nan());
-        assert!(precision_prefix(1.0, f64::NAN).is_nan());
+        for value in [0.0, f64::NAN, f64::INFINITY] {
+            assert_math_nan(
+                precision_prefix(1.0, value),
+                &format!("precisionPrefix(1, {value})"),
+            );
+        }
     }
 
     #[test]

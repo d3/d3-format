@@ -12,11 +12,14 @@
 // original test block, preserving the source title and carrying the static
 // assertion id of every case into the failure message.
 //
-// Phase 1 has no Rust formatting API. Every generated test therefore carries
-// `#[ignore]` with an explicit reason *and* runs through `support::run`, whose body
-// is `unimplemented!()`. The suite compiles, which is what section 3.7 gates on,
-// but it cannot report a pass: `cargo test` shows the blocks as ignored, and
-// `cargo test -- --ignored` panics on every one of them.
+// Every block runs through `support::run`, which replays the block's recorded calls
+// against the Rust port and compares each answer with the exact value the oracle
+// returned. A block is `#[ignore]`d only where the recording cannot drive the port
+// at all: either the oracle recorded no boundary call for it, or every call it did
+// record passes a JavaScript value the typed API declines. Both conditions are
+// computed from the fixtures, both carry a reason naming what is missing, and
+// `main.rs` asserts that the ignored set is exactly the set those two rules select,
+// so a block cannot be quietly ignored to make a suite green.
 import {existsSync} from "node:fs";
 import {
   FIXTURE_DIR,
@@ -37,9 +40,40 @@ import {
 
 export const OUTPUT_DIR = "rust/tests/generated";
 
-const IGNORE_REASON =
-  "Phase 1 placeholder: the Rust formatting API does not exist yet " +
-  "(MIGRATION_TO_RUST.md, Phase 2 through Phase 4)";
+/**
+ * The two reasons a generated block cannot be executed.
+ *
+ * They are `#[ignore]` text, constants in the emitted `support.rs`, *and* the third
+ * column of `IGNORED` in the emitted `main.rs`, all from this one spelling.
+ */
+const NO_RECORDED_CALL =
+  "the oracle recorded no boundary call for this block, so running it would assert nothing; " +
+  "assertion-map.json routes its assertions to rust/tests/ported";
+const NOT_A_PORTABLE_INPUT =
+  "every recorded call in this block passes a JavaScript value the typed API declines; " +
+  "see no-input-coercion in rust/DIVERGENCES.md";
+
+/**
+ * Whether the port can be asked one recorded call at all.
+ *
+ * `undefined`, `null` and booleans reach `format` only through JavaScript coercion,
+ * which `no-input-coercion` in `rust/DIVERGENCES.md` says the typed API refuses. A
+ * block containing such a call is ignored rather than half-run, because a test that
+ * silently skipped part of its block would report coverage it does not have.
+ *
+ * This is the rule the emitted `main.rs` re-applies in Rust, over the same block
+ * data, to check that the `#[ignore]` inventory still matches it.
+ */
+function isExecutableCall(record) {
+  return record.args.every((argument) => argument.kind === "f64" || argument.kind === "text");
+}
+
+/** The `#[ignore]` reason for a block, or `null` when the block can be executed. */
+export function ignoreReason(block) {
+  if (block.cases.length === 0) return NO_RECORDED_CALL;
+  if (!block.cases.every(isExecutableCall)) return NOT_A_PORTABLE_INPUT;
+  return null;
+}
 
 const OPERATION_VARIANTS = {
   format: "Op::Format",
@@ -198,13 +232,20 @@ function renderSupport(locales, totals) {
   const lines = [];
   lines.push(...generatedHeader(`${FIXTURE_DIR}/calls.jsonl`));
   lines.push("");
-  lines.push("//! Shared data model for the generated conformance suite.");
+  lines.push("//! Shared data model and executor for the generated conformance suite.");
   lines.push("//!");
   lines.push("//! Every oracle value is carried exactly as the fixtures record it: numbers as raw");
   lines.push("//! big-endian `f64` bit patterns, so negative zero, NaN payloads and the infinities");
   lines.push("//! survive the round trip; text as ASCII-escaped string literals.");
+  lines.push("//!");
+  lines.push("//! [`run`] replays a block's recorded calls against the public API and compares");
+  lines.push("//! each answer with the value the JavaScript oracle returned, exactly.");
   lines.push("");
   lines.push("#![allow(dead_code)]");
+  lines.push("");
+  lines.push("use d3_format::{");
+  lines.push("    precision_fixed, precision_prefix, precision_round, FormatSpecifier, Locale, LocaleDefinition,");
+  lines.push("};");
   lines.push("");
   lines.push("/// One oracle value.");
   lines.push("#[derive(Debug, Clone, Copy, PartialEq)]");
@@ -334,32 +375,249 @@ function renderSupport(locales, totals) {
   lines.push(`pub const TOTAL_CASES: usize = ${totals.cases};`);
   lines.push(`pub const TOTAL_EXECUTIONS: u32 = ${totals.executions};`);
   lines.push(`pub const TOTAL_LOCALES: usize = ${locales.length};`);
-  lines.push("");
-  lines.push("/// Runs one generated conformance block against the Rust port.");
-  lines.push("///");
-  lines.push("/// There is no Rust formatting API before Phase 2, so this deliberately does not");
-  lines.push("/// exist yet. Every generated test is also `#[ignore]`d, so the placeholder state");
-  lines.push("/// cannot be mistaken for a pass: `cargo test` reports the blocks as ignored, and");
-  lines.push("/// `cargo test -- --ignored` panics here on every one of them.");
-  lines.push("///");
-  lines.push("/// The panic names every static assertion id the block covers, so a failure");
-  lines.push("/// points straight at the JavaScript source it came from.");
-  lines.push("pub fn run(block: &Block) -> ! {");
-  lines.push("    unimplemented!(");
-  lines.push('        "generated conformance block {} #{} ({}) is not runnable: {} case(s), {} \\');
-  lines.push("assertion execution(s), assertion id(s) {} -- no Rust implementation until Phase 2 of \\");
-  lines.push('MIGRATION_TO_RUST.md",');
-  lines.push("        block.file,");
-  lines.push("        block.test_index,");
-  lines.push("        block.title,");
-  lines.push("        block.cases.len(),");
-  lines.push("        block.executions,");
-  lines.push("        block.assertion_ids.join(\", \"),");
-  lines.push("    )");
-  lines.push("}");
+  lines.push(RUNTIME.trimEnd());
   lines.push("");
   return lines.join("\n");
 }
+
+/**
+ * The executor the generated tests call, emitted verbatim into `support.rs`.
+ *
+ * Written as source rather than assembled line by line because it is ordinary
+ * hand-maintained Rust that happens to live in a generated file: nothing in it
+ * varies with the fixtures. It must already satisfy rustfmt, per section 3.4.
+ */
+const RUNTIME = `
+// ---------------------------------------------------------------------------
+// The executor
+// ---------------------------------------------------------------------------
+
+/// The port's answer for one recorded call, in the fixtures' value shape.
+///
+/// A number is carried as its bit pattern, like [\`Value::F64\`], so that negative
+/// zero, the infinities and NaN payloads all compare exactly rather than through
+/// \`f64\` equality, under which two NaNs are never equal and the two zeros always
+/// are.
+#[derive(Debug, Clone, PartialEq, Eq)]
+pub enum Answer {
+    /// A formatted string.
+    Text(String),
+    /// A normalized specifier, which the recording tags apart from text.
+    Specifier(String),
+    /// A numeric answer, by bit pattern.
+    F64(u64),
+}
+
+impl Answer {
+    /// Exact agreement with a recorded oracle value, kind included.
+    fn agrees_with(&self, expected: Value) -> bool {
+        match (self, expected) {
+            (Answer::Text(actual), Value::Text(expected)) => actual == expected,
+            (Answer::Specifier(actual), Value::Specifier(expected)) => actual == expected,
+            (Answer::F64(actual), Value::F64(expected)) => *actual == expected,
+            _ => false,
+        }
+    }
+}
+
+impl Case {
+    /// Whether the port can be asked this call at all.
+    ///
+    /// \`undefined\`, \`null\` and booleans reach d3's \`format\` only through JavaScript
+    /// coercion, and \`no-input-coercion\` in \`rust/DIVERGENCES.md\` records that the
+    /// typed API declines them instead. The block containing such a call is
+    /// \`#[ignore]\`d, and \`main.rs\` asserts that the ignored set is exactly the set
+    /// this rule selects.
+    pub fn is_executable(&self) -> bool {
+        self.args
+            .iter()
+            .all(|argument| matches!(argument, Value::F64(_) | Value::Text(_)))
+    }
+}
+
+/// A block whose assertions the recording routed to \`rust/tests/ported\` instead.
+pub const NO_RECORDED_CALL: &str = ${rustStringLiteral(NO_RECORDED_CALL)};
+/// A block that only ever called d3 with a value the typed API declines.
+pub const NOT_A_PORTABLE_INPUT: &str = ${rustStringLiteral(NOT_A_PORTABLE_INPUT)};
+
+impl Block {
+    /// Why this block cannot be replayed, or \`None\` when it can.
+    ///
+    /// The generator applies this same rule to the fixtures to decide which blocks
+    /// get \`#[ignore]\`; \`main.rs\` reapplies it here, over the data as compiled in,
+    /// and asserts the two agree. So the skip list is derived from the oracle
+    /// rather than asserted about the port, and no block can sit ignored once its
+    /// calls become replayable.
+    pub fn ignore_reason(&self) -> Option<&'static str> {
+        if self.cases.is_empty() {
+            Some(NO_RECORDED_CALL)
+        } else if !self.cases.iter().all(Case::is_executable) {
+            Some(NOT_A_PORTABLE_INPUT)
+        } else {
+            None
+        }
+    }
+}
+
+/// Replays one recorded block against the port, comparing every call exactly.
+///
+/// The failure message names the static assertion site the call came from, so a
+/// disagreement points straight at the JavaScript source that recorded it.
+pub fn run(block: &Block) {
+    assert!(
+        !block.cases.is_empty(),
+        "generated block {} #{} ({}) recorded no boundary call, so running it would assert \\
+nothing",
+        block.file,
+        block.test_index,
+        block.title
+    );
+    for case in block.cases {
+        assert!(
+            case.is_executable(),
+            "generated block {} #{} case {} passes a JavaScript value the typed API declines; \\
+see no-input-coercion in rust/DIVERGENCES.md",
+            block.file,
+            block.test_index,
+            case.seq
+        );
+        let actual = answer(case);
+        assert!(
+            actual.agrees_with(case.expected),
+            "{}\\n  block    : {} #{} ({})\\n  call     : {}\\n  expected : {:?}\\n  actual   : {:?}",
+            case.assertion_id
+                .unwrap_or("(block setup, no assertion site)"),
+            block.file,
+            block.test_index,
+            block.title,
+            describe(case),
+            case.expected,
+            actual
+        );
+    }
+}
+
+/// Asks the port one recorded call.
+fn answer(case: &Case) -> Answer {
+    match case.op {
+        Op::Format | Op::FormatPrefix => {
+            let specifier = case
+                .specifier_input
+                .unwrap_or_else(|| panic!("case {}: no recorded specifier", case.seq));
+            let locale = locale_of(case);
+            let formatter = match (case.op, case.reference.and_then(Value::as_f64)) {
+                (Op::FormatPrefix, Some(reference)) => {
+                    locale.prefix_formatter(specifier, reference)
+                }
+                (Op::FormatPrefix, None) => {
+                    panic!("case {}: formatPrefix with no numeric reference", case.seq)
+                }
+                _ => locale.formatter(specifier),
+            };
+            let formatter = formatter.unwrap_or_else(|error| {
+                panic!("case {}: {specifier:?} did not compile: {error}", case.seq)
+            });
+            let formatted = match case.args {
+                [Value::F64(bits)] => formatter.format_number(f64::from_bits(*bits)),
+                [Value::Text(text)] => formatter.format_text(text),
+                args => panic!("case {}: unexpected arguments {args:?}", case.seq),
+            };
+            Answer::Text(formatted.unwrap_or_else(|error| {
+                panic!(
+                    "case {}: {specifier:?} refused its input: {error}",
+                    case.seq
+                )
+            }))
+        }
+        Op::FormatSpecifier => {
+            let specifier = case
+                .specifier_input
+                .unwrap_or_else(|| panic!("case {}: no recorded specifier", case.seq));
+            let parsed = specifier
+                .parse::<FormatSpecifier>()
+                .unwrap_or_else(|error| {
+                    panic!("case {}: {specifier:?} did not parse: {error}", case.seq)
+                });
+            Answer::Specifier(parsed.to_string())
+        }
+        Op::PrecisionFixed => Answer::F64(precision_fixed(number(case, 0)).to_bits()),
+        Op::PrecisionPrefix => {
+            Answer::F64(precision_prefix(number(case, 0), number(case, 1)).to_bits())
+        }
+        Op::PrecisionRound => {
+            Answer::F64(precision_round(number(case, 0), number(case, 1)).to_bits())
+        }
+    }
+}
+
+/// The \`n\`th argument as an \`f64\`.
+fn number(case: &Case, index: usize) -> f64 {
+    case.args
+        .get(index)
+        .copied()
+        .and_then(Value::as_f64)
+        .unwrap_or_else(|| panic!("case {}: argument {index} is not a number", case.seq))
+}
+
+/// The locale a case names, rebuilt from its recorded definition.
+///
+/// A null field in the recording means the definition *omitted* the key, which d3
+/// answers with its own default; \`LocaleDefinition\`'s \`None\` means the same, so the
+/// two line up field for field.
+fn locale_of(case: &Case) -> Locale {
+    let index = case
+        .locale
+        .unwrap_or_else(|| panic!("case {}: no recorded locale", case.seq));
+    let recorded = &LOCALES[index];
+    let definition = LocaleDefinition {
+        decimal: recorded.decimal.map(str::to_owned),
+        thousands: recorded.thousands.map(str::to_owned),
+        grouping: recorded.grouping.map(<[u32]>::to_vec),
+        currency: recorded.currency.map(|pair| pair.map(str::to_owned)),
+        numerals: recorded.numerals.map(|digits| digits.map(str::to_owned)),
+        percent: recorded.percent.map(str::to_owned),
+        minus: recorded.minus.map(str::to_owned),
+        nan: recorded.nan.map(str::to_owned),
+    };
+    Locale::from_definition(definition).unwrap_or_else(|error| {
+        panic!(
+            "case {}: locale {} ({}) is not accepted: {error}",
+            case.seq, recorded.id, recorded.definition_sha256
+        )
+    })
+}
+
+/// The call as the JavaScript wrote it, for a failure message.
+fn describe(case: &Case) -> String {
+    let arguments = case
+        .args
+        .iter()
+        .map(|argument| match argument {
+            Value::F64(bits) => format!("{} /* {bits:016X} */", f64::from_bits(*bits)),
+            other => format!("{other:?}"),
+        })
+        .collect::<Vec<_>>()
+        .join(", ");
+    let locale = case
+        .locale
+        .map_or_else(|| "-".to_owned(), |index| LOCALES[index].id.to_owned());
+    match case.op {
+        Op::Format => format!(
+            "locale({locale}).format({:?})({arguments})",
+            case.specifier_input.unwrap_or_default()
+        ),
+        Op::FormatPrefix => format!(
+            "locale({locale}).formatPrefix({:?}, {:?})({arguments})",
+            case.specifier_input.unwrap_or_default(),
+            case.reference.and_then(Value::as_f64)
+        ),
+        Op::FormatSpecifier => format!("formatSpecifier({arguments})"),
+        Op::PrecisionFixed => format!("precisionFixed({arguments})"),
+        Op::PrecisionPrefix => format!("precisionPrefix({arguments})"),
+        Op::PrecisionRound => format!("precisionRound({arguments})"),
+    }
+}
+`;
 
 function renderModule(file, blocks, localeIndex) {
   const lines = [];
@@ -379,7 +637,8 @@ function renderModule(file, blocks, localeIndex) {
     lines.push(`// ${file} #${block.testIndex}: ${asciiComment(block.title)}`);
     lines.push(`// ${block.executions} assertion execution(s), ${block.cases.length} recorded call(s)`);
     lines.push("#[test]");
-    lines.push(`#[ignore = ${rustStringLiteral(IGNORE_REASON)}]`);
+    const reason = ignoreReason(block);
+    if (reason !== null) lines.push(`#[ignore = ${rustStringLiteral(reason)}]`);
     lines.push(`fn ${block.fnName}() {`);
     lines.push(`    crate::support::run(&BLOCKS[${block.indexInModule}]);`);
     lines.push("}");
@@ -389,21 +648,26 @@ function renderModule(file, blocks, localeIndex) {
 }
 
 function renderMain(modules) {
-  const blockCount = modules.reduce((sum, module) => sum + module.blocks.length, 0);
+  const blocks = modules.flatMap((module) => module.blocks);
+  const blockCount = blocks.length;
+  const ignored = blocks
+    .map((block) => ({block, reason: ignoreReason(block)}))
+    .filter((entry) => entry.reason !== null);
   const lines = [];
   lines.push(...generatedHeader(`${FIXTURE_DIR}/calls.jsonl and ${FIXTURE_DIR}/assertion-map.json`));
   lines.push("");
   lines.push("//! The generated d3-format conformance suite.");
   lines.push("//!");
   lines.push("//! One Rust test per original JavaScript test block, carrying the recorded oracle");
-  lines.push("//! calls and the static assertion id of each one. The conformance tests are");
-  lines.push("//! `#[ignore]`d and their bodies are `unimplemented!()` until the Rust formatting");
-  lines.push("//! API exists; see `support::run`.");
+  lines.push("//! calls and the static assertion id of each one. Each test replays its calls");
+  lines.push("//! against the public API and compares every answer with what d3 returned; see");
+  lines.push("//! `support::run`.");
   lines.push("//!");
-  lines.push("//! Exactly two tests here run. Neither exercises the port: one asserts that the");
-  lines.push("//! `support::run` seam still diverges, so this target's `test result: ok.` cannot");
-  lines.push("//! be read as conformance, and the other checks the emitted inventory against the");
-  lines.push("//! provenance manifest, so it cannot be read as a stale generation either.");
+  lines.push(`//! ${blockCount - ignored.length} of the ${blockCount} blocks run. The other ${ignored.length} are`);
+  lines.push("//! `#[ignore]`d because the oracle recorded nothing they could replay -- either no");
+  lines.push("//! boundary call at all, or only calls whose JavaScript arguments the typed API");
+  lines.push("//! declines. `IGNORED` below lists them, and a test asserts that list is exactly");
+  lines.push("//! the set the recorded calls justify, so a passing block cannot stay skipped.");
   lines.push("");
   lines.push("mod support;");
   lines.push("");
@@ -425,29 +689,42 @@ function renderMain(modules) {
   }
   lines.push("];");
   lines.push("");
-  // libtest always prints `test result: ok.` for a target whose only outcomes are
-  // "passed" and "ignored", and a CI dashboard that summarizes by that line would
-  // read this placeholder suite as a working port. The per-test `ignored` reasons
-  // say otherwise, but they are the lines a skimmer drops. So the state is also
-  // stated in a test *name*, which survives every level of summarization, and the
-  // name is backed by an assertion that fails the moment it stops being true.
-  lines.push(`/// Proves the ${blockCount} generated conformance blocks cannot pass yet.`);
+  // libtest prints `test result: ok.` for a target whose only outcomes are "passed"
+  // and "ignored", so the count of blocks that did not run is the number a CI
+  // dashboard drops. It is pinned here instead, as data a test compares against.
+  lines.push("/// Every `#[ignore]`d block: its file, its index in that file, and the reason.");
   lines.push("///");
-  lines.push("/// `support::run` is the single seam where the Rust formatting API will be");
-  lines.push("/// called. Until it exists the seam diverges, and this test asserts exactly");
-  lines.push("/// that on a real block, so the suite cannot quietly begin reporting coverage.");
-  lines.push("/// Implementing the API makes this test fail, which is the intended prompt to");
-  lines.push("/// delete it and un-`#[ignore]` the blocks in the same change.");
+  lines.push("/// Emitted by the generator from the recorded calls, and checked below against");
+  lines.push("/// the same calls as compiled in. Nothing here is a judgement call about the");
+  lines.push("/// port: a block is listed when the oracle gave it nothing to replay.");
+  lines.push(`static IGNORED: [(&str, u32, &str); ${ignored.length}] = [`);
+  for (const {block, reason} of ignored) {
+    const parts = [rustStringLiteral(block.file), `${block.testIndex}`, rustStringLiteral(reason)];
+    const inline = parts.join(", ");
+    if (inline.length <= FN_CALL_WIDTH) lines.push(`    (${inline}),`);
+    else lines.push("    (", ...parts.map((part) => `        ${part},`), "    ),");
+  }
+  lines.push("];");
+  lines.push("");
+  lines.push("/// The skipped blocks are exactly the ones the oracle cannot ask about.");
+  lines.push("///");
+  lines.push("/// The `#[ignore]` attributes are baked into the generated source, so on their");
+  lines.push("/// own they are a claim from generation time. This recomputes the reasons from");
+  lines.push("/// the recorded calls and compares, which fails if a block that could run is");
+  lines.push("/// still skipped -- the one way this suite could report agreement it never");
+  lines.push("/// tested.");
   lines.push("#[test]");
-  lines.push(
-    `fn the_rust_formatting_api_is_unimplemented_so_all_${blockCount}_conformance_blocks_are_ignored() {`
-  );
-  lines.push("    let seam = std::panic::catch_unwind(|| support::run(&MODULES[0].1[0]));");
-  lines.push("    assert!(");
-  lines.push("        seam.is_err(),");
-  lines.push("        \"support::run returned a value: the port now exists, so this test and the \\");
-  lines.push("#[ignore] attributes on the generated blocks are both stale\"");
-  lines.push("    );");
+  lines.push("fn the_ignored_blocks_are_exactly_the_ones_with_no_replayable_call() {");
+  lines.push("    let expected: Vec<(&str, u32, &str)> = MODULES");
+  lines.push("        .iter()");
+  lines.push("        .flat_map(|(_, blocks)| blocks.iter())");
+  lines.push("        .filter_map(|block| {");
+  lines.push("            let reason = block.ignore_reason()?;");
+  lines.push("            Some((block.file, block.test_index, reason))");
+  lines.push("        })");
+  lines.push("        .collect();");
+  lines.push("");
+  lines.push("    assert_eq!(expected, IGNORED, \"ignored conformance blocks\");");
   lines.push("}");
   lines.push("");
   lines.push("/// The generated suite reproduces the recorded oracle inventory exactly.");
@@ -503,9 +780,9 @@ function renderMain(modules) {
   lines.push("    }");
   lines.push("");
   lines.push(`    eprintln!(`);
-  lines.push("        \"d3-format: {blocks} generated conformance blocks covering {cases} oracle calls \\");
-  lines.push("are compiled but ignored; the Rust formatting API arrives in Phase 2 of \\");
-  lines.push("MIGRATION_TO_RUST.md\"");
+  lines.push("        \"d3-format: {blocks} generated conformance blocks covering {cases} oracle calls, \\");
+  lines.push("{} of them ignored for want of a replayable call\",");
+  lines.push("        IGNORED.len()");
   lines.push("    );");
   lines.push("}");
   lines.push("");

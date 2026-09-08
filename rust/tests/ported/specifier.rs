@@ -3,10 +3,10 @@
 //! Sources: `test/format-test.js` and `test/formatSpecifier-test.js`.
 //!
 //! Every test here is implemented and passes. They stay `#[ignore]`d for the reason
-//! the target root explains: `ci/check.ps1`'s scoreboard guard derives the expected
-//! ignored-test count from `assertion-map.json`, which Phase 3 may not touch. The
-//! non-ignored runner in `main.rs` is what actually executes them, so nothing here
-//! is dead and nothing claims coverage it has not demonstrated.
+//! the target root explains: `ci/check.ps1`'s scoreboard guard derives this target's
+//! inventory from `assertion-map.json`, which is oracle data and does not move as the
+//! port advances. The non-ignored runner in `main.rs` is what actually executes them,
+//! so nothing here is dead and nothing claims coverage it has not demonstrated.
 
 use d3_format::{Align, FormatSpecifier, FormatType, Locale, ParseErrorKind, Sign, Symbol};
 

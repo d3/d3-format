@@ -188,7 +188,6 @@ pub static BLOCKS: &[Block] = &[
 // test/format-test.js #0: format(specifier)(number) returns a string
 // 1 assertion execution(s), 1 recorded call(s)
 #[test]
-#[ignore = "Phase 1 placeholder: the Rust formatting API does not exist yet (MIGRATION_TO_RUST.md, Phase 2 through Phase 4)"]
 fn t000_format_specifier_number_returns_a_string() {
     crate::support::run(&BLOCKS[0]);
 }
@@ -196,7 +195,7 @@ fn t000_format_specifier_number_returns_a_string() {
 // test/format-test.js #1: format(specifier).toString() returns the normalized specifier
 // 1 assertion execution(s), 0 recorded call(s)
 #[test]
-#[ignore = "Phase 1 placeholder: the Rust formatting API does not exist yet (MIGRATION_TO_RUST.md, Phase 2 through Phase 4)"]
+#[ignore = "the oracle recorded no boundary call for this block, so running it would assert nothing; assertion-map.json routes its assertions to rust/tests/ported"]
 fn t001_format_specifier_tostring_returns_the_normalized_specifier() {
     crate::support::run(&BLOCKS[1]);
 }
@@ -204,7 +203,7 @@ fn t001_format_specifier_tostring_returns_the_normalized_specifier() {
 // test/format-test.js #2: format(specifier) throws an error for invalid formats
 // 3 assertion execution(s), 0 recorded call(s)
 #[test]
-#[ignore = "Phase 1 placeholder: the Rust formatting API does not exist yet (MIGRATION_TO_RUST.md, Phase 2 through Phase 4)"]
+#[ignore = "the oracle recorded no boundary call for this block, so running it would assert nothing; assertion-map.json routes its assertions to rust/tests/ported"]
 fn t002_format_specifier_throws_an_error_for_invalid_formats() {
     crate::support::run(&BLOCKS[2]);
 }
@@ -212,7 +211,6 @@ fn t002_format_specifier_throws_an_error_for_invalid_formats() {
 // test/format-test.js #3: format(",.") unreasonable precision values are clamped to reasonable values
 // 2 assertion execution(s), 2 recorded call(s)
 #[test]
-#[ignore = "Phase 1 placeholder: the Rust formatting API does not exist yet (MIGRATION_TO_RUST.md, Phase 2 through Phase 4)"]
 fn t003_format_unreasonable_precision_values_are_clamped_to_reasonable_values() {
     crate::support::run(&BLOCKS[3]);
 }
@@ -220,7 +218,6 @@ fn t003_format_unreasonable_precision_values_are_clamped_to_reasonable_values() 
 // test/format-test.js #4: format("s") handles very small and very large values
 // 2 assertion execution(s), 2 recorded call(s)
 #[test]
-#[ignore = "Phase 1 placeholder: the Rust formatting API does not exist yet (MIGRATION_TO_RUST.md, Phase 2 through Phase 4)"]
 fn t004_format_s_handles_very_small_and_very_large_values() {
     crate::support::run(&BLOCKS[4]);
 }
@@ -228,7 +225,6 @@ fn t004_format_s_handles_very_small_and_very_large_values() {
 // test/format-test.js #5: format("n") is equivalent to format(",g")
 // 2 assertion execution(s), 2 recorded call(s)
 #[test]
-#[ignore = "Phase 1 placeholder: the Rust formatting API does not exist yet (MIGRATION_TO_RUST.md, Phase 2 through Phase 4)"]
 fn t005_format_n_is_equivalent_to_format_g() {
     crate::support::run(&BLOCKS[5]);
 }
@@ -236,7 +232,6 @@ fn t005_format_n_is_equivalent_to_format_g() {
 // test/format-test.js #6: format("012") is equivalent to format("0=12")
 // 2 assertion execution(s), 2 recorded call(s)
 #[test]
-#[ignore = "Phase 1 placeholder: the Rust formatting API does not exist yet (MIGRATION_TO_RUST.md, Phase 2 through Phase 4)"]
 fn t006_format_012_is_equivalent_to_format_0_12() {
     crate::support::run(&BLOCKS[6]);
 }

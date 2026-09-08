@@ -51,7 +51,6 @@ pub static BLOCKS: &[Block] = &[
 // test/format-type-b-test.js #0: format("b") binary
 // 1 assertion execution(s), 1 recorded call(s)
 #[test]
-#[ignore = "Phase 1 placeholder: the Rust formatting API does not exist yet (MIGRATION_TO_RUST.md, Phase 2 through Phase 4)"]
 fn t000_format_b_binary() {
     crate::support::run(&BLOCKS[0]);
 }
@@ -59,7 +58,6 @@ fn t000_format_b_binary() {
 // test/format-type-b-test.js #1: format("#b") binary with prefix
 // 1 assertion execution(s), 1 recorded call(s)
 #[test]
-#[ignore = "Phase 1 placeholder: the Rust formatting API does not exist yet (MIGRATION_TO_RUST.md, Phase 2 through Phase 4)"]
 fn t001_format_b_binary_with_prefix() {
     crate::support::run(&BLOCKS[1]);
 }

@@ -173,7 +173,6 @@ pub static BLOCKS: &[Block] = &[
 // test/precisionRound-test.js #0: precisionRound(step, max) returns the expected value
 // 4 assertion execution(s), 4 recorded call(s)
 #[test]
-#[ignore = "Phase 1 placeholder: the Rust formatting API does not exist yet (MIGRATION_TO_RUST.md, Phase 2 through Phase 4)"]
 fn t000_precisionround_step_max_returns_the_expected_value() {
     crate::support::run(&BLOCKS[0]);
 }
@@ -181,7 +180,6 @@ fn t000_precisionround_step_max_returns_the_expected_value() {
 // test/precisionRound-test.js #1: precisionRound(0, max) returns NaN
 // 1 assertion execution(s), 1 recorded call(s)
 #[test]
-#[ignore = "Phase 1 placeholder: the Rust formatting API does not exist yet (MIGRATION_TO_RUST.md, Phase 2 through Phase 4)"]
 fn t001_precisionround_0_max_returns_nan() {
     crate::support::run(&BLOCKS[1]);
 }
@@ -189,7 +187,6 @@ fn t001_precisionround_0_max_returns_nan() {
 // test/precisionRound-test.js #2: precisionRound(NaN, max) returns NaN
 // 1 assertion execution(s), 1 recorded call(s)
 #[test]
-#[ignore = "Phase 1 placeholder: the Rust formatting API does not exist yet (MIGRATION_TO_RUST.md, Phase 2 through Phase 4)"]
 fn t002_precisionround_nan_max_returns_nan() {
     crate::support::run(&BLOCKS[2]);
 }
@@ -197,7 +194,6 @@ fn t002_precisionround_nan_max_returns_nan() {
 // test/precisionRound-test.js #3: precisionRound(Infinity, max) returns NaN
 // 2 assertion execution(s), 2 recorded call(s)
 #[test]
-#[ignore = "Phase 1 placeholder: the Rust formatting API does not exist yet (MIGRATION_TO_RUST.md, Phase 2 through Phase 4)"]
 fn t003_precisionround_infinity_max_returns_nan() {
     crate::support::run(&BLOCKS[3]);
 }

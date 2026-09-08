@@ -175,7 +175,6 @@ pub static BLOCKS: &[Block] = &[
 // test/precisionFixed-test.js #0: precisionFixed(number) returns the expected value
 // 6 assertion execution(s), 6 recorded call(s)
 #[test]
-#[ignore = "Phase 1 placeholder: the Rust formatting API does not exist yet (MIGRATION_TO_RUST.md, Phase 2 through Phase 4)"]
 fn t000_precisionfixed_number_returns_the_expected_value() {
     crate::support::run(&BLOCKS[0]);
 }
@@ -183,7 +182,6 @@ fn t000_precisionfixed_number_returns_the_expected_value() {
 // test/precisionFixed-test.js #1: precisionFixed(0) returns NaN
 // 1 assertion execution(s), 1 recorded call(s)
 #[test]
-#[ignore = "Phase 1 placeholder: the Rust formatting API does not exist yet (MIGRATION_TO_RUST.md, Phase 2 through Phase 4)"]
 fn t001_precisionfixed_0_returns_nan() {
     crate::support::run(&BLOCKS[1]);
 }
@@ -191,7 +189,6 @@ fn t001_precisionfixed_0_returns_nan() {
 // test/precisionFixed-test.js #2: precisionFixed(NaN) returns NaN
 // 1 assertion execution(s), 1 recorded call(s)
 #[test]
-#[ignore = "Phase 1 placeholder: the Rust formatting API does not exist yet (MIGRATION_TO_RUST.md, Phase 2 through Phase 4)"]
 fn t002_precisionfixed_nan_returns_nan() {
     crate::support::run(&BLOCKS[2]);
 }
@@ -199,7 +196,6 @@ fn t002_precisionfixed_nan_returns_nan() {
 // test/precisionFixed-test.js #3: precisionFixed(Infinity) returns NaN
 // 2 assertion execution(s), 2 recorded call(s)
 #[test]
-#[ignore = "Phase 1 placeholder: the Rust formatting API does not exist yet (MIGRATION_TO_RUST.md, Phase 2 through Phase 4)"]
 fn t003_precisionfixed_infinity_returns_nan() {
     crate::support::run(&BLOCKS[3]);
 }

@@ -11,11 +11,10 @@ ID that exists here, and that every ID here is either claimed by an assertion or
 `Oracle assertions: none`. That check is what keeps this document from drifting away from the
 recording.
 
-Phase 3 made the specifier, locale, limit and error deviations real; every `Covered by:` line below
-now names a test that runs and passes, except where it says otherwise. The tests under
+Phase 3 made the specifier, locale, limit and error deviations real and Phase 4 made the layout ones
+real; every `Covered by:` line below now names a test that runs and passes. The tests under
 `rust/tests/ported/` keep their `#[ignore]` attributes for a scoreboard reason their target root
-explains — `rust/tests/ported/main.rs::the_phase_3_assertions_all_pass` is what executes them — and
-the two lines still marked with a phase are waiting on layout and on the property suite.
+explains — `rust/tests/ported/main.rs::the_ported_assertions_all_pass` is what executes them.
 
 ---
 
@@ -65,9 +64,11 @@ deliberate structural difference a reviewer should be able to find.
 Oracle assertions: none
 Covered by: `rust/tests/public_api.rs::a_prefix_formatter_reports_type_f_whatever_the_caller_wrote`,
 which shows the fixed prefix living on the formatter that chose it, and the `Send + Sync` bound in
-the same file. The auto-prefix path is Phase 4, so the stronger statement —
-`rust/tests/properties.rs` (Phase 5: concurrent and interleaved formatting agree with sequential
-formatting) — is still outstanding.
+the same file. The stronger statement is
+`rust/tests/concurrency.rs::prefix_formatters_do_not_share_an_exponent`, which formats through
+mixed SI buckets on eight threads at once and requires every answer to equal the one a single
+thread computed; `rust/tests/concurrency.rs::one_shared_formatter_per_specifier_agrees_with_one_thread`
+does the same for type `s` through one `&Formatter` shared by every thread.
 
 ---
 
@@ -164,9 +165,11 @@ Covered by: `rust/tests/public_api.rs::a_numeric_formatter_refuses_text_instead_
 `rust/tests/public_api.rs::a_text_formatter_refuses_numbers_instead_of_coercing_them`, which pin the
 refusal in both directions.
 `rust/tests/ported/divergences.rs::numeric_formatters_reject_non_numeric_input` asserts the same
-refusal against the three locales the oracle uses and then diverges: the other half of its contract
-is that `f64::NAN` renders as each locale's NaN text, which is Phase 4 layout.
-`rust/tests/ported/main.rs::the_phase_4_assertion_still_diverges` is what keeps that honest.
+refusal against the three locales the oracle uses, and then the other half of the contract: that
+`f64::NAN` through those three formatters produces the oracle's own `"   N/A"`, `"-     "` and
+`"   NaN"`. The generated block for those assertions,
+`rust/tests/generated/locale_test.rs::t009_formatlocale_nan_nan_observes_the_specified_not_a_number_representation`,
+is `#[ignore]`d precisely because every call in it passes `undefined`, so this is where they run.
 
 ---
 

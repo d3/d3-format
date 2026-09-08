@@ -239,7 +239,7 @@ pub static BLOCKS: &[Block] = &[
 // test/formatSpecifier-test.js #0: formatSpecifier(specifier) throws an error for invalid formats
 // 3 assertion execution(s), 0 recorded call(s)
 #[test]
-#[ignore = "Phase 1 placeholder: the Rust formatting API does not exist yet (MIGRATION_TO_RUST.md, Phase 2 through Phase 4)"]
+#[ignore = "the oracle recorded no boundary call for this block, so running it would assert nothing; assertion-map.json routes its assertions to rust/tests/ported"]
 fn t000_formatspecifier_specifier_throws_an_error_for_invalid_formats() {
     crate::support::run(&BLOCKS[0]);
 }
@@ -247,7 +247,6 @@ fn t000_formatspecifier_specifier_throws_an_error_for_invalid_formats() {
 // test/formatSpecifier-test.js #1: formatSpecifier(specifier) returns an instanceof formatSpecifier
 // 1 assertion execution(s), 1 recorded call(s)
 #[test]
-#[ignore = "Phase 1 placeholder: the Rust formatting API does not exist yet (MIGRATION_TO_RUST.md, Phase 2 through Phase 4)"]
 fn t001_formatspecifier_specifier_returns_an_instanceof_formatspecifier() {
     crate::support::run(&BLOCKS[1]);
 }
@@ -255,7 +254,6 @@ fn t001_formatspecifier_specifier_returns_an_instanceof_formatspecifier() {
 // test/formatSpecifier-test.js #2: formatSpecifier("") has the expected defaults
 // 10 assertion execution(s), 1 recorded call(s)
 #[test]
-#[ignore = "Phase 1 placeholder: the Rust formatting API does not exist yet (MIGRATION_TO_RUST.md, Phase 2 through Phase 4)"]
 fn t002_formatspecifier_has_the_expected_defaults() {
     crate::support::run(&BLOCKS[2]);
 }
@@ -263,7 +261,6 @@ fn t002_formatspecifier_has_the_expected_defaults() {
 // test/formatSpecifier-test.js #3: formatSpecifier(specifier) preserves unknown types
 // 2 assertion execution(s), 1 recorded call(s)
 #[test]
-#[ignore = "Phase 1 placeholder: the Rust formatting API does not exist yet (MIGRATION_TO_RUST.md, Phase 2 through Phase 4)"]
 fn t003_formatspecifier_specifier_preserves_unknown_types() {
     crate::support::run(&BLOCKS[3]);
 }
@@ -271,7 +268,6 @@ fn t003_formatspecifier_specifier_preserves_unknown_types() {
 // test/formatSpecifier-test.js #4: formatSpecifier(specifier) preserves shorthand
 // 2 assertion execution(s), 1 recorded call(s)
 #[test]
-#[ignore = "Phase 1 placeholder: the Rust formatting API does not exist yet (MIGRATION_TO_RUST.md, Phase 2 through Phase 4)"]
 fn t004_formatspecifier_specifier_preserves_shorthand() {
     crate::support::run(&BLOCKS[4]);
 }
@@ -279,7 +275,6 @@ fn t004_formatspecifier_specifier_preserves_shorthand() {
 // test/formatSpecifier-test.js #5: formatSpecifier(specifier).toString() reflects current field values
 // 11 assertion execution(s), 2 recorded call(s)
 #[test]
-#[ignore = "Phase 1 placeholder: the Rust formatting API does not exist yet (MIGRATION_TO_RUST.md, Phase 2 through Phase 4)"]
 fn t005_formatspecifier_specifier_tostring_reflects_current_field_values() {
     crate::support::run(&BLOCKS[5]);
 }
@@ -287,7 +282,6 @@ fn t005_formatspecifier_specifier_tostring_reflects_current_field_values() {
 // test/formatSpecifier-test.js #6: formatSpecifier(specifier).toString() clamps precision to zero
 // 1 assertion execution(s), 1 recorded call(s)
 #[test]
-#[ignore = "Phase 1 placeholder: the Rust formatting API does not exist yet (MIGRATION_TO_RUST.md, Phase 2 through Phase 4)"]
 fn t006_formatspecifier_specifier_tostring_clamps_precision_to_zero() {
     crate::support::run(&BLOCKS[6]);
 }
@@ -295,7 +289,6 @@ fn t006_formatspecifier_specifier_tostring_clamps_precision_to_zero() {
 // test/formatSpecifier-test.js #7: formatSpecifier(specifier).toString() clamps width to one
 // 1 assertion execution(s), 1 recorded call(s)
 #[test]
-#[ignore = "Phase 1 placeholder: the Rust formatting API does not exist yet (MIGRATION_TO_RUST.md, Phase 2 through Phase 4)"]
 fn t007_formatspecifier_specifier_tostring_clamps_width_to_one() {
     crate::support::run(&BLOCKS[7]);
 }
@@ -303,7 +296,7 @@ fn t007_formatspecifier_specifier_tostring_clamps_width_to_one() {
 // test/formatSpecifier-test.js #8: new FormatSpecifier({}) has the expected defaults
 // 10 assertion execution(s), 0 recorded call(s)
 #[test]
-#[ignore = "Phase 1 placeholder: the Rust formatting API does not exist yet (MIGRATION_TO_RUST.md, Phase 2 through Phase 4)"]
+#[ignore = "the oracle recorded no boundary call for this block, so running it would assert nothing; assertion-map.json routes its assertions to rust/tests/ported"]
 fn t008_new_formatspecifier_has_the_expected_defaults() {
     crate::support::run(&BLOCKS[8]);
 }
@@ -311,7 +304,7 @@ fn t008_new_formatspecifier_has_the_expected_defaults() {
 // test/formatSpecifier-test.js #9: new FormatSpecifier({\u{2026}}) coerces all inputs to the expected types
 // 10 assertion execution(s), 0 recorded call(s)
 #[test]
-#[ignore = "Phase 1 placeholder: the Rust formatting API does not exist yet (MIGRATION_TO_RUST.md, Phase 2 through Phase 4)"]
+#[ignore = "the oracle recorded no boundary call for this block, so running it would assert nothing; assertion-map.json routes its assertions to rust/tests/ported"]
 fn t009_new_formatspecifier_coerces_all_inputs_to_the_expected_types() {
     crate::support::run(&BLOCKS[9]);
 }

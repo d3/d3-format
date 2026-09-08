@@ -6,9 +6,10 @@
 //! section 5.3 requires. Each edge policy has a test named after it, so a change in
 //! behaviour names the policy it broke.
 //!
-//! Phase 4 owns value layout, so the two `format_*` entry points still diverge.
-//! `the_layout_seam_still_diverges` pins that, and it is the test that should fail
-//! first when Phase 4 lands.
+//! Digits are not the subject here -- `tests/generated` compares those against d3
+//! call for call. What these check about `format_number` and `format_text` is the
+//! surface around them: which inputs each accepts, what the buffer looks like after
+//! a failure, and which errors a caller can rely on seeing.
 
 use std::collections::TryReserveError;
 
@@ -494,11 +495,15 @@ fn a_prefix_formatter_reports_type_f_whatever_the_caller_wrote() {
     assert_eq!(forced.specifier().format_type(), FormatType::Fixed);
     assert_eq!(forced.input_kind(), InputKind::Number);
 
-    // A reference with no decimal exponent still builds; d3's scale is NaN and its
-    // prefix is absent, and Phase 4 renders that rather than this failing here.
+    // A reference with no decimal exponent still builds. Section 4.1: d3's scale is
+    // then NaN, so every value formats as the locale's NaN with no SI suffix.
     for reference in [0.0, -0.0, f64::NAN, f64::INFINITY, f64::NEG_INFINITY] {
-        assert!(
-            locale.prefix_formatter("s", reference).is_ok(),
+        let degenerate = locale
+            .prefix_formatter("s", reference)
+            .unwrap_or_else(|error| panic!("reference {reference}: {error}"));
+        assert_eq!(
+            degenerate.format_number(1234.5).expect("valid"),
+            "NaN",
             "reference {reference}"
         );
     }
@@ -579,33 +584,22 @@ fn a_text_formatter_refuses_numbers_instead_of_coercing_them() {
 }
 
 #[test]
-fn the_input_kind_check_happens_before_the_unfinished_layout() {
-    // The wrong-kind error is a Phase 3 contract and the layout is not, so the
-    // order matters: a mismatch must be reported, not swallowed by a panic. Both
-    // directions are checked above; this states the ordering itself.
+fn the_input_kind_check_happens_before_any_layout() {
+    // The mismatch must be reported rather than half-formatted: a numeric formatter
+    // handed text must not lay the text out, and a `c` formatter handed a number
+    // must not stringify it. Both directions are checked above; this states the
+    // ordering, by giving each one input the other would happily have accepted.
     let numeric = Locale::en_us().formatter("d").expect("valid");
     assert!(
-        numeric.format_text("x").is_err(),
-        "a numeric formatter panicked instead of reporting the mismatch"
+        numeric.format_text("1").is_err(),
+        "a numeric formatter formatted text that would have parsed as a number"
     );
 
     let textual = Locale::en_us().formatter("c").expect("valid");
     assert!(
         textual.format_number(1.0).is_err(),
-        "a text formatter panicked instead of reporting the mismatch"
+        "a text formatter formatted a number"
     );
-}
-
-#[test]
-#[should_panic(expected = "Phase 4")]
-fn the_layout_seam_still_diverges() {
-    // Phase 1's placeholder discipline, applied to the Phase 3/Phase 4 boundary:
-    // laying a value out is not implemented, so it diverges rather than returning
-    // something that could be mistaken for output. Phase 4 deletes this test.
-    let _ = Locale::en_us()
-        .formatter("d")
-        .expect("valid")
-        .format_number(0.0);
 }
 
 // ---------------------------------------------------------------------------
@@ -860,6 +854,59 @@ fn a_reserve_failure_would_be_reported_rather_than_aborting() {
             maximum: 0
         }
     );
+}
+
+#[test]
+fn the_into_entry_points_clear_the_buffer_and_reuse_its_capacity() {
+    // Section 5.3: `format_*_into` clears `out` before doing any work, leaves it
+    // empty on error, and reuses the caller's capacity. It makes no allocation-free
+    // claim, so what is asserted is that a buffer already large enough is not
+    // reallocated -- not that no allocation happens anywhere.
+    let formatter = Locale::en_us().formatter("$,.2f").expect("valid");
+    let mut out = String::with_capacity(4096);
+    let capacity = out.capacity();
+    out.push_str("previous contents");
+
+    formatter
+        .format_number_into(&mut out, 1234.5)
+        .expect("valid");
+    assert_eq!(out, "$1,234.50", "the previous contents survived");
+    assert_eq!(out.capacity(), capacity, "the buffer was reallocated");
+
+    // Again into the same buffer: the clear is at the start of the call, not the
+    // end of the previous one, so a caller that inspects `out` between calls sees
+    // the last result rather than an empty string.
+    formatter.format_number_into(&mut out, -1.0).expect("valid");
+    assert_eq!(out, "\u{2212}$1.00");
+    assert_eq!(out.capacity(), capacity);
+
+    // On a limit failure the buffer is empty, not half-written. The budget is small
+    // enough that the affixes alone would exceed it, so the failure happens after
+    // some output has already been produced.
+    let tight = Locale::en_us()
+        .formatter_with_limits(
+            "$,.2f",
+            FormatLimits {
+                max_output_bytes: 4,
+                ..FormatLimits::DEFAULT
+            },
+        )
+        .expect("valid");
+    let error = tight.format_number_into(&mut out, 1234.5).unwrap_err();
+    assert!(
+        matches!(error, FormatError::OutputLimit { .. }),
+        "{error:?}"
+    );
+    assert!(out.is_empty(), "the buffer kept a partial result: {out:?}");
+
+    // And the same for the text entry point.
+    let character = Locale::en_us().formatter("_^9c").expect("valid");
+    out.push_str("previous contents");
+    character
+        .format_text_into(&mut out, "\u{1f600}")
+        .expect("valid");
+    assert_eq!(out, "___\u{1f600}____");
+    assert_eq!(out.capacity(), capacity);
 }
 
 // ---------------------------------------------------------------------------

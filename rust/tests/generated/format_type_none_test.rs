@@ -570,7 +570,6 @@ pub static BLOCKS: &[Block] = &[
 // test/format-type-none-test.js #0: format(".[precision]") uses significant precision and trims insignificant zeros
 // 10 assertion execution(s), 10 recorded call(s)
 #[test]
-#[ignore = "Phase 1 placeholder: the Rust formatting API does not exist yet (MIGRATION_TO_RUST.md, Phase 2 through Phase 4)"]
 fn t000_format_precision_uses_significant_precision_and_trims_insignificant_zero() {
     crate::support::run(&BLOCKS[0]);
 }
@@ -578,7 +577,6 @@ fn t000_format_precision_uses_significant_precision_and_trims_insignificant_zero
 // test/format-type-none-test.js #1: format(".[precision]") does not trim significant zeros
 // 8 assertion execution(s), 8 recorded call(s)
 #[test]
-#[ignore = "Phase 1 placeholder: the Rust formatting API does not exist yet (MIGRATION_TO_RUST.md, Phase 2 through Phase 4)"]
 fn t001_format_precision_does_not_trim_significant_zeros() {
     crate::support::run(&BLOCKS[1]);
 }
@@ -586,7 +584,6 @@ fn t001_format_precision_does_not_trim_significant_zeros() {
 // test/format-type-none-test.js #2: format(".[precision]") also trims the decimal point if there are only insignificant zeros
 // 4 assertion execution(s), 4 recorded call(s)
 #[test]
-#[ignore = "Phase 1 placeholder: the Rust formatting API does not exist yet (MIGRATION_TO_RUST.md, Phase 2 through Phase 4)"]
 fn t002_format_precision_also_trims_the_decimal_point_if_there_are_only_insignif() {
     crate::support::run(&BLOCKS[2]);
 }
@@ -594,7 +591,6 @@ fn t002_format_precision_also_trims_the_decimal_point_if_there_are_only_insignif
 // test/format-type-none-test.js #3: format("$") can output a currency
 // 7 assertion execution(s), 7 recorded call(s)
 #[test]
-#[ignore = "Phase 1 placeholder: the Rust formatting API does not exist yet (MIGRATION_TO_RUST.md, Phase 2 through Phase 4)"]
 fn t003_format_can_output_a_currency() {
     crate::support::run(&BLOCKS[3]);
 }
@@ -602,7 +598,6 @@ fn t003_format_can_output_a_currency() {
 // test/format-type-none-test.js #4: format("($") can output a currency with parentheses for negative values
 // 7 assertion execution(s), 7 recorded call(s)
 #[test]
-#[ignore = "Phase 1 placeholder: the Rust formatting API does not exist yet (MIGRATION_TO_RUST.md, Phase 2 through Phase 4)"]
 fn t004_format_can_output_a_currency_with_parentheses_for_negative_values() {
     crate::support::run(&BLOCKS[4]);
 }
@@ -610,7 +605,6 @@ fn t004_format_can_output_a_currency_with_parentheses_for_negative_values() {
 // test/format-type-none-test.js #5: format("") can format negative zero as zero
 // 1 assertion execution(s), 1 recorded call(s)
 #[test]
-#[ignore = "Phase 1 placeholder: the Rust formatting API does not exist yet (MIGRATION_TO_RUST.md, Phase 2 through Phase 4)"]
 fn t005_format_can_format_negative_zero_as_zero() {
     crate::support::run(&BLOCKS[5]);
 }
@@ -618,7 +612,6 @@ fn t005_format_can_format_negative_zero_as_zero() {
 // test/format-type-none-test.js #6: format("") can format negative infinity
 // 1 assertion execution(s), 1 recorded call(s)
 #[test]
-#[ignore = "Phase 1 placeholder: the Rust formatting API does not exist yet (MIGRATION_TO_RUST.md, Phase 2 through Phase 4)"]
 fn t006_format_can_format_negative_infinity() {
     crate::support::run(&BLOCKS[6]);
 }

@@ -93,7 +93,6 @@ pub static BLOCKS: &[Block] = &[
 // test/defaultLocale-test.js #0: formatDefaultLocale(definition) returns the new default locale
 // 2 assertion execution(s), 2 recorded call(s)
 #[test]
-#[ignore = "Phase 1 placeholder: the Rust formatting API does not exist yet (MIGRATION_TO_RUST.md, Phase 2 through Phase 4)"]
 fn t000_formatdefaultlocale_definition_returns_the_new_default_locale() {
     crate::support::run(&BLOCKS[0]);
 }
@@ -101,7 +100,6 @@ fn t000_formatdefaultlocale_definition_returns_the_new_default_locale() {
 // test/defaultLocale-test.js #1: formatDefaultLocale(definition) affects format
 // 2 assertion execution(s), 1 recorded call(s)
 #[test]
-#[ignore = "Phase 1 placeholder: the Rust formatting API does not exist yet (MIGRATION_TO_RUST.md, Phase 2 through Phase 4)"]
 fn t001_formatdefaultlocale_definition_affects_format() {
     crate::support::run(&BLOCKS[1]);
 }
@@ -109,7 +107,6 @@ fn t001_formatdefaultlocale_definition_affects_format() {
 // test/defaultLocale-test.js #2: formatDefaultLocale(definition) affects formatPrefix
 // 2 assertion execution(s), 1 recorded call(s)
 #[test]
-#[ignore = "Phase 1 placeholder: the Rust formatting API does not exist yet (MIGRATION_TO_RUST.md, Phase 2 through Phase 4)"]
 fn t002_formatdefaultlocale_definition_affects_formatprefix() {
     crate::support::run(&BLOCKS[2]);
 }

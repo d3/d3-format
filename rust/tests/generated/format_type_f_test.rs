@@ -471,7 +471,6 @@ pub static BLOCKS: &[Block] = &[
 // test/format-type-f-test.js #0: format("f") can output fixed-point notation
 // 8 assertion execution(s), 8 recorded call(s)
 #[test]
-#[ignore = "Phase 1 placeholder: the Rust formatting API does not exist yet (MIGRATION_TO_RUST.md, Phase 2 through Phase 4)"]
 fn t000_format_f_can_output_fixed_point_notation() {
     crate::support::run(&BLOCKS[0]);
 }
@@ -479,7 +478,6 @@ fn t000_format_f_can_output_fixed_point_notation() {
 // test/format-type-f-test.js #1: format("+$,f") can output a currency with comma-grouping and sign
 // 5 assertion execution(s), 5 recorded call(s)
 #[test]
-#[ignore = "Phase 1 placeholder: the Rust formatting API does not exist yet (MIGRATION_TO_RUST.md, Phase 2 through Phase 4)"]
 fn t001_format_f_can_output_a_currency_with_comma_grouping_and_sign() {
     crate::support::run(&BLOCKS[1]);
 }
@@ -487,7 +485,6 @@ fn t001_format_f_can_output_a_currency_with_comma_grouping_and_sign() {
 // test/format-type-f-test.js #2: format(",.f") can group thousands, space fill, and round to significant digits
 // 8 assertion execution(s), 8 recorded call(s)
 #[test]
-#[ignore = "Phase 1 placeholder: the Rust formatting API does not exist yet (MIGRATION_TO_RUST.md, Phase 2 through Phase 4)"]
 fn t002_format_f_can_group_thousands_space_fill_and_round_to_significant_digits() {
     crate::support::run(&BLOCKS[2]);
 }
@@ -495,7 +492,6 @@ fn t002_format_f_can_group_thousands_space_fill_and_round_to_significant_digits(
 // test/format-type-f-test.js #3: format("f") can display integers in fixed-point notation
 // 1 assertion execution(s), 1 recorded call(s)
 #[test]
-#[ignore = "Phase 1 placeholder: the Rust formatting API does not exist yet (MIGRATION_TO_RUST.md, Phase 2 through Phase 4)"]
 fn t003_format_f_can_display_integers_in_fixed_point_notation() {
     crate::support::run(&BLOCKS[3]);
 }
@@ -503,7 +499,6 @@ fn t003_format_f_can_display_integers_in_fixed_point_notation() {
 // test/format-type-f-test.js #4: format("f") can format negative zero as zero
 // 2 assertion execution(s), 2 recorded call(s)
 #[test]
-#[ignore = "Phase 1 placeholder: the Rust formatting API does not exist yet (MIGRATION_TO_RUST.md, Phase 2 through Phase 4)"]
 fn t004_format_f_can_format_negative_zero_as_zero() {
     crate::support::run(&BLOCKS[4]);
 }
@@ -511,7 +506,6 @@ fn t004_format_f_can_format_negative_zero_as_zero() {
 // test/format-type-f-test.js #5: format("+f") signs negative zero correctly
 // 4 assertion execution(s), 4 recorded call(s)
 #[test]
-#[ignore = "Phase 1 placeholder: the Rust formatting API does not exist yet (MIGRATION_TO_RUST.md, Phase 2 through Phase 4)"]
 fn t005_format_f_signs_negative_zero_correctly() {
     crate::support::run(&BLOCKS[5]);
 }
@@ -519,7 +513,6 @@ fn t005_format_f_signs_negative_zero_correctly() {
 // test/format-type-f-test.js #6: format("f") can format negative infinity
 // 1 assertion execution(s), 1 recorded call(s)
 #[test]
-#[ignore = "Phase 1 placeholder: the Rust formatting API does not exist yet (MIGRATION_TO_RUST.md, Phase 2 through Phase 4)"]
 fn t006_format_f_can_format_negative_infinity() {
     crate::support::run(&BLOCKS[6]);
 }
@@ -527,7 +520,6 @@ fn t006_format_f_can_format_negative_infinity() {
 // test/format-type-f-test.js #7: format(",f") does not group Infinity
 // 1 assertion execution(s), 1 recorded call(s)
 #[test]
-#[ignore = "Phase 1 placeholder: the Rust formatting API does not exist yet (MIGRATION_TO_RUST.md, Phase 2 through Phase 4)"]
 fn t007_format_f_does_not_group_infinity() {
     crate::support::run(&BLOCKS[7]);
 }

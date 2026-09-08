@@ -280,7 +280,6 @@ pub static BLOCKS: &[Block] = &[
 // test/format-type-n-test.js #0: format("n") is an alias for ",g"
 // 11 assertion execution(s), 11 recorded call(s)
 #[test]
-#[ignore = "Phase 1 placeholder: the Rust formatting API does not exist yet (MIGRATION_TO_RUST.md, Phase 2 through Phase 4)"]
 fn t000_format_n_is_an_alias_for_g() {
     crate::support::run(&BLOCKS[0]);
 }
@@ -288,7 +287,6 @@ fn t000_format_n_is_an_alias_for_g() {
 // test/format-type-n-test.js #1: format("n") uses zero padding
 // 8 assertion execution(s), 8 recorded call(s)
 #[test]
-#[ignore = "Phase 1 placeholder: the Rust formatting API does not exist yet (MIGRATION_TO_RUST.md, Phase 2 through Phase 4)"]
 fn t001_format_n_uses_zero_padding() {
     crate::support::run(&BLOCKS[1]);
 }

@@ -94,7 +94,6 @@ pub static BLOCKS: &[Block] = &[
 // test/format-type-c-test.js #0: format("c") unicode character
 // 4 assertion execution(s), 4 recorded call(s)
 #[test]
-#[ignore = "Phase 1 placeholder: the Rust formatting API does not exist yet (MIGRATION_TO_RUST.md, Phase 2 through Phase 4)"]
 fn t000_format_c_unicode_character() {
     crate::support::run(&BLOCKS[0]);
 }
@@ -102,7 +101,6 @@ fn t000_format_c_unicode_character() {
 // test/format-type-c-test.js #1: format("c") does not localize a decimal point
 // 1 assertion execution(s), 1 recorded call(s)
 #[test]
-#[ignore = "Phase 1 placeholder: the Rust formatting API does not exist yet (MIGRATION_TO_RUST.md, Phase 2 through Phase 4)"]
 fn t001_format_c_does_not_localize_a_decimal_point() {
     crate::support::run(&BLOCKS[1]);
 }

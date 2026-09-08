@@ -227,7 +227,6 @@ pub static BLOCKS: &[Block] = &[
 // test/format-type-e-test.js #0: format("e") can output exponent notation
 // 10 assertion execution(s), 10 recorded call(s)
 #[test]
-#[ignore = "Phase 1 placeholder: the Rust formatting API does not exist yet (MIGRATION_TO_RUST.md, Phase 2 through Phase 4)"]
 fn t000_format_e_can_output_exponent_notation() {
     crate::support::run(&BLOCKS[0]);
 }
@@ -235,7 +234,6 @@ fn t000_format_e_can_output_exponent_notation() {
 // test/format-type-e-test.js #1: format("e") can format negative zero as zero
 // 2 assertion execution(s), 2 recorded call(s)
 #[test]
-#[ignore = "Phase 1 placeholder: the Rust formatting API does not exist yet (MIGRATION_TO_RUST.md, Phase 2 through Phase 4)"]
 fn t001_format_e_can_format_negative_zero_as_zero() {
     crate::support::run(&BLOCKS[1]);
 }
@@ -243,7 +241,6 @@ fn t001_format_e_can_format_negative_zero_as_zero() {
 // test/format-type-e-test.js #2: format(",e") does not group Infinity
 // 1 assertion execution(s), 1 recorded call(s)
 #[test]
-#[ignore = "Phase 1 placeholder: the Rust formatting API does not exist yet (MIGRATION_TO_RUST.md, Phase 2 through Phase 4)"]
 fn t002_format_e_does_not_group_infinity() {
     crate::support::run(&BLOCKS[2]);
 }
@@ -251,7 +248,6 @@ fn t002_format_e_does_not_group_infinity() {
 // test/format-type-e-test.js #3: format(".3e") can format negative infinity
 // 1 assertion execution(s), 1 recorded call(s)
 #[test]
-#[ignore = "Phase 1 placeholder: the Rust formatting API does not exist yet (MIGRATION_TO_RUST.md, Phase 2 through Phase 4)"]
 fn t003_format_3e_can_format_negative_infinity() {
     crate::support::run(&BLOCKS[3]);
 }

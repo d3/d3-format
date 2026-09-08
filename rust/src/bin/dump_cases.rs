@@ -5,12 +5,11 @@
 //! case, in input order. `rust/tools/differential.mjs` computes the same records
 //! from the JavaScript oracle and compares them exactly.
 //!
-//! The transport is complete. [`evaluate`] is the single seam through which the
-//! port answers, and it answers only what the port has actually implemented. As of
-//! Phase 2 that is section 4.1's ECMAScript numeric conversions; the formatters,
-//! the specifier parser and the precision helpers arrive in Phases 3 and 4 and
-//! still report `"unimplemented"`. Any run containing an unimplemented case exits
-//! with [`EXIT_UNIMPLEMENTED`], so no caller can read a partial port as agreement.
+//! The transport is complete, and as of Phase 4 so is [`evaluate`]: every operation
+//! the corpus can name is answered by the public API, and nothing reports
+//! `"unimplemented"` any more. The variant and [`EXIT_UNIMPLEMENTED`] are kept
+//! because they are what stops a *future* corpus operation from being silently read
+//! as agreement, and because the exit code is part of the protocol.
 //!
 //! Everything here is dependency-free on purpose: `rust/Cargo.lock` is a reviewed,
 //! hash-pinned artifact, and a differential harness is not a good reason to add a
@@ -23,7 +22,7 @@ use std::io::{self, Read, Write};
 use std::process::ExitCode;
 
 use d3_format::decimal;
-use d3_format::FormatLimits;
+use d3_format::{FormatLimits, FormatSpecifier, Locale, LocaleDefinition};
 
 /// Returned when the corpus was read and answered, but no case could be computed.
 const EXIT_UNIMPLEMENTED: u8 = 3;
@@ -338,56 +337,85 @@ fn write_json_string(out: &mut String, value: &str) {
 enum Outcome {
     /// A value the differential can compare: text, or an f64 by its bit pattern.
     Text(String),
-    #[allow(dead_code)]
     F64(f64),
     /// A rendered `FormatSpecifier`. Tagged apart from `Text` because the recording
     /// tags it apart: a normalized specifier is not a formatted number.
-    #[allow(dead_code)]
     Specifier(String),
     /// The port rejected the input. A typed error is a legitimate answer for the
     /// deviations in `DIVERGENCES.md`; `differential.mjs` checks it against the
     /// case's skip reason rather than treating it as agreement.
     Rejected(String),
-    /// No implementation exists yet.
+    /// No implementation exists for an operation the corpus named.
+    ///
+    /// Unreachable for the operations the corpus generates today. It survives as the
+    /// answer for an operation added to `gen-corpus.mjs` and not to this binary,
+    /// which is the case that must not be readable as agreement.
     Unimplemented(&'static str),
 }
 
-/// Phase 3 and Phase 4 territory. Spelled once so that every operation the port
-/// cannot yet answer says the same thing, and so that adding an operation to the
-/// port is a matter of removing it from this list.
-const NOT_YET: &str =
-    "the Rust formatting API is incomplete: the specifier parser, Locale/Formatter and the \
-precision helpers arrive in Phases 3 and 4 of MIGRATION_TO_RUST.md";
+/// The answer for a corpus operation this binary does not know.
+const NOT_YET: &str = "dump_cases has no implementation for this operation; every operation \
+gen-corpus.mjs emits is implemented, so this is a corpus that has grown past the harness";
 
 /// The single seam between the differential transport and the port.
 ///
-/// Phase 2 answers section 4.1's ECMAScript numeric conversions and nothing else.
-/// Every other operation still reports `Unimplemented`, which `differential.mjs`
-/// refuses to count as agreement.
+/// Every case the corpus can produce is answered here, either with a value or with
+/// the typed rejection `DIVERGENCES.md` licenses.
 fn evaluate(case: &Json) -> Outcome {
     let op = match case.get("op").and_then(Json::as_str) {
         Some(op) => op,
         None => return Outcome::Unimplemented(NOT_YET),
     };
 
-    // Section 4.1's conversions are the only ones Phase 2 implements, and all of
-    // them need a numeric input. A null value is a JavaScript coercion case, which
-    // DIVERGENCES.md excuses and the port must decline rather than answer.
+    // A null value is a JavaScript coercion case -- `format(spec)(undefined)`, or a
+    // type `c` formatter handed text. DIVERGENCES.md entry `no-input-coercion`
+    // excuses it, and `differential.mjs` requires the port to decline rather than
+    // answer, so the decline has to reach every operation and not only the numeric
+    // ones.
     let value = match case.get("value").and_then(Json::as_str).map(parse_bits) {
         Some(Some(value)) => value,
         _ => {
             return match op {
                 "numberToString" | "toFixed" | "toExponential" | "toPrecision"
-                | "toLocaleStringEn" | "toStringRadix" => {
+                | "toLocaleStringEn" | "toStringRadix" | "format" | "formatPrefix"
+                | "precisionFixed" | "precisionRound" | "precisionPrefix" => {
                     Outcome::Rejected("no-input-coercion: the input is not a number".to_string())
                 }
+                "formatSpecifier" => return evaluate_specifier(case),
                 _ => Outcome::Unimplemented(NOT_YET),
             }
         }
     };
     let precision = case.get("precision").and_then(Json::as_i64);
     let radix = case.get("radix").and_then(Json::as_i64);
+    let reference = case
+        .get("reference")
+        .and_then(Json::as_str)
+        .and_then(parse_bits);
     let limits = FormatLimits::DEFAULT;
+
+    match op {
+        "format" | "formatPrefix" => return evaluate_format(case, op, value, reference, limits),
+        "formatSpecifier" => return evaluate_specifier(case),
+        "precisionFixed" => return Outcome::F64(d3_format::precision_fixed(value)),
+        "precisionRound" => match reference {
+            Some(max) => return Outcome::F64(d3_format::precision_round(value, max)),
+            None => {
+                return Outcome::Rejected(
+                    "precisionRound needs a second numeric argument".to_string(),
+                )
+            }
+        },
+        "precisionPrefix" => match reference {
+            Some(reference) => return Outcome::F64(d3_format::precision_prefix(value, reference)),
+            None => {
+                return Outcome::Rejected(
+                    "precisionPrefix needs a second numeric argument".to_string(),
+                )
+            }
+        },
+        _ => {}
+    }
 
     let result = match op {
         "numberToString" => decimal::number_to_string(value, &limits),
@@ -450,6 +478,90 @@ fn evaluate(case: &Json) -> Outcome {
     match result {
         Ok(text) => Outcome::Text(text),
         Err(error) => Outcome::Rejected(error.to_string()),
+    }
+}
+
+/// `locale.format(specifier)(value)` and `locale.formatPrefix(specifier, ref)(value)`.
+fn evaluate_format(
+    case: &Json,
+    op: &str,
+    value: f64,
+    reference: Option<f64>,
+    limits: FormatLimits,
+) -> Outcome {
+    let specifier = match case.get("specifier").and_then(Json::as_str) {
+        Some(specifier) => specifier,
+        None => return Outcome::Rejected(format!("{op} needs a specifier")),
+    };
+    let definition = match case.get("locale_definition") {
+        Some(definition @ Json::Obj(_)) => read_locale(definition),
+        // d3's `formatLocale({})`, which is every default.
+        _ => LocaleDefinition::default(),
+    };
+    let locale = match Locale::from_definition(definition) {
+        Ok(locale) => locale,
+        Err(error) => return Outcome::Rejected(error.to_string()),
+    };
+    let formatter = match (op, reference) {
+        ("formatPrefix", Some(reference)) => {
+            locale.prefix_formatter_with_limits(specifier, reference, limits)
+        }
+        ("formatPrefix", None) => {
+            return Outcome::Rejected("formatPrefix needs a numeric reference".to_string())
+        }
+        _ => locale.formatter_with_limits(specifier, limits),
+    };
+    match formatter.and_then(|formatter| formatter.format_number(value)) {
+        Ok(text) => Outcome::Text(text),
+        Err(error) => Outcome::Rejected(error.to_string()),
+    }
+}
+
+/// `String(formatSpecifier(specifier))`.
+fn evaluate_specifier(case: &Json) -> Outcome {
+    match case.get("specifier").and_then(Json::as_str) {
+        None => Outcome::Rejected("formatSpecifier needs a specifier".to_string()),
+        Some(text) => match text.parse::<FormatSpecifier>() {
+            Ok(specifier) => Outcome::Specifier(specifier.to_string()),
+            Err(error) => Outcome::Rejected(error.to_string()),
+        },
+    }
+}
+
+/// Reads a canonical locale definition, where a null is an *absent* key.
+///
+/// Canonical form spells "the definition omitted this" as null, and d3 substitutes
+/// its own default for an absent key. `LocaleDefinition`'s `None` means the same
+/// thing, so the two line up field for field.
+fn read_locale(definition: &Json) -> LocaleDefinition {
+    let text = |key: &str| {
+        definition
+            .get(key)
+            .and_then(Json::as_str)
+            .map(str::to_owned)
+    };
+    let strings = |key: &str| match definition.get(key) {
+        Some(Json::Arr(items)) => items
+            .iter()
+            .map(|item| item.as_str().map(str::to_owned))
+            .collect::<Option<Vec<String>>>(),
+        _ => None,
+    };
+    LocaleDefinition {
+        decimal: text("decimal"),
+        thousands: text("thousands"),
+        grouping: match definition.get("grouping") {
+            Some(Json::Arr(items)) => items
+                .iter()
+                .map(|item| item.as_i64().and_then(|size| u32::try_from(size).ok()))
+                .collect::<Option<Vec<u32>>>(),
+            _ => None,
+        },
+        currency: strings("currency").and_then(|items| <[String; 2]>::try_from(items).ok()),
+        numerals: strings("numerals").and_then(|items| <[String; 10]>::try_from(items).ok()),
+        percent: text("percent"),
+        minus: text("minus"),
+        nan: text("nan"),
     }
 }
 
@@ -559,8 +671,9 @@ fn main() -> ExitCode {
             }
         };
 
-        // Read the fields the port will need in Phase 3 now, so that a corpus this
-        // binary accepts is a corpus it can actually answer once `evaluate` is real.
+        // Validate every field before answering, so that a corpus this binary
+        // accepts is one it can answer and a malformed case fails as malformed
+        // rather than as a disagreement.
         if let Err(error) = validate_case(&record) {
             eprintln!("dump_cases: line {}: case {id}: {error}", index + 1);
             return ExitCode::from(EXIT_BAD_INPUT);
@@ -586,7 +699,7 @@ fn main() -> ExitCode {
     if unimplemented > 0 {
         eprintln!(
             "dump_cases: answered {cases} case(s), {unimplemented} of them \"unimplemented\": \
-the Rust formatting API arrives in Phase 2 of MIGRATION_TO_RUST.md. \
+the corpus names an operation this binary does not implement. \
 Exiting {EXIT_UNIMPLEMENTED} so that no caller can read this run as agreement."
         );
         return ExitCode::from(EXIT_UNIMPLEMENTED);
@@ -657,7 +770,7 @@ fn validate_case(record: &Json) -> Result<(), String> {
 /// `formatLocale({decimal: "/"})` is a real recorded case -- and `src/locale.js`
 /// substitutes its own default for each absent key. Canonical form spells "absent"
 /// as null, so rejecting nulls here would reject legitimate recorded input. Applying
-/// those defaults is the port's job, in Phase 4, not the transport's.
+/// those defaults is `LocaleBuilder`'s job, not the transport's.
 fn validate_locale(definition: &Json) -> Result<(), String> {
     for field in ["decimal", "thousands", "percent", "minus", "nan"] {
         match definition.get(field) {
@@ -725,21 +838,61 @@ mod tests {
     }
 
     #[test]
-    fn the_formatters_are_still_unimplemented() {
-        for op in [
-            "format",
-            "formatPrefix",
-            "formatSpecifier",
-            "precisionFixed",
-        ] {
-            let line = format!(r#"{{"id":"c","op":"{op}","value":"3FF0000000000000"}}"#);
-            let record = parse_json(&line).unwrap();
+    fn every_operation_the_corpus_emits_is_answered() {
+        // The full set gen-corpus.mjs can produce. A corpus operation that reaches
+        // `Unimplemented` fails the whole differential run by design, so the list
+        // being complete is the property worth asserting.
+        let cases = [
+            (
+                "format",
+                r#"{"id":"c","op":"format","value":"C08F400000000000","specifier":"$,.2f","locale_definition":{"decimal":".","thousands":",","grouping":[3],"currency":["$",""]}}"#,
+                r#""text":"\u2212$1,000.00""#,
+            ),
+            (
+                // 3190544 against a reference of 1e6, so the bucket is mega and the
+                // value is scaled by the reference's `Math.pow(10, -6)`, not by its
+                // own exponent. Checked in Node.
+                "formatPrefix",
+                r#"{"id":"c","op":"formatPrefix","value":"4148578800000000","reference":"412E848000000000","specifier":",.2","locale_definition":{}}"#,
+                r#""text":"3.19M""#,
+            ),
+            (
+                "formatSpecifier",
+                r#"{"id":"c","op":"formatSpecifier","value":null,"specifier":"q"}"#,
+                r#""kind":"specifier","bits":null,"text":" >-q""#,
+            ),
+            (
+                // `precisionFixed(0.01)` is 2.
+                "precisionFixed",
+                r#"{"id":"c","op":"precisionFixed","value":"3F847AE147AE147B"}"#,
+                r#""kind":"f64","bits":"4000000000000000""#,
+            ),
+            (
+                // `precisionRound(0.01, 100)` is 4.
+                "precisionRound",
+                r#"{"id":"c","op":"precisionRound","value":"3F847AE147AE147B","reference":"4059000000000000"}"#,
+                r#""kind":"f64","bits":"4010000000000000""#,
+            ),
+            (
+                // `precisionPrefix(1e-6, 0.0013)` is 3.
+                "precisionPrefix",
+                r#"{"id":"c","op":"precisionPrefix","value":"3EB0C6F7A0B5ED8D","reference":"3F554C985F06F694"}"#,
+                r#""kind":"f64","bits":"4008000000000000""#,
+            ),
+        ];
+        for (op, line, expected) in cases {
+            let record = parse_json(line).expect("case parses");
             let rendered = render_outcome("c", op, &evaluate(&record));
-            assert!(
-                rendered.contains(r#""status":"unimplemented""#),
-                "{op}: {rendered}"
-            );
+            assert!(rendered.contains(expected), "{op}: {rendered}");
         }
+    }
+
+    #[test]
+    fn a_type_c_formatter_declines_a_number_rather_than_coercing_it() {
+        let line = r#"{"id":"c","op":"format","value":"3FF0000000000000","specifier":"020c","locale_definition":{}}"#;
+        let record = parse_json(line).unwrap();
+        let rendered = render_outcome("c", "format", &evaluate(&record));
+        assert!(rendered.contains(r#""status":"rejected""#), "{rendered}");
     }
 
     #[test]

@@ -2138,7 +2138,6 @@ pub static BLOCKS: &[Block] = &[
 // test/format-type-d-test.js #0: format("d") can zero fill
 // 8 assertion execution(s), 8 recorded call(s)
 #[test]
-#[ignore = "Phase 1 placeholder: the Rust formatting API does not exist yet (MIGRATION_TO_RUST.md, Phase 2 through Phase 4)"]
 fn t000_format_d_can_zero_fill() {
     crate::support::run(&BLOCKS[0]);
 }
@@ -2146,7 +2145,6 @@ fn t000_format_d_can_zero_fill() {
 // test/format-type-d-test.js #1: format("d") can space fill
 // 8 assertion execution(s), 8 recorded call(s)
 #[test]
-#[ignore = "Phase 1 placeholder: the Rust formatting API does not exist yet (MIGRATION_TO_RUST.md, Phase 2 through Phase 4)"]
 fn t001_format_d_can_space_fill() {
     crate::support::run(&BLOCKS[1]);
 }
@@ -2154,7 +2152,6 @@ fn t001_format_d_can_space_fill() {
 // test/format-type-d-test.js #2: format("d") can underscore fill
 // 8 assertion execution(s), 8 recorded call(s)
 #[test]
-#[ignore = "Phase 1 placeholder: the Rust formatting API does not exist yet (MIGRATION_TO_RUST.md, Phase 2 through Phase 4)"]
 fn t002_format_d_can_underscore_fill() {
     crate::support::run(&BLOCKS[2]);
 }
@@ -2162,7 +2159,6 @@ fn t002_format_d_can_underscore_fill() {
 // test/format-type-d-test.js #3: format("d") can zero fill with sign and group
 // 8 assertion execution(s), 8 recorded call(s)
 #[test]
-#[ignore = "Phase 1 placeholder: the Rust formatting API does not exist yet (MIGRATION_TO_RUST.md, Phase 2 through Phase 4)"]
 fn t003_format_d_can_zero_fill_with_sign_and_group() {
     crate::support::run(&BLOCKS[3]);
 }
@@ -2170,7 +2166,6 @@ fn t003_format_d_can_zero_fill_with_sign_and_group() {
 // test/format-type-d-test.js #4: format("d") always uses zero precision
 // 3 assertion execution(s), 3 recorded call(s)
 #[test]
-#[ignore = "Phase 1 placeholder: the Rust formatting API does not exist yet (MIGRATION_TO_RUST.md, Phase 2 through Phase 4)"]
 fn t004_format_d_always_uses_zero_precision() {
     crate::support::run(&BLOCKS[4]);
 }
@@ -2178,7 +2173,6 @@ fn t004_format_d_always_uses_zero_precision() {
 // test/format-type-d-test.js #5: format("d") rounds non-integers
 // 1 assertion execution(s), 1 recorded call(s)
 #[test]
-#[ignore = "Phase 1 placeholder: the Rust formatting API does not exist yet (MIGRATION_TO_RUST.md, Phase 2 through Phase 4)"]
 fn t005_format_d_rounds_non_integers() {
     crate::support::run(&BLOCKS[5]);
 }
@@ -2186,7 +2180,6 @@ fn t005_format_d_rounds_non_integers() {
 // test/format-type-d-test.js #6: format(",d") can group thousands
 // 11 assertion execution(s), 11 recorded call(s)
 #[test]
-#[ignore = "Phase 1 placeholder: the Rust formatting API does not exist yet (MIGRATION_TO_RUST.md, Phase 2 through Phase 4)"]
 fn t006_format_d_can_group_thousands() {
     crate::support::run(&BLOCKS[6]);
 }
@@ -2194,7 +2187,6 @@ fn t006_format_d_can_group_thousands() {
 // test/format-type-d-test.js #7: format("0,d") can group thousands and zero fill
 // 15 assertion execution(s), 15 recorded call(s)
 #[test]
-#[ignore = "Phase 1 placeholder: the Rust formatting API does not exist yet (MIGRATION_TO_RUST.md, Phase 2 through Phase 4)"]
 fn t007_format_0_d_can_group_thousands_and_zero_fill() {
     crate::support::run(&BLOCKS[7]);
 }
@@ -2202,7 +2194,6 @@ fn t007_format_0_d_can_group_thousands_and_zero_fill() {
 // test/format-type-d-test.js #8: format("0,d") can group thousands and zero fill with overflow
 // 7 assertion execution(s), 7 recorded call(s)
 #[test]
-#[ignore = "Phase 1 placeholder: the Rust formatting API does not exist yet (MIGRATION_TO_RUST.md, Phase 2 through Phase 4)"]
 fn t008_format_0_d_can_group_thousands_and_zero_fill_with_overflow() {
     crate::support::run(&BLOCKS[8]);
 }
@@ -2210,7 +2201,6 @@ fn t008_format_0_d_can_group_thousands_and_zero_fill_with_overflow() {
 // test/format-type-d-test.js #9: format(",d") can group thousands and space fill
 // 8 assertion execution(s), 8 recorded call(s)
 #[test]
-#[ignore = "Phase 1 placeholder: the Rust formatting API does not exist yet (MIGRATION_TO_RUST.md, Phase 2 through Phase 4)"]
 fn t009_format_d_can_group_thousands_and_space_fill() {
     crate::support::run(&BLOCKS[9]);
 }
@@ -2218,7 +2208,6 @@ fn t009_format_d_can_group_thousands_and_space_fill() {
 // test/format-type-d-test.js #10: format(",d") can group thousands and space fill with overflow
 // 7 assertion execution(s), 7 recorded call(s)
 #[test]
-#[ignore = "Phase 1 placeholder: the Rust formatting API does not exist yet (MIGRATION_TO_RUST.md, Phase 2 through Phase 4)"]
 fn t010_format_d_can_group_thousands_and_space_fill_with_overflow() {
     crate::support::run(&BLOCKS[10]);
 }
@@ -2226,7 +2215,6 @@ fn t010_format_d_can_group_thousands_and_space_fill_with_overflow() {
 // test/format-type-d-test.js #11: format("<d") align left
 // 8 assertion execution(s), 8 recorded call(s)
 #[test]
-#[ignore = "Phase 1 placeholder: the Rust formatting API does not exist yet (MIGRATION_TO_RUST.md, Phase 2 through Phase 4)"]
 fn t011_format_d_align_left() {
     crate::support::run(&BLOCKS[11]);
 }
@@ -2234,7 +2222,6 @@ fn t011_format_d_align_left() {
 // test/format-type-d-test.js #12: format(">d") align right
 // 10 assertion execution(s), 10 recorded call(s)
 #[test]
-#[ignore = "Phase 1 placeholder: the Rust formatting API does not exist yet (MIGRATION_TO_RUST.md, Phase 2 through Phase 4)"]
 fn t012_format_d_align_right() {
     crate::support::run(&BLOCKS[12]);
 }
@@ -2242,7 +2229,6 @@ fn t012_format_d_align_right() {
 // test/format-type-d-test.js #13: format("^d") align center
 // 10 assertion execution(s), 10 recorded call(s)
 #[test]
-#[ignore = "Phase 1 placeholder: the Rust formatting API does not exist yet (MIGRATION_TO_RUST.md, Phase 2 through Phase 4)"]
 fn t013_format_d_align_center() {
     crate::support::run(&BLOCKS[13]);
 }
@@ -2250,7 +2236,6 @@ fn t013_format_d_align_center() {
 // test/format-type-d-test.js #14: format("=+,d") pad after sign
 // 9 assertion execution(s), 9 recorded call(s)
 #[test]
-#[ignore = "Phase 1 placeholder: the Rust formatting API does not exist yet (MIGRATION_TO_RUST.md, Phase 2 through Phase 4)"]
 fn t014_format_d_pad_after_sign() {
     crate::support::run(&BLOCKS[14]);
 }
@@ -2258,7 +2243,6 @@ fn t014_format_d_pad_after_sign() {
 // test/format-type-d-test.js #15: format("=+$,d") pad after sign with currency
 // 9 assertion execution(s), 9 recorded call(s)
 #[test]
-#[ignore = "Phase 1 placeholder: the Rust formatting API does not exist yet (MIGRATION_TO_RUST.md, Phase 2 through Phase 4)"]
 fn t015_format_d_pad_after_sign_with_currency() {
     crate::support::run(&BLOCKS[15]);
 }
@@ -2266,7 +2250,6 @@ fn t015_format_d_pad_after_sign_with_currency() {
 // test/format-type-d-test.js #16: format(" ,d") a space can denote positive numbers
 // 9 assertion execution(s), 9 recorded call(s)
 #[test]
-#[ignore = "Phase 1 placeholder: the Rust formatting API does not exist yet (MIGRATION_TO_RUST.md, Phase 2 through Phase 4)"]
 fn t016_format_d_a_space_can_denote_positive_numbers() {
     crate::support::run(&BLOCKS[16]);
 }
@@ -2274,7 +2257,6 @@ fn t016_format_d_a_space_can_denote_positive_numbers() {
 // test/format-type-d-test.js #17: format("-,d") explicitly only use a sign for negative numbers
 // 8 assertion execution(s), 8 recorded call(s)
 #[test]
-#[ignore = "Phase 1 placeholder: the Rust formatting API does not exist yet (MIGRATION_TO_RUST.md, Phase 2 through Phase 4)"]
 fn t017_format_d_explicitly_only_use_a_sign_for_negative_numbers() {
     crate::support::run(&BLOCKS[17]);
 }
@@ -2282,7 +2264,6 @@ fn t017_format_d_explicitly_only_use_a_sign_for_negative_numbers() {
 // test/format-type-d-test.js #18: format("d") can format negative zero as zero
 // 2 assertion execution(s), 2 recorded call(s)
 #[test]
-#[ignore = "Phase 1 placeholder: the Rust formatting API does not exist yet (MIGRATION_TO_RUST.md, Phase 2 through Phase 4)"]
 fn t018_format_d_can_format_negative_zero_as_zero() {
     crate::support::run(&BLOCKS[18]);
 }

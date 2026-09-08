@@ -51,7 +51,6 @@ pub static BLOCKS: &[Block] = &[
 // test/format-type-o-test.js #0: format("o") octal
 // 1 assertion execution(s), 1 recorded call(s)
 #[test]
-#[ignore = "Phase 1 placeholder: the Rust formatting API does not exist yet (MIGRATION_TO_RUST.md, Phase 2 through Phase 4)"]
 fn t000_format_o_octal() {
     crate::support::run(&BLOCKS[0]);
 }
@@ -59,7 +58,6 @@ fn t000_format_o_octal() {
 // test/format-type-o-test.js #1: format("#o") octal with prefix
 // 1 assertion execution(s), 1 recorded call(s)
 #[test]
-#[ignore = "Phase 1 placeholder: the Rust formatting API does not exist yet (MIGRATION_TO_RUST.md, Phase 2 through Phase 4)"]
 fn t001_format_o_octal_with_prefix() {
     crate::support::run(&BLOCKS[1]);
 }

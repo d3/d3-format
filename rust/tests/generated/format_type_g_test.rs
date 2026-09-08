@@ -280,7 +280,6 @@ pub static BLOCKS: &[Block] = &[
 // test/format-type-g-test.js #0: format("g") can output general notation
 // 11 assertion execution(s), 11 recorded call(s)
 #[test]
-#[ignore = "Phase 1 placeholder: the Rust formatting API does not exist yet (MIGRATION_TO_RUST.md, Phase 2 through Phase 4)"]
 fn t000_format_g_can_output_general_notation() {
     crate::support::run(&BLOCKS[0]);
 }
@@ -288,7 +287,6 @@ fn t000_format_g_can_output_general_notation() {
 // test/format-type-g-test.js #1: format(",g") can group thousands with general notation
 // 8 assertion execution(s), 8 recorded call(s)
 #[test]
-#[ignore = "Phase 1 placeholder: the Rust formatting API does not exist yet (MIGRATION_TO_RUST.md, Phase 2 through Phase 4)"]
 fn t001_format_g_can_group_thousands_with_general_notation() {
     crate::support::run(&BLOCKS[1]);
 }

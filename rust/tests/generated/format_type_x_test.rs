@@ -454,7 +454,6 @@ pub static BLOCKS: &[Block] = &[
 // test/format-type-x-test.js #0: format("x") returns the expected hexadecimal (lowercase) string
 // 1 assertion execution(s), 1 recorded call(s)
 #[test]
-#[ignore = "Phase 1 placeholder: the Rust formatting API does not exist yet (MIGRATION_TO_RUST.md, Phase 2 through Phase 4)"]
 fn t000_format_x_returns_the_expected_hexadecimal_lowercase_string() {
     crate::support::run(&BLOCKS[0]);
 }
@@ -462,7 +461,6 @@ fn t000_format_x_returns_the_expected_hexadecimal_lowercase_string() {
 // test/format-type-x-test.js #1: format("#x") returns the expected hexadecimal (lowercase) string with prefix
 // 1 assertion execution(s), 1 recorded call(s)
 #[test]
-#[ignore = "Phase 1 placeholder: the Rust formatting API does not exist yet (MIGRATION_TO_RUST.md, Phase 2 through Phase 4)"]
 fn t001_format_x_returns_the_expected_hexadecimal_lowercase_string_with_prefix() {
     crate::support::run(&BLOCKS[1]);
 }
@@ -470,7 +468,6 @@ fn t001_format_x_returns_the_expected_hexadecimal_lowercase_string_with_prefix()
 // test/format-type-x-test.js #2: format(",x") groups thousands
 // 1 assertion execution(s), 1 recorded call(s)
 #[test]
-#[ignore = "Phase 1 placeholder: the Rust formatting API does not exist yet (MIGRATION_TO_RUST.md, Phase 2 through Phase 4)"]
 fn t002_format_x_groups_thousands() {
     crate::support::run(&BLOCKS[2]);
 }
@@ -478,7 +475,6 @@ fn t002_format_x_groups_thousands() {
 // test/format-type-x-test.js #3: format(",x") groups thousands
 // 1 assertion execution(s), 1 recorded call(s)
 #[test]
-#[ignore = "Phase 1 placeholder: the Rust formatting API does not exist yet (MIGRATION_TO_RUST.md, Phase 2 through Phase 4)"]
 fn t003_format_x_groups_thousands() {
     crate::support::run(&BLOCKS[3]);
 }
@@ -486,7 +482,6 @@ fn t003_format_x_groups_thousands() {
 // test/format-type-x-test.js #4: format("#,x") does not group the prefix
 // 1 assertion execution(s), 1 recorded call(s)
 #[test]
-#[ignore = "Phase 1 placeholder: the Rust formatting API does not exist yet (MIGRATION_TO_RUST.md, Phase 2 through Phase 4)"]
 fn t004_format_x_does_not_group_the_prefix() {
     crate::support::run(&BLOCKS[4]);
 }
@@ -494,7 +489,6 @@ fn t004_format_x_does_not_group_the_prefix() {
 // test/format-type-x-test.js #5: format("+#x") puts the sign before the prefix
 // 4 assertion execution(s), 4 recorded call(s)
 #[test]
-#[ignore = "Phase 1 placeholder: the Rust formatting API does not exist yet (MIGRATION_TO_RUST.md, Phase 2 through Phase 4)"]
 fn t005_format_x_puts_the_sign_before_the_prefix() {
     crate::support::run(&BLOCKS[5]);
 }
@@ -502,7 +496,6 @@ fn t005_format_x_puts_the_sign_before_the_prefix() {
 // test/format-type-x-test.js #6: format("$,x") formats hexadecimal currency
 // 1 assertion execution(s), 1 recorded call(s)
 #[test]
-#[ignore = "Phase 1 placeholder: the Rust formatting API does not exist yet (MIGRATION_TO_RUST.md, Phase 2 through Phase 4)"]
 fn t006_format_x_formats_hexadecimal_currency() {
     crate::support::run(&BLOCKS[6]);
 }
@@ -510,7 +503,6 @@ fn t006_format_x_formats_hexadecimal_currency() {
 // test/format-type-x-test.js #7: format("[.precision]x") always has precision zero
 // 2 assertion execution(s), 2 recorded call(s)
 #[test]
-#[ignore = "Phase 1 placeholder: the Rust formatting API does not exist yet (MIGRATION_TO_RUST.md, Phase 2 through Phase 4)"]
 fn t007_format_precision_x_always_has_precision_zero() {
     crate::support::run(&BLOCKS[7]);
 }
@@ -518,7 +510,6 @@ fn t007_format_precision_x_always_has_precision_zero() {
 // test/format-type-x-test.js #8: format("x") rounds non-integers
 // 1 assertion execution(s), 1 recorded call(s)
 #[test]
-#[ignore = "Phase 1 placeholder: the Rust formatting API does not exist yet (MIGRATION_TO_RUST.md, Phase 2 through Phase 4)"]
 fn t008_format_x_rounds_non_integers() {
     crate::support::run(&BLOCKS[8]);
 }
@@ -526,7 +517,6 @@ fn t008_format_x_rounds_non_integers() {
 // test/format-type-x-test.js #9: format("x") can format negative zero as zero
 // 2 assertion execution(s), 2 recorded call(s)
 #[test]
-#[ignore = "Phase 1 placeholder: the Rust formatting API does not exist yet (MIGRATION_TO_RUST.md, Phase 2 through Phase 4)"]
 fn t009_format_x_can_format_negative_zero_as_zero() {
     crate::support::run(&BLOCKS[9]);
 }
@@ -534,7 +524,6 @@ fn t009_format_x_can_format_negative_zero_as_zero() {
 // test/format-type-x-test.js #10: format("x") does not consider -0xeee to be positive
 // 1 assertion execution(s), 1 recorded call(s)
 #[test]
-#[ignore = "Phase 1 placeholder: the Rust formatting API does not exist yet (MIGRATION_TO_RUST.md, Phase 2 through Phase 4)"]
 fn t010_format_x_does_not_consider_0xeee_to_be_positive() {
     crate::support::run(&BLOCKS[10]);
 }
@@ -542,7 +531,6 @@ fn t010_format_x_does_not_consider_0xeee_to_be_positive() {
 // test/format-type-x-test.js #11: format("X") returns the expected hexadecimal (uppercase) string
 // 1 assertion execution(s), 1 recorded call(s)
 #[test]
-#[ignore = "Phase 1 placeholder: the Rust formatting API does not exist yet (MIGRATION_TO_RUST.md, Phase 2 through Phase 4)"]
 fn t011_format_x_returns_the_expected_hexadecimal_uppercase_string() {
     crate::support::run(&BLOCKS[11]);
 }
@@ -550,7 +538,6 @@ fn t011_format_x_returns_the_expected_hexadecimal_uppercase_string() {
 // test/format-type-x-test.js #12: format("#X") returns the expected hexadecimal (uppercase) string with prefix
 // 1 assertion execution(s), 1 recorded call(s)
 #[test]
-#[ignore = "Phase 1 placeholder: the Rust formatting API does not exist yet (MIGRATION_TO_RUST.md, Phase 2 through Phase 4)"]
 fn t012_format_x_returns_the_expected_hexadecimal_uppercase_string_with_prefix() {
     crate::support::run(&BLOCKS[12]);
 }
@@ -558,7 +545,6 @@ fn t012_format_x_returns_the_expected_hexadecimal_uppercase_string_with_prefix()
 // test/format-type-x-test.js #13: format("X") can format negative zero as zero
 // 2 assertion execution(s), 2 recorded call(s)
 #[test]
-#[ignore = "Phase 1 placeholder: the Rust formatting API does not exist yet (MIGRATION_TO_RUST.md, Phase 2 through Phase 4)"]
 fn t013_format_x_can_format_negative_zero_as_zero() {
     crate::support::run(&BLOCKS[13]);
 }
@@ -566,7 +552,6 @@ fn t013_format_x_can_format_negative_zero_as_zero() {
 // test/format-type-x-test.js #14: format("X") does not consider -0xeee to be positive
 // 1 assertion execution(s), 1 recorded call(s)
 #[test]
-#[ignore = "Phase 1 placeholder: the Rust formatting API does not exist yet (MIGRATION_TO_RUST.md, Phase 2 through Phase 4)"]
 fn t014_format_x_does_not_consider_0xeee_to_be_positive() {
     crate::support::run(&BLOCKS[14]);
 }
@@ -574,7 +559,6 @@ fn t014_format_x_does_not_consider_0xeee_to_be_positive() {
 // test/format-type-x-test.js #15: format("#[width]x") considers the prefix
 // 4 assertion execution(s), 4 recorded call(s)
 #[test]
-#[ignore = "Phase 1 placeholder: the Rust formatting API does not exist yet (MIGRATION_TO_RUST.md, Phase 2 through Phase 4)"]
 fn t015_format_width_x_considers_the_prefix() {
     crate::support::run(&BLOCKS[15]);
 }

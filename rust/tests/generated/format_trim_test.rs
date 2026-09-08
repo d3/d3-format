@@ -866,7 +866,6 @@ pub static BLOCKS: &[Block] = &[
 // test/format-trim-test.js #0: format("~r") trims insignificant zeros
 // 13 assertion execution(s), 13 recorded call(s)
 #[test]
-#[ignore = "Phase 1 placeholder: the Rust formatting API does not exist yet (MIGRATION_TO_RUST.md, Phase 2 through Phase 4)"]
 fn t000_format_r_trims_insignificant_zeros() {
     crate::support::run(&BLOCKS[0]);
 }
@@ -874,7 +873,6 @@ fn t000_format_r_trims_insignificant_zeros() {
 // test/format-trim-test.js #1: format("~e") trims insignificant zeros
 // 8 assertion execution(s), 8 recorded call(s)
 #[test]
-#[ignore = "Phase 1 placeholder: the Rust formatting API does not exist yet (MIGRATION_TO_RUST.md, Phase 2 through Phase 4)"]
 fn t001_format_e_trims_insignificant_zeros() {
     crate::support::run(&BLOCKS[1]);
 }
@@ -882,7 +880,6 @@ fn t001_format_e_trims_insignificant_zeros() {
 // test/format-trim-test.js #2: format(".4~e") trims insignificant zeros
 // 12 assertion execution(s), 12 recorded call(s)
 #[test]
-#[ignore = "Phase 1 placeholder: the Rust formatting API does not exist yet (MIGRATION_TO_RUST.md, Phase 2 through Phase 4)"]
 fn t002_format_4_e_trims_insignificant_zeros() {
     crate::support::run(&BLOCKS[2]);
 }
@@ -890,7 +887,6 @@ fn t002_format_4_e_trims_insignificant_zeros() {
 // test/format-trim-test.js #3: format("~s") trims insignificant zeros
 // 21 assertion execution(s), 21 recorded call(s)
 #[test]
-#[ignore = "Phase 1 placeholder: the Rust formatting API does not exist yet (MIGRATION_TO_RUST.md, Phase 2 through Phase 4)"]
 fn t003_format_s_trims_insignificant_zeros() {
     crate::support::run(&BLOCKS[3]);
 }
@@ -898,7 +894,6 @@ fn t003_format_s_trims_insignificant_zeros() {
 // test/format-trim-test.js #4: format("~%") trims insignificant zeros
 // 5 assertion execution(s), 5 recorded call(s)
 #[test]
-#[ignore = "Phase 1 placeholder: the Rust formatting API does not exist yet (MIGRATION_TO_RUST.md, Phase 2 through Phase 4)"]
 fn t004_format_trims_insignificant_zeros() {
     crate::support::run(&BLOCKS[4]);
 }
@@ -906,7 +901,6 @@ fn t004_format_trims_insignificant_zeros() {
 // test/format-trim-test.js #5: trimming respects commas
 // 2 assertion execution(s), 2 recorded call(s)
 #[test]
-#[ignore = "Phase 1 placeholder: the Rust formatting API does not exist yet (MIGRATION_TO_RUST.md, Phase 2 through Phase 4)"]
 fn t005_trimming_respects_commas() {
     crate::support::run(&BLOCKS[5]);
 }
