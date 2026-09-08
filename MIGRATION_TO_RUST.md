@@ -79,6 +79,7 @@ Current status:
 | `cargo package` review | Gate — passed | `rust/ci/package/collect-listing.ps1`: 56 files, 187 KiB compressed, each matched to a rule that says why it ships; verified to fail on an unclassified file and on a lapsed exclusion |
 | Downstream canaries | Gate — passed | two consumers built from the unpacked `.crate` on 1.98.1 and 1.80.0; ~1.14 M formatted values across the four runs, zero mismatches |
 | Parity artifacts archived | Deliverable — present | `rust/ci/parity/ci-differential.json` and `prerelease-differential.json`; the runner's own summary stays ephemeral under `rust/target/` |
+| Release evidence collected from a commit | Gate — passed | all four archives name a commit whose tree they measured with `git_worktree_dirty: false`; each collector refuses a dirty tree, verified firing on one under PowerShell 5.1 and 7 |
 | Cargo publication | Gate — pending | `publish-rust.yml` written and statically checked, never executed; `d3-format` is unclaimed on crates.io; the protected environment and credentials are a human step |
 
 ### 0.3 Verified exploratory evidence
@@ -1207,6 +1208,15 @@ invites failures unrelated to MSRV.
 fails locally whenever work is in progress. The committed script takes an `-AllowDirty` switch for
 local use; CI checks out clean and never sets it.
 
+That refusal is narrower than it sounds, and Phase 6 measured which half is which rather than
+leaving it to inference. Cargo counts only the files it would actually package: an untracked
+`src/probe_dirty_check.rs` fails with `1 files in the working directory contain changes that were
+not yet committed into git` and exit 101, while a modified `ci/parity/ci-differential.json` — a path
+`exclude` drops — packages successfully and exits zero. So this profile still passes with
+regenerated release archives sitting uncommitted under `ci/`, which is what lets the gate run and
+the evidence reach a reviewer as separate steps. The switch stays necessary for work in progress on
+a packaged path.
+
 The Windows entry tests the same GNU host selected for local development. An additional MSVC job may
 be added as compatibility coverage, but it does not replace the GNU job.
 
@@ -1326,6 +1336,41 @@ that a later run could silently contradict, and leaving the evidence only in a C
 have made a release's parity unreadable once the retention window closed — the archive is the third
 option and is the one that keeps a reader able to answer "what did the RC actually agree on" from
 the repository alone.
+
+**Release evidence is collected from a clean tree, and the collectors enforce it.** An archive is
+worth exactly the tree it names, and the first set produced under this scheme was worth nothing:
+all four artifacts — both parity archives, the packaging listing and the benchmark baseline — were
+collected from Phase 5's commit plus the whole of Phase 6 uncommitted, a tree that exists nowhere in
+history. Three of them recorded `git_worktree_dirty: true` and nothing acted on it. The packaging
+listing shows why that is fatal rather than untidy: `cargo package` writes the commit into
+`.cargo_vcs_info.json`, so the crate hash is a function of the commit, and the archived SHA-256 was
+one no commit could ever produce. Each of `collect-listing.ps1`, `collect-differential.ps1` and
+`collect-baseline.ps1` now reads `git status --porcelain --untracked-files=normal` before it
+measures anything and again before it writes the result, and refuses at either point unless
+`-AllowDirty` is passed. The second check is not redundant: it is what makes `git_worktree_dirty:
+false` a property of the whole collection rather than of its first second. `-AllowDirty` is for
+local experimentation and marks what it produced, through `provenance.allow_dirty`; an artifact
+carrying it is not release evidence. Both collectors also re-read `HEAD` at the end and refuse if it
+moved during the run. The refusal was exercised on a genuinely dirty tree, for all four artifacts,
+under both Windows PowerShell 5.1 and PowerShell 7 — an assertion nobody has seen fail is not known
+to work, and this one had never fired.
+
+The ordering that creates is worth stating plainly, because it reads as a defect and is not.
+`git_commit` names the commit of the tree that was *measured*, and the artifact recording that
+measurement necessarily lands in a *later* commit; no artifact can name the commit that contains it.
+What makes the record usable is `git_worktree_dirty: false` beside it, because that is the claim
+that the measured tree was exactly the named commit and a reader can check it out and reproduce the
+result. Each artifact now says this in its own `notes`, so a reader who meets one without this
+document can still read its provenance. `prerelease-differential.json` had been missing
+`git_worktree_dirty` entirely while the other three carried it; provenance fields are uniform across
+all four, since a field that exists to make an artifact traceable is worth nothing on three artifacts
+out of four.
+
+Collecting all four in one sitting needs one accommodation, because the first artifact written makes
+the tree dirty for the next collector. Either commit between collections, or point each collector's
+`-OutputPath` at a scratch directory under the gitignored `rust/target/` and move the four into
+place once they are all done. The second is what Phase 6's regeneration did, so that all four name
+one commit and all four measured it clean.
 
 The per-locale floor is half the mean, floored, applied only once the mean per locale reaches 200.
 That threshold comes from a Chernoff bound — for Binomial(n, 1/59), P(count < μ/2) ≤ exp(−μ/8), so
@@ -1504,6 +1549,11 @@ tarball against `cargo package --list`, checks the crates.io size limit, and arc
 with a per-file SHA-256. A file added to the crate directory therefore cannot join the distribution
 without someone classifying it. Both failure modes were exercised: an unclassified file, and an
 `exclude` entry removed so that `rust-toolchain.toml` reappeared.
+
+All four archived artifacts — `ci/package/package-listing.json`, `ci/parity/ci-differential.json`,
+`ci/parity/prerelease-differential.json` and `ci/benchmarks/baseline.json` — are collected from a
+clean tree, and their collectors refuse a dirty one. §6.3 records why, including the first set's
+failure to meet it.
 
 Exit: RC remains green through the scheduled full differential and downstream smoke tests. Stable
 `0.1.0` is a separate approval.

@@ -36,10 +36,20 @@
     the collector still refuses a tarball older than the crate sources.
 
 .PARAMETER AllowDirty
-    Passes --allow-dirty to `cargo package`, as ci/check.ps1 does and for the same
-    reason: a local run always has uncommitted work in progress. The archive records
-    whether it was used, because a dirty package is a record of a tree no commit
-    holds.
+    Collects from a working tree that does not match HEAD, and passes --allow-dirty
+    to `cargo package` so that cargo permits it too.
+
+    Without it the collector refuses a dirty tree. The archive names the commit it
+    measured, and naming a commit is only worth something if a reader can check that
+    commit out and get the same result -- which is exactly what a collection taken
+    over uncommitted work cannot offer, because the tree it measured exists nowhere
+    in history. That failure mode is not hypothetical here: the package sha256 is a
+    function of the commit, since cargo writes it into .cargo_vcs_info.json, so a
+    dirty listing records a hash nobody can ever reproduce.
+
+    The switch exists for local experimentation and marks the artifact:
+    provenance.allow_dirty is true and provenance.git_worktree_dirty records what the
+    tree actually was. An archive with either set is not release evidence.
 
 .PARAMETER OutputPath
     Where to write the archive. Defaults to ci/package/package-listing.json.
@@ -176,6 +186,71 @@ function Get-CommandOutput {
     , @($captured)
 }
 
+function Get-WorktreeChanges {
+    <#
+        Every uncommitted path in the repository, tracked or not, one per output
+        object. Untracked counts: a file HEAD does not contain is as much a
+        difference from it as a modified one, and `cargo package` treats the two the
+        same way.
+
+        git is invoked here rather than through Get-CommandOutput deliberately. That
+        helper returns the whole output as one array-valued object -- which is what
+        its other callers want, since they index [0] or test .Count -gt 0, but a
+        caller that needs the paths themselves gets an array holding an array and
+        renders it as "System.Object[]". Normalizing through @() and dropping blank
+        lines makes the shape the same for none, one and many.
+
+        Duplicated verbatim in ci/parity/collect-differential.ps1 and
+        ci/benchmarks/collect-baseline.ps1, as Get-CommandOutput already is, so each
+        collector stays runnable on its own.
+    #>
+
+    $status = & git 'status' '--porcelain' '--untracked-files=normal'
+    if ($LASTEXITCODE -ne 0) {
+        throw "git status --porcelain --untracked-files=normal failed with exit code $LASTEXITCODE"
+    }
+    @($status) | Where-Object { -not [string]::IsNullOrWhiteSpace($_) }
+}
+
+function Assert-CollectedFromACommit {
+    <#
+        The clean-tree precondition every collector applies before it measures
+        anything and again before it writes the result.
+    #>
+    [CmdletBinding()]
+    param(
+        [Parameter(Mandatory = $true)] [AllowEmptyCollection()] [string[]] $Changes,
+        [Parameter(Mandatory = $true)] [string] $When
+    )
+
+    if ($Changes.Count -eq 0) {
+        return
+    }
+
+    # Built by appending rather than as one nested literal: PowerShell does not
+    # flatten an array written inside an array literal, and -join would render the
+    # inner one as "System.Object[]".
+    # ${...} as in ci/parity/assert-agreement.ps1: PowerShell reads `$When:` as a
+    # drive-qualified variable and refuses to parse the file at all.
+    $message = @("the working tree has $($Changes.Count) uncommitted path(s) ${When}:")
+    $message += @($Changes | Select-Object -First 20 | ForEach-Object { "  $_" })
+    if ($Changes.Count -gt 20) {
+        $message += "  ... and $($Changes.Count - 20) more"
+    }
+    $message += @(
+        '',
+        'Release evidence names the commit it measured, and the only reason to name one',
+        'is so a reader can check it out and reproduce the result. This tree is that',
+        'commit plus changes no commit holds, so the artifact would point at nothing.',
+        'Commit or stash the work and rerun.',
+        '',
+        '-AllowDirty overrides this for local experimentation and marks the artifact,',
+        'which is then a note to yourself rather than release evidence.'
+    )
+
+    throw ($message -join [Environment]::NewLine)
+}
+
 $crateRoot = Split-Path -Parent (Split-Path -Parent $PSScriptRoot)
 
 if ([string]::IsNullOrEmpty($OutputPath)) {
@@ -197,10 +272,21 @@ try {
     $version = $Matches[1]
     $cratePath = Join-Path $crateRoot "target/package/d3-format-$version.crate"
 
+    # Read before the run and re-read after it, so the archive cannot name a commit
+    # that was not HEAD for the whole collection.
+    $commit = (Get-CommandOutput -Command 'git' -Arguments @('rev-parse', 'HEAD'))[0]
+
     Write-Host 'd3-format package listing'
     Write-Host "  version: $version"
+    Write-Host "  commit:  $commit"
     Write-Host "  crate:   $cratePath"
     Write-Host "  output:  $OutputPath"
+
+    # Checked before anything is built, so a dirty tree costs a second rather than a
+    # package and a review of it.
+    if (-not $AllowDirty) {
+        Assert-CollectedFromACommit -Changes @(Get-WorktreeChanges) -When 'before the collection started'
+    }
 
     $startedUtc = (Get-Date).ToUniversalTime()
 
@@ -355,6 +441,19 @@ try {
     $totals = @('total', $files.Count, $uncompressedBytes, $crateFile.Length)
     Write-Host ("    {0,-17} {1,3} file(s), {2,8:n0} bytes uncompressed, {3:n0} compressed" -f $totals)
 
+    # Re-checked now rather than only at the start: this is the value the archive
+    # records, and recording it after asserting it is what makes git_worktree_dirty
+    # false an enforced property of the run instead of a claim about its first
+    # second.
+    $changes = @(Get-WorktreeChanges)
+    if (-not $AllowDirty) {
+        Assert-CollectedFromACommit -Changes $changes -When 'after the collection finished'
+    }
+    $commitAfter = (Get-CommandOutput -Command 'git' -Arguments @('rev-parse', 'HEAD'))[0]
+    if ($commitAfter -ne $commit) {
+        throw "HEAD moved from $commit to $commitAfter during the collection, so this listing measures neither"
+    }
+
     $excludeList = @()
     if ($manifest -match '(?m)^exclude\s*=\s*\[([^\]]*)\]') {
         $excludeList = @($Matches[1] -split ',' |
@@ -378,9 +477,8 @@ try {
             headroom_bytes = $CratesIoMaxBytes - $crateFile.Length
         }
         provenance = [ordered] @{
-            git_commit = (Get-CommandOutput -Command 'git' -Arguments @('rev-parse', 'HEAD'))[0]
-            git_worktree_dirty = @(Get-CommandOutput -Command 'git' -Arguments @(
-                    'status', '--porcelain', '--untracked-files=normal')).Count -gt 0
+            git_commit = $commit
+            git_worktree_dirty = $changes.Count -gt 0
             allow_dirty = [bool] $AllowDirty
             cargo = (Get-CommandOutput -Command 'cargo' -Arguments @('--version'))[0]
             rustc = (Get-CommandOutput -Command 'rustc' -Arguments @('--version'))[0]
@@ -395,7 +493,8 @@ try {
         files = $files
         notes = @(
             'Read out of the tarball, not out of the working tree: the per-file sha256 values are the bytes a consumer downloads.',
-            'The package sha256 changes with every commit even when no source does, because .cargo_vcs_info.json records the commit. It identifies this build, not this content.',
+            'The package sha256 changes with every commit even when no source does, because cargo writes the commit into .cargo_vcs_info.json. It identifies this build rather than this content, so it is reproducible from the named commit and from no other: package that commit again and the bytes are identical.',
+            'provenance.git_commit names the commit whose tree was measured. This artifact records that measurement and therefore lands in a later commit, which is expected rather than a defect. What makes it evidence is provenance.git_worktree_dirty being false: the tree measured was exactly the named commit, so a reader can check that commit out and reproduce this. The collector refuses a dirty tree, so the false value is enforced rather than asserted; -AllowDirty waives the refusal and says so in provenance.allow_dirty.',
             'Every path here matched exactly one rule in collect-listing.ps1, and each rule carries the reason a consumer needs the file. A packaged path that matches no rule fails the collector, so this listing cannot go stale by accident.',
             'The listing is a record, not a gate that CI runs. The executable packaging gate is `cargo package --locked` inside ci/check.ps1 -Profile Pinned, and .github/workflows/publish-rust.yml runs this collector before it uploads anything.'
         )

@@ -44,6 +44,20 @@
     drawn specifier in fifteen is type `c` and is a policy check rather than an
     output comparison, which is the headroom in the pre-release default.
 
+.PARAMETER AllowDirty
+    Collects from a working tree that does not match HEAD.
+
+    Without it the collector refuses a dirty tree, in the same shape and for the same
+    reason as ci/package/collect-listing.ps1: the archive names the commit it
+    measured, and naming a commit is only worth something if a reader can check that
+    commit out and reproduce the run. A differential taken over uncommitted work
+    describes a tree that exists nowhere in history, which is the one thing an
+    agreement record cannot be.
+
+    The switch exists for local experimentation and marks the artifact:
+    provenance.allow_dirty is true and provenance.git_worktree_dirty records what the
+    tree actually was. An archive with either set is not release evidence.
+
 .PARAMETER OutputPath
     Where to write the archive. Defaults to ci/parity/<corpus>-differential.json.
 
@@ -63,6 +77,8 @@ param(
     [int] $Seed = 1,
 
     [int] $Cases,
+
+    [switch] $AllowDirty,
 
     [string] $OutputPath
 )
@@ -98,6 +114,71 @@ function Get-CommandOutput {
         throw "$Command $($Arguments -join ' ') failed with exit code $LASTEXITCODE"
     }
     , @($captured)
+}
+
+function Get-WorktreeChanges {
+    <#
+        Every uncommitted path in the repository, tracked or not, one per output
+        object. Untracked counts: a file HEAD does not contain is as much a
+        difference from it as a modified one, and `cargo package` treats the two the
+        same way.
+
+        git is invoked here rather than through Get-CommandOutput deliberately. That
+        helper returns the whole output as one array-valued object -- which is what
+        its other callers want, since they index [0] or test .Count -gt 0, but a
+        caller that needs the paths themselves gets an array holding an array and
+        renders it as "System.Object[]". Normalizing through @() and dropping blank
+        lines makes the shape the same for none, one and many.
+
+        Duplicated verbatim in ci/package/collect-listing.ps1 and
+        ci/benchmarks/collect-baseline.ps1, as Get-CommandOutput already is, so each
+        collector stays runnable on its own.
+    #>
+
+    $status = & git 'status' '--porcelain' '--untracked-files=normal'
+    if ($LASTEXITCODE -ne 0) {
+        throw "git status --porcelain --untracked-files=normal failed with exit code $LASTEXITCODE"
+    }
+    @($status) | Where-Object { -not [string]::IsNullOrWhiteSpace($_) }
+}
+
+function Assert-CollectedFromACommit {
+    <#
+        The clean-tree precondition every collector applies before it measures
+        anything and again before it writes the result.
+    #>
+    [CmdletBinding()]
+    param(
+        [Parameter(Mandatory = $true)] [AllowEmptyCollection()] [string[]] $Changes,
+        [Parameter(Mandatory = $true)] [string] $When
+    )
+
+    if ($Changes.Count -eq 0) {
+        return
+    }
+
+    # Built by appending rather than as one nested literal: PowerShell does not
+    # flatten an array written inside an array literal, and -join would render the
+    # inner one as "System.Object[]".
+    # ${...} as in ci/parity/assert-agreement.ps1: PowerShell reads `$When:` as a
+    # drive-qualified variable and refuses to parse the file at all.
+    $message = @("the working tree has $($Changes.Count) uncommitted path(s) ${When}:")
+    $message += @($Changes | Select-Object -First 20 | ForEach-Object { "  $_" })
+    if ($Changes.Count -gt 20) {
+        $message += "  ... and $($Changes.Count - 20) more"
+    }
+    $message += @(
+        '',
+        'Release evidence names the commit it measured, and the only reason to name one',
+        'is so a reader can check it out and reproduce the result. This tree is that',
+        'commit plus changes no commit holds, so the artifact would point at nothing.',
+        'Commit or stash the work and rerun.',
+        '',
+        '-AllowDirty overrides this for local experimentation and marks the artifact,',
+        'which is then a note to yourself rather than release evidence.'
+    )
+
+    throw ($message -join [Environment]::NewLine)
 }
 
 function Get-HostDescription {
@@ -148,12 +229,24 @@ Push-Location -LiteralPath $repositoryRoot
 try {
     $summaryPath = "rust/target/differential/$Corpus-summary.json"
 
+    # Read before the run and re-read after it, so the archive cannot name a commit
+    # that was not HEAD for the whole collection.
+    $commit = (Get-CommandOutput -Command 'git' -Arguments @('rev-parse', 'HEAD'))[0]
+
     Write-Host "d3-format differential archive"
     Write-Host "  corpus:  $Corpus"
     Write-Host "  seed:    $Seed"
     Write-Host "  cases:   $Cases drawn"
+    Write-Host "  commit:  $commit"
     Write-Host "  summary: $summaryPath"
     Write-Host "  output:  $OutputPath"
+
+    # Checked before the run rather than after it. The pre-release corpus takes
+    # roughly twelve minutes, and a precondition that reports after the work is a
+    # precondition nobody will keep.
+    if (-not $AllowDirty) {
+        Assert-CollectedFromACommit -Changes @(Get-WorktreeChanges) -When 'before the collection started'
+    }
 
     # A summary left behind by an earlier invocation would otherwise be
     # indistinguishable from this run's if the run died before writing one.
@@ -204,6 +297,19 @@ try {
 
     $summary = Get-Content -LiteralPath $summaryPath -Raw | ConvertFrom-Json
 
+    # Re-checked now rather than only at the start: this is the value the archive
+    # records, and recording it after asserting it is what makes git_worktree_dirty
+    # false an enforced property of the whole run instead of a claim about its first
+    # second.
+    $changes = @(Get-WorktreeChanges)
+    if (-not $AllowDirty) {
+        Assert-CollectedFromACommit -Changes $changes -When 'after the collection finished'
+    }
+    $commitAfter = (Get-CommandOutput -Command 'git' -Arguments @('rev-parse', 'HEAD'))[0]
+    if ($commitAfter -ne $commit) {
+        throw "HEAD moved from $commit to $commitAfter during the collection, so this archive measures neither"
+    }
+
     $archive = [ordered] @{
         schema = 'd3-format/differential-archive/1'
         generated_utc = $finishedUtc.ToString('yyyy-MM-ddTHH:mm:ssZ')
@@ -213,13 +319,12 @@ try {
             # The commit the evidence describes. The archive is only about the tree
             # it was produced from, and an archive whose commit a reader cannot
             # recover is not evidence of anything.
-            git_commit = (Get-CommandOutput -Command 'git' -Arguments @('rev-parse', 'HEAD'))[0]
-            # An archive that names a commit it was not actually produced from is
-            # worse than one that names none, and the archive itself is an
-            # uncommitted file at the moment it is written, so the honest answer is
-            # to say whether anything else was uncommitted too.
-            git_worktree_dirty = @(Get-CommandOutput -Command 'git' -Arguments @(
-                    'status', '--porcelain', '--untracked-files=normal')).Count -gt 0
+            git_commit = $commit
+            # ...which is why this must be false. An archive naming a commit whose
+            # tree it did not measure is worse than one naming none, so the collector
+            # refuses a dirty tree and this field records the fact it enforced.
+            git_worktree_dirty = $changes.Count -gt 0
+            allow_dirty = [bool] $AllowDirty
             node = (Get-CommandOutput -Command 'node' -Arguments @('--version'))[0]
             rustc = (Get-CommandOutput -Command 'rustc' -Arguments @('--version'))[0]
             cargo = (Get-CommandOutput -Command 'cargo' -Arguments @('--version'))[0]
@@ -232,6 +337,7 @@ try {
         # \u0027, and these exist to be read.
         notes = @(
             'The summary block below is the differential runners own output, copied verbatim from the run this file records. It is not a transcription: nothing in it was typed by hand.',
+            'provenance.git_commit names the commit whose tree was measured. This artifact records that measurement and therefore lands in a later commit, which is expected rather than a defect. What makes it evidence is provenance.git_worktree_dirty being false: the tree measured was exactly the named commit, so a reader can check that commit out and reproduce this. The collector refuses a dirty tree, so the false value is enforced rather than asserted; -AllowDirty waives the refusal and says so in provenance.allow_dirty.',
             'The debug profile keeps Rusts integer overflow checks and debug assertions live, which is the stronger reading of "no accepted input panics". The pre-release corpus trades them for throughput because it is the only way ten million comparisons are affordable; the ci corpus keeps them.',
             'Roughly one drawn specifier in fifteen is type c, which is an input-policy check rather than an output comparison, so formatter.cases and formatter.output_comparisons are different numbers on purpose.',
             'A locale drawing zero cases would be a gate failure rather than a pass. locale_coverage.floor_applied says whether the per-locale floor was in force; below about 200 draws per locale it is not, and the runner says so rather than asserting nothing.',

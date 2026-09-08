@@ -64,6 +64,13 @@ bytes; that is an executable gate, not a convention.
 None of these files is part of the published crate. The `exclude` list in `Cargo.toml` keeps
 verification tooling out of the distribution; they live in the repository.
 
+Each of the three `ci/` archives carries a `provenance` block naming the commit whose tree it
+measured, and its collector refuses to run against a working tree that does not match that commit —
+so `git_commit` names something a reader can check out and reproduce, and `git_worktree_dirty` is
+false. The artifact recording a measurement necessarily lands in a commit *after* the one it names;
+that ordering is expected. `-AllowDirty` waives the refusal for local experimentation and says so in
+`provenance.allow_dirty`, which marks the result as not being release evidence.
+
 ## The evidence
 
 ### The recorded oracle suite
@@ -237,7 +244,7 @@ node rust/tools/gen-corpus.mjs --check-manifest # the structured corpora still f
 ./rust/ci/check.ps1 -Profile Pinned            # fmt, clippy, four feature combinations, package
 node rust/tools/differential.mjs --corpus ci --seed 1 --cases 200000
 
-pwsh rust/ci/package/collect-listing.ps1       # what ships, and why each file does
+pwsh rust/ci/package/collect-listing.ps1       # what ships, and why each file does; clean tree only
 pwsh canaries/run-canaries.ps1                 # the packaged crate, from a consumer's side
 ```
 

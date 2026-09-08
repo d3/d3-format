@@ -25,6 +25,18 @@
     Authored for Windows PowerShell 5.1 as well as PowerShell 7, like ci/check.ps1,
     and it contains no Bash syntax.
 
+.PARAMETER AllowDirty
+    Collects from a working tree that does not match HEAD.
+
+    Without it the collector refuses a dirty tree, in the same shape and for the same
+    reason as ci/package/collect-listing.ps1: timings are only interpretable against
+    the tree that produced them, and a tree that exists nowhere in history is one
+    nobody can build again to compare against.
+
+    The switch exists for local experimentation and marks the artifact:
+    provenance.allow_dirty is true and provenance.git_worktree_dirty records what the
+    tree actually was. An archive with either set is not release evidence.
+
 .PARAMETER OutputPath
     Where to write the baseline. Defaults to baseline.json next to this script.
     The default is resolved in the body rather than here because Windows
@@ -36,6 +48,8 @@
 
 [CmdletBinding()]
 param(
+    [switch] $AllowDirty,
+
     [string] $OutputPath
 )
 
@@ -82,6 +96,71 @@ function Get-CommandOutput {
         throw "$Command $($Arguments -join ' ') failed with exit code $LASTEXITCODE"
     }
     , @($captured)
+}
+
+function Get-WorktreeChanges {
+    <#
+        Every uncommitted path in the repository, tracked or not, one per output
+        object. Untracked counts: a file HEAD does not contain is as much a
+        difference from it as a modified one, and `cargo package` treats the two the
+        same way.
+
+        git is invoked here rather than through Get-CommandOutput deliberately. That
+        helper returns the whole output as one array-valued object -- which is what
+        its other callers want, since they index [0] or test .Count -gt 0, but a
+        caller that needs the paths themselves gets an array holding an array and
+        renders it as "System.Object[]". Normalizing through @() and dropping blank
+        lines makes the shape the same for none, one and many.
+
+        Duplicated verbatim in ci/package/collect-listing.ps1 and
+        ci/parity/collect-differential.ps1, as Get-CommandOutput already is, so each
+        collector stays runnable on its own.
+    #>
+
+    $status = & git 'status' '--porcelain' '--untracked-files=normal'
+    if ($LASTEXITCODE -ne 0) {
+        throw "git status --porcelain --untracked-files=normal failed with exit code $LASTEXITCODE"
+    }
+    @($status) | Where-Object { -not [string]::IsNullOrWhiteSpace($_) }
+}
+
+function Assert-CollectedFromACommit {
+    <#
+        The clean-tree precondition every collector applies before it measures
+        anything and again before it writes the result.
+    #>
+    [CmdletBinding()]
+    param(
+        [Parameter(Mandatory = $true)] [AllowEmptyCollection()] [string[]] $Changes,
+        [Parameter(Mandatory = $true)] [string] $When
+    )
+
+    if ($Changes.Count -eq 0) {
+        return
+    }
+
+    # Built by appending rather than as one nested literal: PowerShell does not
+    # flatten an array written inside an array literal, and -join would render the
+    # inner one as "System.Object[]".
+    # ${...} as in ci/parity/assert-agreement.ps1: PowerShell reads `$When:` as a
+    # drive-qualified variable and refuses to parse the file at all.
+    $message = @("the working tree has $($Changes.Count) uncommitted path(s) ${When}:")
+    $message += @($Changes | Select-Object -First 20 | ForEach-Object { "  $_" })
+    if ($Changes.Count -gt 20) {
+        $message += "  ... and $($Changes.Count - 20) more"
+    }
+    $message += @(
+        '',
+        'Release evidence names the commit it measured, and the only reason to name one',
+        'is so a reader can check it out and reproduce the result. This tree is that',
+        'commit plus changes no commit holds, so the artifact would point at nothing.',
+        'Commit or stash the work and rerun.',
+        '',
+        '-AllowDirty overrides this for local experimentation and marks the artifact,',
+        'which is then a note to yourself rather than release evidence.'
+    )
+
+    throw ($message -join [Environment]::NewLine)
 }
 
 function Get-HostDescription {
@@ -133,9 +212,21 @@ $crateRoot = Split-Path -Parent (Split-Path -Parent $PSScriptRoot)
 
 Push-Location -LiteralPath $crateRoot
 try {
+    # Read before the run and re-read after it, so the baseline cannot name a commit
+    # that was not HEAD for the whole collection.
+    $commit = (Get-CommandOutput -Command 'git' -Arguments @('rev-parse', 'HEAD'))[0]
+
     Write-Host "d3-format benchmark baseline"
     Write-Host "  directory: $crateRoot"
+    Write-Host "  commit:    $commit"
     Write-Host "  output:    $OutputPath"
+
+    # Checked before the run rather than after it. The full benchmark set takes
+    # several minutes, and a precondition that reports after the work is a
+    # precondition nobody will keep.
+    if (-not $AllowDirty) {
+        Assert-CollectedFromACommit -Changes @(Get-WorktreeChanges) -When 'before the collection started'
+    }
 
     # The inventory the run must produce, taken from the target itself. --list
     # builds the benchmark but times nothing, so this costs a second or two and
@@ -301,6 +392,19 @@ try {
     $crate = @($metadata.packages | Where-Object { $_.name -eq 'd3-format' })[0]
     $criterion = @($metadata.packages | Where-Object { $_.name -eq 'criterion' })[0]
 
+    # Re-checked now rather than only at the start: this is the value the baseline
+    # records, and recording it after asserting it is what makes git_worktree_dirty
+    # false an enforced property of the whole run instead of a claim about its first
+    # second.
+    $changes = @(Get-WorktreeChanges)
+    if (-not $AllowDirty) {
+        Assert-CollectedFromACommit -Changes $changes -When 'after the collection finished'
+    }
+    $commitAfter = (Get-CommandOutput -Command 'git' -Arguments @('rev-parse', 'HEAD'))[0]
+    if ($commitAfter -ne $commit) {
+        throw "HEAD moved from $commit to $commitAfter during the collection, so this baseline measures neither"
+    }
+
     $baseline = [ordered] @{
         schema = 'd3-format/benchmark-baseline/1'
         generated_utc = $finishedUtc.ToString('yyyy-MM-ddTHH:mm:ssZ')
@@ -312,9 +416,12 @@ try {
             # interpretable against the tree that produced them, and a version alone
             # does not identify a tree: an archived baseline whose commit a reader
             # cannot recover is a set of numbers about nothing in particular.
-            git_commit = (Get-CommandOutput -Command 'git' -Arguments @('rev-parse', 'HEAD'))[0]
-            git_worktree_dirty = @(Get-CommandOutput -Command 'git' -Arguments @(
-                    'status', '--porcelain', '--untracked-files=normal')).Count -gt 0
+            git_commit = $commit
+            # ...which is why this must be false. The collector refuses a dirty tree,
+            # so this field records the fact it enforced rather than reporting one it
+            # was willing to tolerate.
+            git_worktree_dirty = $changes.Count -gt 0
+            allow_dirty = [bool] $AllowDirty
             criterion = $criterion.version
             rustc = (Get-CommandOutput -Command 'rustc' -Arguments @('--version'))[0]
             cargo = (Get-CommandOutput -Command 'cargo' -Arguments @('--version'))[0]
@@ -342,6 +449,7 @@ try {
         # \u0027, and this field exists to be read.
         notes = @(
             'Machine-specific and not a regression gate. No CI job reads this file; it is the archived observation MIGRATION_TO_RUST.md section 9 asks for, taken on one developer host with whatever else that host was doing at the time.',
+            'provenance.git_commit names the commit whose tree was measured. This artifact records that measurement and therefore lands in a later commit, which is expected rather than a defect. What makes it evidence is provenance.git_worktree_dirty being false: the tree measured was exactly the named commit, so a reader can check that commit out and reproduce this. The collector refuses a dirty tree, so the false value is enforced rather than asserted; -AllowDirty waives the refusal and says so in provenance.allow_dirty.',
             'The difference between the owned_output and reused_output groups is one allocation and one deallocation per call, and on this host that is close to the run-to-run spread of an individual case. Read the direction across the group rather than any single delta, and expect the effect to clear the spread only where the pair is a large share of the call: the type c text case, which does no numeric conversion at all, and the kilobyte binary radix case. The exact form of the comparison is in the allocation profile below, where the reused path makes exactly one fewer allocation in every case measured.',
             'The allocation numbers are exact GlobalAlloc call counts for one call, not statistics. They support "this case made N allocations on this build" and nothing stronger. They do not establish that any path is allocation-free, they say nothing about peak resident memory or fragmentation, and another allocator, optimization level or toolchain may produce different counts for the same code.',
             'Every reused-output measurement ran against a String reserved to the exact output length outside the timed loop, and the benchmark asserts that the capacity was unchanged afterwards, so a reallocation counted on a reused row grew a buffer inside the conversion rather than the output buffer supplied by the caller.',
