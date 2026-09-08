@@ -168,6 +168,23 @@ jobs:
       RUSTUP_TOOLCHAIN: 1.98.1-x86_64-unknown-linux-gnu
     steps:
       - uses: actions/checkout@v6
+      # Section 1's `text eol=lf` rule, checked rather than trusted, and checked
+      # first because it is one git command and everything below it byte-compares
+      # something. It is the sibling of the drift clause at the end of this job:
+      # that one catches a generated file missing from the commit, this one catches
+      # a committed file whose checked-out bytes are not the bytes the rule
+      # declares. Neither is visible to the other, and neither is visible to
+      # `git status` -- a path git itself checked out as CRLF still matches the stat
+      # data cached in the index, so status reports nothing at all.
+      #
+      # The failure it can find here is not the one it finds on Windows. Checkout on
+      # this runner writes LF whatever the attribute says, so a `w/crlf` finding is
+      # nearly impossible; what an Ubuntu leg catches is an `i/crlf` index copy,
+      # committed from somewhere the attribute did not apply, which would then be
+      # CRLF on every platform. Same command, and it has to hold in both places.
+      - name: Line endings match .gitattributes
+        shell: pwsh
+        run: ./rust/ci/assert-line-endings.ps1
       - uses: actions/setup-node@v6
         with:
           node-version: 24.18.0

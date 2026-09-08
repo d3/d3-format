@@ -29,19 +29,20 @@
 
     Pinned  The full set from section 6.1: formatting, lints, the four feature
             combinations, the conformance inventory guard, benchmark compilation
-            and a benchmark smoke run, packaging, and the forbidden dependency
-            guard. "Pinned" names the check set, not a toolchain: section 6.2 runs
-            this same set on current stable as moving compatibility coverage.
+            and a benchmark smoke run, the line-ending gate, packaging, and the
+            forbidden dependency guard. "Pinned" names the check set, not a
+            toolchain: section 6.2 runs this same set on current stable as moving
+            compatibility coverage.
 
     Msrv    The lighter set from section 6.2: the four feature-combination test
             runs only. MSRV coverage answers "does the declared minimum compiler
             still build this crate and produce the same behavior". Formatting and
-            Clippy conformance, packaging, dependency-graph policy, and the
-            conformance inventory are properties of the source, the lockfile and
-            the generated fixtures rather than of the compiler, so pinning them
+            Clippy conformance, packaging, dependency-graph policy, line endings,
+            and the conformance inventory are properties of the source, the
+            lockfile and the checkout rather than of the compiler, so pinning them
             to one toolchain avoids failing the MSRV job for a lint whose wording
             changed between releases and avoids asserting the same
-            toolchain-independent inventory twice.
+            toolchain-independent property twice.
 
     Note that `Profile` shadows PowerShell's automatic $PROFILE variable inside
     this script. The name is fixed by section 6.1, which documents the invocation
@@ -325,19 +326,22 @@ function Assert-ConformanceInventoryMatchesTheArtifacts {
         # Names first: they say which test moved, where a count says only that one did.
         $missing = @($recorded[$target.Name] | Where-Object { $conformance -notcontains $_ })
         if ($missing.Count -ne 0) {
-            throw (@(
-                "the '$($target.Name)' target no longer defines $($missing.Count) test(s) that $mapPath routes assertions to:",
-                ($missing | ForEach-Object { "  $_" })
-            ) -join [Environment]::NewLine)
+            # Built by appending rather than as one nested literal, as
+            # ci/package/collect-listing.ps1 builds its dirty-tree message: PowerShell
+            # does not flatten an array written inside an array literal, so -join would
+            # render the inner one as "System.Object[]" and this message would lose the
+            # names it exists to report the first time it ever fired.
+            $message = @("the '$($target.Name)' target no longer defines $($missing.Count) test(s) that $mapPath routes assertions to:")
+            $message += @($missing | ForEach-Object { "  $_" })
+            throw ($message -join [Environment]::NewLine)
         }
 
         if ($target.RecordedIsExhaustive) {
             $unrecorded = @($conformance | Where-Object { $recorded[$target.Name] -notcontains $_ })
             if ($unrecorded.Count -ne 0) {
-                throw (@(
-                    "the '$($target.Name)' target defines $($unrecorded.Count) conformance test(s) that $mapPath does not record:",
-                    ($unrecorded | ForEach-Object { "  $_" })
-                ) -join [Environment]::NewLine)
+                $message = @("the '$($target.Name)' target defines $($unrecorded.Count) conformance test(s) that $mapPath does not record:")
+                $message += @($unrecorded | ForEach-Object { "  $_" })
+                throw ($message -join [Environment]::NewLine)
             }
         }
 
@@ -412,6 +416,17 @@ try {
             # not a performance gate: nothing here compares timings, and a hosted
             # runner's timings would not be worth comparing.
             Invoke-Step -Command 'cargo' -Arguments @('bench', '--locked', '--', '--test')
+
+            # Immediately before packaging, because packaging is what consumes the
+            # working tree. `cargo package` reads the checked-out bytes rather than
+            # the index, so a tracked file carrying CRLF changes the crate sha256
+            # that section 6.3 archives and publish-rust.yml uploads -- and where the
+            # CRLF came from a checkout rather than an edit, it does so from a tree
+            # `git status` reports as clean. The gate is one git command, so it runs
+            # here on both matrix hosts as well as in the parity job; the Windows leg
+            # is where the condition arises and the Ubuntu leg is where it must keep
+            # being absent.
+            & (Join-Path $PSScriptRoot 'assert-line-endings.ps1')
 
             $packageArguments = @('package', '--locked')
             if ($AllowDirty) {

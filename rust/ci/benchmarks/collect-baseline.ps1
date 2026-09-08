@@ -350,20 +350,23 @@ try {
 
     $missing = @($expectedIds | Where-Object { -not $measured.ContainsKey($_) })
     if ($missing.Count -ne 0) {
-        throw (@(
-            "the run produced no estimate for $($missing.Count) of the $($expectedIds.Count) benchmarks defined:",
-            ($missing | ForEach-Object { "  $_" })
-        ) -join [Environment]::NewLine)
+        # Built by appending rather than as one nested literal, as
+        # Assert-CollectedFromACommit above builds its message: PowerShell does not
+        # flatten an array written inside an array literal, so -join would render the
+        # inner one as "System.Object[]" and drop the very ids this message exists to
+        # name -- the first time it ever fired.
+        $message = @("the run produced no estimate for $($missing.Count) of the $($expectedIds.Count) benchmarks defined:")
+        $message += @($missing | ForEach-Object { "  $_" })
+        throw ($message -join [Environment]::NewLine)
     }
 
     # An estimate older than this run is a leftover from an earlier case table, and
     # archiving it would date-stamp someone else's measurement as this one.
     $stale = @($expectedIds | Where-Object { $measured[$_].Written -lt $startedUtc.AddMinutes(-1) })
     if ($stale.Count -ne 0) {
-        throw (@(
-            'these benchmarks were not re-measured by this run:',
-            ($stale | ForEach-Object { "  $_" })
-        ) -join [Environment]::NewLine)
+        $message = @('these benchmarks were not re-measured by this run:')
+        $message += @($stale | ForEach-Object { "  $_" })
+        throw ($message -join [Environment]::NewLine)
     }
 
     $entries = @()

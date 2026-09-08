@@ -80,6 +80,7 @@ Current status:
 | Downstream canaries | Gate — passed | two consumers built from the unpacked `.crate` on 1.98.1 and 1.80.0; ~1.14 M formatted values across the four runs, zero mismatches |
 | Parity artifacts archived | Deliverable — present | `rust/ci/parity/ci-differential.json` and `prerelease-differential.json`; the runner's own summary stays ephemeral under `rust/target/` |
 | Release evidence collected from a commit | Gate — passed | all four archives name `ba5b9ea`, whose tree they measured with `git_worktree_dirty: false`; each collector refuses a dirty tree, verified firing on one under PowerShell 5.1 and 7 |
+| Working-tree line endings | Gate — passed | `rust/ci/assert-line-endings.ps1` checks all 88 tracked paths under the declared `eol=lf` roots; wired into `-Profile Pinned`, the `parity` job and `collect-listing.ps1`; verified firing on a packaged and an unpackaged file under PowerShell 5.1 and 7 |
 | Cargo publication | Gate — pending | `publish-rust.yml` written and statically checked, never executed; `d3-format` is unclaimed on crates.io; the protected environment and credentials are a human step |
 
 ### 0.3 Verified exploratory evidence
@@ -156,6 +157,7 @@ d3-format-rust/
     ├── COMPATIBILITY.md
     ├── ci/
     │   ├── check.ps1
+    │   ├── assert-line-endings.ps1
     │   ├── benchmarks/
     │   │   ├── collect-baseline.ps1
     │   │   └── baseline.json
@@ -285,16 +287,57 @@ The rule is scoped to `rust/` and `canaries/`. The JavaScript oracle keeps its e
 behavior, because renormalizing it is an unrelated change to the reference implementation.
 
 The rule governs checkout, and Phase 6's evidence rework found what it does not govern. Nine tracked
-files under those two directories had acquired CRLF in the working tree after checkout — among them
-`rust/README.md`, `rust/CHANGELOG.md` and `rust/COMPATIBILITY.md`, all three of which are packaged.
-Git reports such a file as clean, because the `text` attribute normalizes it back to LF on the way
-to the index, so no gate in §3 and no `git status` sees it. `cargo package` reads the working tree
-rather than the index, so the crate's SHA-256 quietly depended on which files an editor had last
-rewritten and would not have matched a package built from a fresh checkout of the same commit. The
-release evidence was collected only after deleting and re-checking-out those paths so that the tree
-byte-matched a fresh clone. `git ls-files --eol rust canaries` reports the state in one command and
-is worth running before a release; no gate does so yet, which is a real hole rather than a
-deliberate omission.
+files under those two directories had CRLF in the working tree — among them `rust/README.md`,
+`rust/CHANGELOG.md` and `rust/COMPATIBILITY.md`, all three of which are packaged. `cargo package`
+reads the working tree rather than the index, so the crate's SHA-256 quietly depended on which files
+an editor had last rewritten and would not have matched a package built from a fresh checkout of the
+same commit. The release evidence was collected only after deleting and re-checking-out those paths
+so that the tree byte-matched a fresh clone.
+
+`rust/ci/assert-line-endings.ps1` is the gate for it. It reads the `eol=lf` patterns out of
+`.gitattributes` rather than carrying a second copy of them, runs `git ls-files --eol` over exactly
+those roots, and fails unless every tracked path reports the declared attribute and an ending of
+`lf` in both the index and the working tree. An ending of `none` passes: git prints that for a file
+with no line terminator at all, which cannot carry a CRLF either way, and
+`rust/fixtures/d3-format-3.1.2/regressions.jsonl` is legitimately empty. A path that stopped
+carrying `eol=lf` fails too, since a file the rule no longer covers has nothing left to disagree
+with. Only tracked paths are checked, because only committed content has a checked-out form that can
+drift from it.
+
+It runs in three places, all of them cheap because it is one `git` command. `-Profile Pinned` runs
+it immediately before `cargo package`, which puts it on `windows-latest`, where the condition
+arises, and on `ubuntu-latest`, where it must keep being absent. The `parity` job runs it as its
+first step. `collect-listing.ps1` runs it before it packages anything, which is the path that
+produced the unreproducible hash, and `-AllowDirty` does not waive it: that switch says "measure
+work in progress and mark the artifact", not "measure bytes the checkout rule forbids". It is not in
+the `Msrv` profile, for the reason §6.1 keeps formatting and packaging out of it — the checked-out
+bytes are a property of the checkout, not of the compiler.
+
+The gate was watched failing rather than assumed to work. `rust/README.md`, which is packaged, and
+`rust/ci/check.ps1`, which `exclude` drops, were each rewritten with CRLF and then both together;
+the gate named each offending path with its index ending, its working-tree ending and its
+attributes, and exited 1 identically under Windows PowerShell 5.1 and PowerShell 7. Packaging the
+contaminated tree and the restored tree at the same commit produced two different crate SHA-256
+values, which is the damage of §7's Phase 6 restated as a measurement rather than an argument.
+
+Why no existing gate sees this was measured on git 2.55.0 rather than inferred, and the answer is
+sharper than "git reports the file as clean". Which half of git stays quiet depends on how the CRLF
+arrived. A file git itself checked out as CRLF — which is every file committed before
+`.gitattributes` existed, on a host with `core.autocrlf=true` — still matches the stat data cached
+in the index, so `git status` never reads its contents and reports nothing whatsoever. That is the
+state the nine files were in, and it is why the collectors' clean-tree refusal could not have caught
+them. Rewrite the same file with an editor and the cached size stops matching, so `git status` does
+print ` M` — but `git diff` stays empty and `git hash-object` returns the committed OID, because the
+`text` attribute normalizes the bytes back to LF on the way to the index. §3.7's drift clause sees
+neither, being scoped to the three generated paths, none of which was among the nine.
+
+`.github/workflows/*.yml` is deliberately out of scope. The four files carry no `eol` attribute and
+are `w/crlf` on a Windows checkout; none was added, so the gate does not see them. The hazard cannot
+reach them: nothing byte-compares them, `cargo package` walks the crate directory and never reaches
+`.github/`, and Actions reads the committed blob — `i/lf` for all four — rather than anyone's
+working tree. They are also shared with the JavaScript product that this rule deliberately leaves
+alone; `publish.yml` is the existing npm publication listed above as unchanged. Declaring an
+attribute for them would change checkout behavior outside the port to buy a guarantee nothing needs.
 
 ## 2. Phase 0: machine, toolchains, baseline, and gates
 
@@ -621,6 +664,7 @@ cargo test --locked --manifest-path rust/Cargo.toml --no-run
 cargo test --locked --manifest-path rust/Cargo.toml --all-features --no-run
 $status = git status --porcelain -- rust/fixtures rust/tests/generated rust/src/locales/generated.rs
 if ($status) { throw "generated artifacts are dirty:`n$status" }
+pwsh rust/ci/assert-line-endings.ps1
 ```
 
 The all-features build is not redundant. With only the default build, `--features locales` went an
@@ -629,7 +673,14 @@ entire phase without ever compiling: `src/lib.rs` re-exported a private module, 
 feature combination proves only that one combination generates. Any gate that builds generated
 output builds every combination that generated output can reach.
 
-The final clause is a drift check against committed artifacts, so it cannot pass on the commit that
+The line-ending gate joins this block because it checks the one kind of drift the clause above it
+cannot: `git status` compares the working tree against the index through the `text` attribute, which
+normalizes CRLF away before the comparison happens, so a checked-out file that does not byte-match
+what a fresh clone would produce is invisible to it. §1 states what the gate checks and why the
+scope stops where it does. It is the only command here that is not part of Phase 1's own toolset,
+because the hole it closes was not found until Phase 6.
+
+The drift clause is a check against committed artifacts, so it cannot pass on the commit that
 first introduces them: every generated path is reported as untracked until it is committed. On that
 one commit, commit first and then run the gate. Every later run, including all of CI, evaluates it
 as written. The clause is deliberately not narrowed to modified-and-deleted entries, because in a
@@ -1237,6 +1288,23 @@ The profile also runs `cargo bench --locked -- --test` after `--no-run`. Compili
 not running it, and the smoke run is the only thing that catches a benchmark which builds and then
 panics on its first iteration.
 
+It then runs `ci/assert-line-endings.ps1`, immediately before packaging. §1 says what the gate is
+for; it belongs at this point in this profile because `cargo package` is the step that reads the
+working tree, and because `Pinned` is the only profile that runs on both a Windows and an Ubuntu
+host. It stays out of `Msrv` for the same reason formatting and packaging do.
+
+One PowerShell detail cuts across every script in this section and is worth stating once, because it
+destroys a diagnostic at exactly the moment the diagnostic matters. PowerShell does not flatten an
+array written inside an array literal, so `@('header:', ($items | ForEach-Object { "  $_" }))`
+has two elements and `-join` renders the second as `System.Object[]` — and only when `$items` holds
+more than one, so any single-item check of the message passes. Four diagnostics were built that way:
+the two conformance-inventory messages in `check.ps1`, and the missing-estimate and stale-estimate
+messages in `ci/benchmarks/collect-baseline.ps1`. Each now appends to the message array instead, as
+the collectors' dirty-tree message already did, and each was rendered with more than one item under
+both Windows PowerShell 5.1 and PowerShell 7. The edit is confined to the failure branch that builds
+the string: no collector measures or writes anything differently, which is what lets
+`baseline.json` stay valid rather than needing a forty-minute regeneration.
+
 ### 6.2 MSRV, stable, features, and WASM compile
 
 Separate Ubuntu jobs install:
@@ -1273,6 +1341,8 @@ parity:
   runs-on: ubuntu-latest
   steps:
     - uses: actions/checkout@v6
+    - run: ./rust/ci/assert-line-endings.ps1
+      shell: pwsh
     - uses: actions/setup-node@v6
       with:
         node-version: 24.18.0
@@ -1306,12 +1376,16 @@ comparison, so a drawn count is not a comparison count. The pre-release corpus d
 output-comparison count and asserts it, otherwise a corpus change that quietly converted comparisons
 into declines would pass.
 
-Two steps beyond §6.3's original list are load-bearing. `gen-corpus.mjs --check-manifest` gates the
+Three steps beyond §6.3's original list are load-bearing. `gen-corpus.mjs --check-manifest` gates the
 bucket census, which §4.3 treats as gate material but which no workflow previously checked for
 staleness. §3.7's drift clause is repeated here because the `--check` tools prove that generated
 bytes match a fresh generation and cannot catch a generated file that is present but untracked. The
 job also sets `RUSTUP_TOOLCHAIN` explicitly rather than inheriting the image default, which removes
-the ambiguity §6.3 warns about at its source.
+the ambiguity §6.3 warns about at its source. The line-ending gate is first because it costs one
+`git` command and everything after it byte-compares something; on this runner it is the `i/crlf`
+half it can find, since checkout writes LF here whatever the attribute says, while the
+`windows-latest` leg of §6.1 is where a `w/crlf` finding is reachable. Same command, and it has to
+hold in both places.
 
 The differential runs in **debug** here. Overflow checks and debug assertions stay live, which is
 the stronger reading of "no accepted input panics", and it costs about 2.8× — well under a minute
@@ -1566,7 +1640,9 @@ without someone classifying it. Both failure modes were exercised: an unclassifi
 All four archived artifacts — `ci/package/package-listing.json`, `ci/parity/ci-differential.json`,
 `ci/parity/prerelease-differential.json` and `ci/benchmarks/baseline.json` — are collected from a
 clean tree, and their collectors refuse a dirty one. §6.3 records why, including the first set's
-failure to meet it.
+failure to meet it. `collect-listing.ps1` additionally runs §1's line-ending gate, because a clean
+tree and a correctly checked-out one are not the same claim and only the second one determines the
+SHA-256 it archives.
 
 Exit: RC remains green through the scheduled full differential and downstream smoke tests. Stable
 `0.1.0` is a separate approval.
@@ -1667,6 +1743,8 @@ enforcement §6.3 describes; the archives themselves are the working-tree change
       Linux host exists here and the hosted runners have never executed.
 - [x] Benchmark and parity artifacts are archived, all four collected from a clean tree at
       `ba5b9ea` and recording `git_worktree_dirty: false`.
+- [x] Every tracked path under the declared `eol=lf` roots is LF in the index and the working tree,
+      and a gate says so rather than a reader remembering to look.
 - [x] `cargo package` contents are reviewed and build independently.
 - [x] Downstream canaries pass against the packaged crate.
 - [x] Compatibility, deviations, release, and rollback documents are complete.

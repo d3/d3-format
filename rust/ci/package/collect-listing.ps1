@@ -14,8 +14,12 @@
     quietly add it to the distribution -- it fails here until someone classifies it,
     which is the point at which a human decides whether it belongs.
 
-    Three further things are asserted rather than assumed:
+    Four further things are asserted rather than assumed:
 
+    - The working tree is the checkout section 1 declares. ci/assert-line-endings.ps1
+      runs before anything is packaged, because `cargo package` reads the working
+      tree rather than the index: a tracked file carrying CRLF moves the sha256 this
+      archive records, from a tree git status calls clean.
     - The `exclude` list in Cargo.toml actually held. Section 7 justifies each entry
       at length, and an exclusion that silently stopped matching would put the
       multi-megabyte fixture corpora, the JavaScript tooling and the differential
@@ -287,6 +291,19 @@ try {
     if (-not $AllowDirty) {
         Assert-CollectedFromACommit -Changes @(Get-WorktreeChanges) -When 'before the collection started'
     }
+
+    # The other half of "this listing describes the named commit", and the half the
+    # refusal above cannot see. `cargo package` reads the working tree rather than
+    # the index, so a tracked file carrying CRLF changes the sha256 recorded below --
+    # while git status stays silent, because a path git itself checked out as CRLF
+    # still matches the stat data cached in the index. That is not hypothetical: it
+    # is how the first archived hash came to be one no fresh clone could reproduce.
+    #
+    # Deliberately not waived by -AllowDirty. That switch says "measure work in
+    # progress and mark the artifact"; it does not say "measure bytes the checkout
+    # rule forbids", and there is no version of this collection for which a CRLF
+    # packaged file is the intended input.
+    & (Join-Path (Split-Path -Parent $PSScriptRoot) 'assert-line-endings.ps1')
 
     $startedUtc = (Get-Date).ToUniversalTime()
 
