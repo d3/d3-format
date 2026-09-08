@@ -71,15 +71,15 @@ Current status:
 | Parity CI job | Deliverable — present | `parity` in `test.yml`; every step but the `actions/*` ones reproduced locally |
 | Property and hardening tests | Gate — passed | 17 property tests; 525,121 values through 15,913 accepted specifiers with no panic; owned/reused equivalence, trimming, padding, all-locale, and allocation-budget properties |
 | Per-PR differential | Gate — passed | 213,784 cases, zero disagreements, in debug |
-| Pre-release differential | Gate — passed | 13,355,832 cases and 10,268,703 formatter comparisons, zero disagreements, 12 min in release |
+| Pre-release differential | Gate — passed | 13,355,832 cases and 10,268,703 formatter comparisons, zero disagreements, 550 s in release |
 | Benchmarks and baseline | Deliverable — present | `rust/benches/format.rs`, 7 groups and 41 benchmarks with allocator instrumentation; baseline archived, not a gate |
 | Ubuntu and hosted-runner legs | Gate — pending | no Linux host locally; `ubuntu-latest` jobs, the hosted Windows `dlltool` assumption, and the Actions plumbing are unverified until a real run |
 | Release documentation | Deliverable — present | `rust/README.md`, crate-level rustdoc, `COMPATIBILITY.md`, `DIVERGENCES.md`, `CHANGELOG.md`; every API example is a compiled doctest |
 | Crate documentation examples | Gate — passed | `cargo test --locked --doc --all-features` runs 32 doctests, including every Rust block in `README.md`, and all pass; 31 with default features |
-| `cargo package` review | Gate — passed | `rust/ci/package/collect-listing.ps1`: 56 files, 187 KiB compressed, each matched to a rule that says why it ships; verified to fail on an unclassified file and on a lapsed exclusion |
+| `cargo package` review | Gate — passed | `rust/ci/package/collect-listing.ps1`: 56 files, 187 KiB compressed, each matched to a rule that says why it ships; verified to fail on an unclassified file and on a lapsed exclusion; the archived SHA-256 reproduced across five packagings of the commit it names and matches both the tarball on disk and the canary run |
 | Downstream canaries | Gate — passed | two consumers built from the unpacked `.crate` on 1.98.1 and 1.80.0; ~1.14 M formatted values across the four runs, zero mismatches |
 | Parity artifacts archived | Deliverable — present | `rust/ci/parity/ci-differential.json` and `prerelease-differential.json`; the runner's own summary stays ephemeral under `rust/target/` |
-| Release evidence collected from a commit | Gate — passed | all four archives name a commit whose tree they measured with `git_worktree_dirty: false`; each collector refuses a dirty tree, verified firing on one under PowerShell 5.1 and 7 |
+| Release evidence collected from a commit | Gate — passed | all four archives name `ba5b9ea`, whose tree they measured with `git_worktree_dirty: false`; each collector refuses a dirty tree, verified firing on one under PowerShell 5.1 and 7 |
 | Cargo publication | Gate — pending | `publish-rust.yml` written and statically checked, never executed; `d3-format` is unclaimed on crates.io; the protected environment and credentials are a human step |
 
 ### 0.3 Verified exploratory evidence
@@ -278,10 +278,23 @@ form:
 
 ```gitattributes
 rust/** text eol=lf
+canaries/** text eol=lf
 ```
 
-The rule is scoped to `rust/`. The JavaScript oracle keeps its existing checkout behavior, because
-renormalizing it is an unrelated change to the reference implementation.
+The rule is scoped to `rust/` and `canaries/`. The JavaScript oracle keeps its existing checkout
+behavior, because renormalizing it is an unrelated change to the reference implementation.
+
+The rule governs checkout, and Phase 6's evidence rework found what it does not govern. Nine tracked
+files under those two directories had acquired CRLF in the working tree after checkout — among them
+`rust/README.md`, `rust/CHANGELOG.md` and `rust/COMPATIBILITY.md`, all three of which are packaged.
+Git reports such a file as clean, because the `text` attribute normalizes it back to LF on the way
+to the index, so no gate in §3 and no `git status` sees it. `cargo package` reads the working tree
+rather than the index, so the crate's SHA-256 quietly depended on which files an editor had last
+rewritten and would not have matched a package built from a fresh checkout of the same commit. The
+release evidence was collected only after deleting and re-checking-out those paths so that the tree
+byte-matched a fresh clone. `git ls-files --eol rust canaries` reports the state in one command and
+is worth running before a release; no gate does so yet, which is a real hole rather than a
+deliberate omission.
 
 ## 2. Phase 0: machine, toolchains, baseline, and gates
 
@@ -863,8 +876,8 @@ unpacked crate, defeating §9's canary that the package builds under a consumer'
 crate to build and test independently; whether generated tests remain packaged is decided in Phase 1
 against their measured size.
 
-Phase 6 measured it and they stay. The whole package is 56 files, 1,107,762 bytes uncompressed and
-191,251 compressed — under 2% of the crates.io limit — of which `tests/` is 36 files and 752,568
+Phase 6 measured it and they stay. The whole package is 56 files, 1,108,967 bytes uncompressed and
+191,741 compressed — under 2% of the crates.io limit — of which `tests/` is 36 files and 752,568
 bytes. The generalized version of "no fixture dependency" turned out to hold for every test target,
 not only `gate.rs`: nothing under `tests/` reads a file at run time, because `gen-tests.mjs` inlines
 every oracle value and `properties.rs` generates its own. That is what makes a packaged suite
@@ -1636,7 +1649,9 @@ micro signs, RTL marks, grouping cycles, and final numeral substitution.
 
 A box is ticked only where the command was run and succeeded, per §0.2's distinction between a
 deliverable being present and a gate having passed. Everything below was last confirmed at the end
-of Phase 6, on the one available host: `x86_64-pc-windows-gnu`.
+of Phase 6, on the one available host: `x86_64-pc-windows-gnu`. The four release-evidence archives
+were recollected from the clean tree at `ba5b9ea`, which is the commit that added the clean-tree
+enforcement §6.3 describes; the archives themselves are the working-tree change that follows it.
 
 - [x] Phase 0 machine and gate commands pass.
 - [x] Oracle metadata exactly matches `oracle.json`.
@@ -1650,7 +1665,8 @@ of Phase 6, on the one available host: `x86_64-pc-windows-gnu`.
       **Ubuntu is the outstanding one.** MSRV 1.80.0, pinned 1.98.1, stable, all four feature
       combinations, and the `wasm32-unknown-unknown` compile check pass locally on GNU Windows; no
       Linux host exists here and the hosted runners have never executed.
-- [x] Benchmark and parity artifacts are archived.
+- [x] Benchmark and parity artifacts are archived, all four collected from a clean tree at
+      `ba5b9ea` and recording `git_worktree_dirty: false`.
 - [x] `cargo package` contents are reviewed and build independently.
 - [x] Downstream canaries pass against the packaged crate.
 - [x] Compatibility, deviations, release, and rollback documents are complete.
