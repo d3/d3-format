@@ -1,9 +1,8 @@
-# The Rust port is authored and generated with LF endings, and its fixtures and
-# generated sources are byte-compared against a fresh regeneration. Without this
-# rule core.autocrlf rewrites them to CRLF on checkout and the drift checks fail.
-rust/** text eol=lf
-
-# The canaries are checked out and built on both hosted Linux and this Windows
-# host. They compare formatted output byte for byte, so they get the same rule
-# rather than inheriting core.autocrlf and differing by platform.
-canaries/** text eol=lf
+# Everything here is LF, in the index and in the working tree.
+#
+# This is not a style preference. `cargo package` reads the working tree rather
+# than the index, so a source file that drifted to CRLF changes the published
+# crate's SHA-256 while `git status` stays silent about it -- a path git itself
+# checked out as CRLF still matches the stat data cached in the index, so status
+# never reads its contents. `git ls-files --eol` is what shows the real state.
+* text eol=lf

@@ -1,0 +1,51 @@
+[package]
+name = "d3-format"
+# A release candidate rather than 0.1.0: the port is byte-for-byte verified
+# against the oracle, but nothing has been published yet and no downstream has
+# depended on it. Stable 0.1.0 is a separate, deliberate bump.
+version = "0.1.0-rc.1"
+edition = "2021"
+rust-version = "1.80"
+license = "ISC"
+repository = "https://github.com/alexkhil/d3-format-rust"
+description = "A Rust implementation of d3-format 3.1.2"
+# Cargo would find README.md anyway; naming it is what makes the dependency
+# explicit, because src/lib.rs pulls the same file in with include_str! so that
+# every Rust snippet in it is a doctest rather than a prose snippet.
+readme = "README.md"
+keywords = ["d3", "format", "number", "locale", "formatting"]
+categories = ["value-formatting", "internationalization", "localization"]
+# rust-toolchain.toml is excluded because rustup resolves it by walking up from
+# the build directory: shipping it would pin an unpacked-crate consumer to 1.98.1
+# and silently override the toolchain they chose to build with.
+#
+# docs/ holds the migration plan, which is a 100 KB design record about a
+# repository the consumer does not have. COMPATIBILITY.md and DIVERGENCES.md both
+# state that it is not part of the published crate; this is what makes that true.
+# The README's link to it still resolves, because crates.io renders relative links
+# against the repository.
+exclude = ["docs/", "rust-toolchain.toml"]
+
+[lib]
+name = "d3_format"
+
+[features]
+default = []
+locales = []
+serde = ["dep:serde"]
+
+[dependencies]
+serde = { version = "1", optional = true, features = ["derive"] }
+
+[dev-dependencies]
+criterion = { version = "=0.7.0", default-features = false, features = ["cargo_bench_support"] }
+
+# `harness = false` hands `main` to the file, which it needs: no "allocation-free"
+# claim is made without allocator instrumentation, so `benches/format.rs` installs
+# a counting global allocator and prints an exact allocation profile before
+# Criterion's timing runs. Criterion stays at exactly 0.7.0 with default features
+# off, because 0.8 pulls `alloca` through the `cc` build dependency and this crate
+# keeps a pure-Rust graph.
+[[bench]]
+name = "format"
+harness = false
