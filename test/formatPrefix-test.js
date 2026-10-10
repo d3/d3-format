@@ -37,3 +37,11 @@ test("formatPrefix(\"($~s\", value)(number) formats with the SI prefix inside pa
   assert.strictEqual(formatPrefix("($~s", 1e3)(1e3), "$1k");
   assert.strictEqual(formatPrefix("($~s", 1e3)(-1e3), "($1k)");
 });
+
+test("formatPrefix uses no SI prefix for a zero reference value", () => {
+  const f = formatPrefix(".1", 0);
+  assert.strictEqual(f(0), "0.0");
+  assert.strictEqual(f(1), "1.0");
+  assert.strictEqual(f(-1), "−1.0");
+  assert.strictEqual(formatPrefix(".1", -0)(1), "1.0");
+});
