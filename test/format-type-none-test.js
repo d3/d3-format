@@ -1,5 +1,5 @@
 import {assert, test} from "vitest";
-import {format} from "../src/index.js";
+import {format} from "d3-format";
 
 test("format(\".[precision]\") uses significant precision and trims insignificant zeros", () => {
   assert.strictEqual(format(".1")(4.9), "5");

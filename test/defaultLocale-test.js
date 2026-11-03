@@ -1,5 +1,5 @@
 import {assert, test} from "vitest";
-import {format, formatPrefix, formatDefaultLocale} from "../src/index.js";
+import {format, formatPrefix, formatDefaultLocale} from "d3-format";
 
 const enUs = {
   decimal: ".",

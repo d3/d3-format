@@ -1,7 +1,7 @@
 import {readdirSync, readFileSync} from "node:fs";
 import {join} from "node:path";
 import {assert, test} from "vitest";
-import {formatLocale} from "../src/index.js";
+import {formatLocale} from "d3-format";
 
 function locale(locale) {
   return formatLocale(JSON.parse(readFileSync(`./locale/${locale}.json`, "utf8")));

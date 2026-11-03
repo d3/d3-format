@@ -1,5 +1,5 @@
 import {assert, test} from "vitest";
-import {format, formatSpecifier, FormatSpecifier} from "../src/index.js";
+import {format, formatSpecifier, FormatSpecifier} from "d3-format";
 
 test("formatSpecifier(specifier) throws an error for invalid formats", () => {
   assert.throws(() => { formatSpecifier("foo"); }, /invalid format: foo/);

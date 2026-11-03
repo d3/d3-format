@@ -1,5 +1,5 @@
 import {assert, test} from "vitest";
-import {format, formatLocale} from "../src/index.js";
+import {format, formatLocale} from "d3-format";
 
 test("format(\"c\") unicode character", () => {
   assert.strictEqual(format("c")("☃"), "☃");

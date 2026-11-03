@@ -1,5 +1,5 @@
 import {assert, test} from "vitest";
-import {precisionRound} from "../src/index.js";
+import {precisionRound} from "d3-format";
 
 test("precisionRound(step, max) returns the expected value", () => {
   assert.strictEqual(precisionRound(0.1, 1.1), 2); // "1.0", "1.1"
