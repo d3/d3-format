@@ -1,5 +1,5 @@
 import {assert, test} from "vitest";
-import {format} from "../src/index.js";
+import {format} from "d3-format";
 
 test("format(\"g\") can output general notation", () => {
   assert.strictEqual(format(".1g")(0.049), "0.05");

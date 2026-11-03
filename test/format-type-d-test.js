@@ -1,5 +1,5 @@
 import {assert, test} from "vitest";
-import {format} from "../src/index.js";
+import {format} from "d3-format";
 
 test("format(\"d\") can zero fill", () => {
   const f = format("08d");

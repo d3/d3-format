@@ -1,5 +1,5 @@
 import {assert, test} from "vitest";
-import {format} from "../src/index.js";
+import {format} from "d3-format";
 
 test("format(\"r\") can round to significant digits", () => {
   assert.strictEqual(format(".1r")(0.049), "0.05");

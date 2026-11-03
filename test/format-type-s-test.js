@@ -1,5 +1,5 @@
 import {assert, test} from "vitest";
-import {format} from "../src/index.js";
+import {format} from "d3-format";
 
 test("format(\"s\") outputs SI-prefix notation with default precision 6", () => {
   const f = format("s");

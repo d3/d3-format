@@ -1,5 +1,5 @@
 import {assert, test} from "vitest";
-import {format} from "../src/index.js";
+import {format} from "d3-format";
 
 test("format(\"n\") is an alias for \",g\"", () => {
   const f = format(".12n");

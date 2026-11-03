@@ -1,5 +1,5 @@
 import {assert, test} from "vitest";
-import {format} from "../src/index.js";
+import {format} from "d3-format";
 
 test("format(specifier)(number) returns a string", () => {
   assert.strictEqual(typeof format("d")(0), "string");

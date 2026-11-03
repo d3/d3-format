@@ -1,6 +1,6 @@
 {
   "name": "d3-format",
-  "version": "3.1.2",
+  "version": "3.1.3",
   "description": "Format numbers for human consumption.",
   "homepage": "https://d3js.org/d3-format/",
   "repository": {
@@ -21,33 +21,33 @@
   "type": "module",
   "files": [
     "dist/**/*.js",
-    "src/**/*.js",
+    "dist/**/*.mjs",
     "locale/*.json"
   ],
-  "module": "src/index.js",
-  "main": "src/index.js",
+  "module": "dist/d3-format.mjs",
+  "main": "dist/d3-format.mjs",
   "jsdelivr": "dist/d3-format.min.js",
   "unpkg": "dist/d3-format.min.js",
   "exports": {
     ".": {
       "umd": "./dist/d3-format.min.js",
-      "default": "./src/index.js"
+      "default": "./dist/d3-format.mjs"
     },
     "./locale/*": "./locale/*.json"
   },
-  "sideEffects": [
-    "./src/defaultLocale.js"
-  ],
+  "sideEffects": false,
   "devDependencies": {
-    "@rollup/plugin-terser": "^0.4.4",
-    "eslint": "^9.39.2",
-    "globals": "^17.0.0",
-    "rollup": "^4.55.1",
-    "vitest": "^4.0.17"
+    "@eslint/js": "^10.0.1",
+    "@rollup/plugin-node-resolve": "^16.0.3",
+    "@rollup/plugin-terser": "^1.0.2",
+    "eslint": "^10.14.0",
+    "globals": "^17.14.0",
+    "rollup": "^4.67.4",
+    "vitest": "^5.1.0"
   },
   "scripts": {
     "test": "vitest",
-    "lint": "eslint src test",
+    "lint": "eslint",
     "prepublishOnly": "rm -rf dist && rollup -c"
   },
   "engines": {

@@ -1,5 +1,5 @@
 import {assert, test} from "vitest";
-import {precisionPrefix} from "../src/index.js";
+import {precisionPrefix} from "d3-format";
 
 // A generalization from µ to all prefixes:
 // assert.strictEqual(precisionPrefix(1e-6, 1e-6), 0); // 1µ

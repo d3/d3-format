@@ -1,5 +1,5 @@
 import {assert, test} from "vitest";
-import {precisionFixed} from "../src/index.js";
+import {precisionFixed} from "d3-format";
 
 test("precisionFixed(number) returns the expected value", () => {
   assert.strictEqual(precisionFixed(8.9), 0);
