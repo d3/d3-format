@@ -69,6 +69,14 @@ test("format(\"s\") formats numbers smaller than 1e-24 with yocto", () => {
   assert.strictEqual(f(-1.29e-21), "−1.2900000z");
 });
 
+test("format(\"s\") carries into a higher power when rounding below 1e-24", () => {
+  assert.strictEqual(format(".3s")(9.99e-25), "1.0y"); // 0.999y → 1.0y, not 0.10y
+  assert.strictEqual(format(".2s")(9.9e-25), "1y"); // 0.99y → 1y, not 0.1y
+  assert.strictEqual(format(".3s")(9.99e-26), "0.1y"); // 0.0999y → 0.1y, not 0.01y
+  assert.strictEqual(format(".1s")(9.5e-25), "1y");
+  assert.strictEqual(format(".5s")(9.9999e-25), "1.000y");
+});
+
 test("format(\"s\") formats numbers larger than 1e24 with yotta", () => {
   const f = format(".8s");
   assert.strictEqual(f(1.23e+21), "1.2300000Z");
