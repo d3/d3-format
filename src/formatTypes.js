@@ -11,7 +11,7 @@ export default {
   "f": (x, p) => x.toFixed(p),
   "g": (x, p) => x.toPrecision(p),
   "o": (x) => Math.round(x).toString(8),
-  "p": (x, p) => formatRounded(x * 100, p),
+  "p": (x, p) => isFinite(x) && !isFinite(x * 100) ? formatRounded(x, p) + "00" : formatRounded(x * 100, p),
   "r": formatRounded,
   "s": formatPrefixAuto,
   "X": (x) => Math.round(x).toString(16).toUpperCase(),
