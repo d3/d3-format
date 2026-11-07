@@ -90,3 +90,21 @@ test("locale data is valid", async () => {
     formatLocale(locale);
   }
 });
+
+test("an empty group separator preserves zero padding", () => {
+  const locale = formatLocale({grouping: [3], thousands: ""});
+  assert.strictEqual(locale.format("05,d")(1), "00001");
+  assert.strictEqual(locale.format("08,d")(123456), "00123456");
+  assert.strictEqual(locale.format("+08,d")(-42), "−0000042");
+  assert.strictEqual(locale.format("012,.2f")(2), "000000002.00");
+  for (const grouping of [[3], [2], [3, 2]]) {
+    const locale = formatLocale({grouping, thousands: "", currency: ["$", ""]});
+    for (const width of [5, 8, 12]) {
+      for (const value of [0, -0, 1, -42, 123456]) {
+        for (const type of ["d", ".2f", ".3s"]) {
+          assert.strictEqual(locale.format("$0" + width + "," + type)(value), locale.format("$0" + width + type)(value));
+        }
+      }
+    }
+  }
+});
