@@ -1,4 +1,7 @@
+import identity from "./identity.js";
+
 export default function(grouping, thousands) {
+  if (!thousands) return identity;
   return function(value, width) {
     var i = value.length,
         t = [],
