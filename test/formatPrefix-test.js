@@ -37,3 +37,9 @@ test("formatPrefix(\"($~s\", value)(number) formats with the SI prefix inside pa
   assert.strictEqual(formatPrefix("($~s", 1e3)(1e3), "$1k");
   assert.strictEqual(formatPrefix("($~s", 1e3)(-1e3), "($1k)");
 });
+
+test("formatPrefix(specifier, 0)(number) formats with 0 exponent", () => {
+  assert.strictEqual(formatPrefix(",.0", 0)(1000), "1,000");
+  assert.strictEqual(formatPrefix(",.1", -0)(0), "0.0");
+  assert.strictEqual(formatPrefix(",.0s", 0)(42), "42");
+});
