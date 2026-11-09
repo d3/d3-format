@@ -53,3 +53,14 @@ test("precisionPrefix(Infinity, value) returns NaN", () => {
   assert.isNaN(precisionPrefix(Infinity, 1));
   assert.isNaN(precisionPrefix(-Infinity, 1));
 });
+
+test("precisionPrefix(step, 0) returns the precision for a value with 0 exponent", () => {
+  assert.strictEqual(precisionPrefix(1, 0), 0);
+  assert.strictEqual(precisionPrefix(0.1, 0), 1);
+  assert.strictEqual(precisionPrefix(1e-3, -0), 3);
+  assert.strictEqual(precisionPrefix(1e3, 0), 0);
+});
+
+test("precisionPrefix(0, 0) returns NaN", () => {
+  assert.isNaN(precisionPrefix(0, 0));
+});
