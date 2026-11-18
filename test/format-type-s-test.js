@@ -1,5 +1,11 @@
 import {assert, test} from "vitest";
-import {format} from "d3-format";
+import {format, formatLocale} from "d3-format";
+
+test("an empty NaN label does not inherit the preceding SI prefix", () => {
+  const f = formatLocale({nan: ""}).format("s");
+  assert.strictEqual(f(12000), "12.0000k");
+  assert.strictEqual(f(NaN), "");
+});
 
 test("format(\"s\") outputs SI-prefix notation with default precision 6", () => {
   const f = format("s");
