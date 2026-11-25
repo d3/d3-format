@@ -1,4 +1,5 @@
 import exponent from "./exponent.js";
+import formatFixedScaled from "./formatFixedScaled.js";
 import formatGroup from "./formatGroup.js";
 import formatNumerals from "./formatNumerals.js";
 import formatSpecifier from "./formatSpecifier.js";
@@ -51,7 +52,7 @@ export default function(locale) {
     // What format function should we use?
     // Is this an integer type?
     // Can this type generate exponential notation?
-    var formatType = formatTypes[type],
+    var formatType = options && options.formatType || formatTypes[type],
         maybeSuffix = /[defgprs%]/.test(type);
 
     // Set the default precision if not specified,
@@ -133,10 +134,9 @@ export default function(locale) {
 
   function formatPrefix(specifier, value) {
     var e = Math.max(-8, Math.min(8, Math.floor(exponent(value) / 3))) * 3,
-        k = Math.pow(10, -e),
-        f = newFormat((specifier = formatSpecifier(specifier), specifier.type = "f", specifier), {suffix: prefixes[8 + e / 3]});
+        f = newFormat((specifier = formatSpecifier(specifier), specifier.type = "f", specifier), {suffix: prefixes[8 + e / 3], formatType: function(x, p) { return formatFixedScaled(x, p, e); }});
     return function(value) {
-      return f(k * value);
+      return f(isNaN(e) ? NaN : value);
     };
   }
 

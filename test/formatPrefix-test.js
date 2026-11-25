@@ -37,3 +37,12 @@ test("formatPrefix(\"($~s\", value)(number) formats with the SI prefix inside pa
   assert.strictEqual(formatPrefix("($~s", 1e3)(1e3), "$1k");
   assert.strictEqual(formatPrefix("($~s", 1e3)(-1e3), "($1k)");
 });
+
+test("formatPrefix(\",.2\", value)(number) rounds the scaled value at the requested precision", () => {
+  assert.strictEqual(formatPrefix(",.2", 1e3)(1555), "1.56k");
+  assert.strictEqual(formatPrefix(",.2", 1e3)(1554), "1.55k");
+  assert.strictEqual(formatPrefix(",.2", 1e3)(5), "0.01k");
+  assert.strictEqual(formatPrefix(",.2", 1e3)(4), "0.00k");
+  assert.strictEqual(formatPrefix(",.0", 1e3)(500), "1k");
+  assert.strictEqual(formatPrefix(",.0", 1e3)(499), "0k");
+});
